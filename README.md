@@ -19,9 +19,9 @@ Done:
 * fixes transparency issues / transparent masked images (even though transparency is still not completely supported)
 * corrected handling of overlapping shapes
 * better support Type0 fonts that use embedded CID fonts
-* jbig2 image format decoded with jpedal api
+* jbig2 image format decoded with "jpedal" API
 * DeviceCMY / DeviceRGB colour spaces are working now, but some PDFs are still displayed in wrong format.
-* Improved reading of CMYK images. Some colors are still displayed wrong. (using the ch.randelshofer.media.jpeg.JPEGImageIO API)
+* Improved reading of CMYK images. Some colours are still displayed wrong. (using the ch.randelshofer.media.jpeg.JPEGImageIO API)
 * Improved run length decoding (corrected reading of buffer) 
 * fixed compression issues
 * fixed size of outline fonts 
