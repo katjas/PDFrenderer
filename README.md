@@ -8,8 +8,8 @@ The principal objective of the fork is to improve the original PDF renderer. The
 To do:
 ------
 * some colours are displayed incorrect, there seem to be open issues regarding colour space handling
+* some fonts can't be rendered and are replaced with built in fonts 
 * embedded Type0 font with a CIDType0 font is not supported correctly. Currently there is a hack in the code to fall back to the built in fonts in this case.
-* ...
 
 Done:
 -----
