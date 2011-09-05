@@ -39,7 +39,7 @@ public class LinkAnnotation extends PDFAnnotation {
 		// a link annotation can either have an action (GoTo or URI) or a destination (DEST)
 		PDFObject actionObj = annotObject.getDictRef("A");
 		if (actionObj != null) {
-			this.action = PDFAction.getAction(actionObj, annotObject);
+			this.action = PDFAction.getAction(actionObj, annotObject.getRoot());
 		} else {
 			// if a destination is given, create a GoToAction from it
 			PDFObject dest = annotObject.getDictRef("Dest");
