@@ -379,6 +379,14 @@ public class PDFObject {
     }
 
     /**
+     * Returns the root of this object.
+     * @return
+     */
+    public PDFObject getRoot() {
+    	return owner.getRoot();
+    }
+    
+    /**
      * get the value as a String.  Will return null if the object
      * isn't a STRING, NAME, or KEYWORD.  This method will <b>NOT</b>
      * convert a NUMBER to a String. If the string is actually

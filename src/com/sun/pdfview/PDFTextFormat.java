@@ -261,7 +261,7 @@ public class PDFTextFormat implements Cloneable {
      */
     public void doText(PDFPage cmds, String text) {
         Point2D.Float zero = new Point2D.Float();
-        AffineTransform scale = new AffineTransform(this.fsize, 0, 0, this.fsize * this.th, 0, this.tr);
+        AffineTransform scale = new AffineTransform(this.fsize * this.th, 0, 0, this.fsize, 0, this.tr);
         AffineTransform at = new AffineTransform();
 
         List l = this.font.getGlyphs(text);
