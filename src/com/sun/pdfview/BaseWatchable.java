@@ -266,9 +266,17 @@ public abstract class BaseWatchable implements Watchable, Runnable {
             this.thread = Thread.currentThread();
             run();
         } else {
-            this.thread = new Thread(this);
-            this.thread.setName(getClass().getName());
-            this.thread.start();
+        	this.thread = new Thread(this);
+        	this.thread.setName(getClass().getName());
+        	//Fix for NPE: Taken from http://java.net/jira/browse/PDF_RENDERER-46
+        	synchronized (statusLock) {
+        		thread.start();
+        		try {
+        			statusLock.wait();
+        		} catch (InterruptedException ex) {
+        			// ignore
+        		}
+        	}
         }
     }
 
