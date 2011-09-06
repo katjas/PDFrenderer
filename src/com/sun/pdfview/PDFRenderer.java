@@ -272,6 +272,12 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
                 0, 1);
 
         BufferedImage bi = image.getImage();
+        if (bi == null) {
+        	// maybe it was an unsupported format, or something.
+        	// Nothing to draw, anyway!
+        	return new Rectangle2D.Double();
+        }
+
         if (image.isImageMask()) {
             bi = getMaskedImage(bi);
         }
