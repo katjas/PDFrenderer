@@ -59,6 +59,8 @@ public class CCITTFaxDecode {
 			System.out.println("Error decoding CCITTFax image k: "+ k);
 			// some PDf producer don't correctly assign a k value for the deocde,
 			// as  result we can try one more time using the T6.
+			//first, reset buffer
+			destination = new byte[size];
 			decoder.decodeT6(destination, source, 0, rows);
 		}
 		if (!getOptionFieldBoolean(dict, "BlackIs1", false)) {
