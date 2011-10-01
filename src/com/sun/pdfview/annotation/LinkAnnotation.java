@@ -47,7 +47,7 @@ public class LinkAnnotation extends PDFAnnotation {
 				dest = annotObject.getDictRef("DEST");
 			}
 			if (dest != null) {
-				this.action = new GoToAction(PDFDestination.getDestination(dest, annotObject));
+				this.action = new GoToAction(PDFDestination.getDestination(dest, annotObject.getRoot()));
 			} else {
 				throw new PDFParseException(
 					"Could not parse link annotation (no Action or Destination found): "
