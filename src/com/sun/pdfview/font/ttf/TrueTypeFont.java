@@ -255,9 +255,15 @@ public class TrueTypeFont {
 
         data.mark ();
 
-        // special adjustment for head table
+        // special adjustment for head table: always treat the 4-bytes
+        // starting at byte 8 as 0x0000. This the checkSumAdjustment so
+        // must be ignored here (see the TTF spec)
         if (tagString.equals ("head")) {
-            data.putInt (8, 0);
+        	data.putInt (8, 0);
+        	sum += data.getInt();
+        	sum += data.getInt();
+        	// consume the uncounted checkSumAdjustment int
+        	data.getInt();
         }
 
         int nlongs = (data.remaining () + 3) / 4;
