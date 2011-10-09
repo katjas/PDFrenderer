@@ -132,7 +132,7 @@ public class FunctionType3 extends PDFFunction {
 
         // read the encode array (required)
         PDFObject encodeObj = obj.getDictRef("Encode");
-        if (encodeObj != null) {
+        if (encodeObj == null) {
             throw new PDFParseException("Encode required for function type 3!");
         }
         PDFObject[] encodeAry = encodeObj.getArray();
