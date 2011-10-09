@@ -263,7 +263,7 @@ public class LaunchAction extends PDFAction {
 	 * @author  xond
 	 * @since 08.07.2009
 	 ****************************************************************************/
-	public class FileSpec{
+	public static class FileSpec{
 		private String fileSystem;
 		private String fileName;
 		private String dosFileName;

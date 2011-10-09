@@ -280,7 +280,7 @@ public class Type1CFont extends OutlineFont {
      * A range.  There's probably a version of this class floating around
      * somewhere already in Java.
      */
-    class Range {
+    static class Range {
 
         private int start;
 

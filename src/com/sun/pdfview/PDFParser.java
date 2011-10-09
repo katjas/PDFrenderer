@@ -123,7 +123,7 @@ public class PDFParser extends BaseWatchable {
     /**
      * a token from a PDF Stream
      */
-    class Tok {
+    static class Tok {
 
         /** begin bracket &lt; */
         public static final int BRKB = 11;

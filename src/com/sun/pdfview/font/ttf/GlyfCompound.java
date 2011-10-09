@@ -307,7 +307,7 @@ public class GlyfCompound extends Glyf {
     /**
      * The record for a single component of this compound glyph
      */
-    class GlyfComponent {
+    static class GlyfComponent {
         /** flags */
         short flags;
         

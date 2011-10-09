@@ -346,7 +346,7 @@ public class NameTable extends TrueTypeTable {
     /**
      * A class to hold the data associated with each record
      */
-    class NameRecord implements Comparable {
+    static class NameRecord implements Comparable {
         /**
          * Platform ID
          */
