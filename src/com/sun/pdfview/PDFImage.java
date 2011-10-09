@@ -302,12 +302,31 @@ public class PDFImage {
 
             // set the data explicitly as well
             bi.setData(raster);
-        } else {
+        } else if (cm.getPixelSize() == 1 && cm.getNumComponents() == 1) {
+        	//If the image is black and white only, convert it into BYTE_GRAY format
+        	//This is a lot faster compared to just drawing the original image
+        	
+        	//Are pixels decoded?
+        	int[] cc = new int[]{0, 1};
+        	try {
+        		PDFObject o = imageObj.getDictRef("Decode");
+        		if (o != null && o.getAt(0) != null) {
+        			cc[0] = o.getAt(0).getIntValue();
+        			cc[1] = o.getAt(1).getIntValue();
+        		}
+			} catch (IOException e) {
+			}
+        	final byte[] ncc = new byte[]{(byte)-cc[0], (byte)-cc[1]};
+
+        	bi = biColorToGrayscale(raster, ncc);
+        	//Return when there is no SMask
+        	if (getSMask() == null) return bi;
+        }
+        else {
             // Raster is already in a format which is supported by Java2D,
             // such as RGB or Gray.
             bi = new BufferedImage(cm, raster, true, null);
         }
-
         // hack to avoid *very* slow conversion
         ColorSpace cs = cm.getColorSpace();
         ColorSpace rgbCS = ColorSpace.getInstance(ColorSpace.CS_sRGB);
@@ -348,6 +367,64 @@ public class PDFImage {
 
         return (bi);
     }
+
+	/**
+	 * Creates a new image of type {@link TYPE_BYTE_GRAY} which represents
+	 * the given raster
+	 * @param raster Raster of an image with just two colors, bitwise encoded 
+	 * @param ncc Array with two entries that describe the corresponding 
+	 * 				gray values
+	 */
+    private BufferedImage biColorToGrayscale(final WritableRaster raster,
+			final byte[] ncc) {
+    	
+		final byte[] bufferO = ((DataBufferByte) raster.getDataBuffer()).getData();
+		
+		BufferedImage converted = new BufferedImage(getWidth(),
+				getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+		
+		byte[] buffer = ((DataBufferByte) converted.getRaster().getDataBuffer()).getData();        	
+
+		int i = 0;
+		final int height = converted.getHeight();
+		final int width = converted.getWidth();
+		for (int y = 0; y < height; y++) {
+			int base = y*width + 7;
+			if ((y+1)*width < buffer.length) {
+				for (int x = 0; x < width; x += 8) {
+					final byte bits = bufferO[i];
+					i++;
+					buffer[base - 7] = ncc[((bits >>> 7) & 1)];
+					buffer[base - 6] = ncc[((bits >>> 6) & 1)];
+					buffer[base - 5] = ncc[((bits >>> 5) & 1)];
+					buffer[base - 4] = ncc[((bits >>> 4) & 1)];
+					buffer[base - 3] = ncc[((bits >>> 3) & 1)];
+					buffer[base - 2] = ncc[((bits >>> 2) & 1)];
+					buffer[base - 1] = ncc[((bits >>> 1) & 1)];
+					buffer[base] = ncc[(bits & 1)];
+					
+					/*for (byte j=7; j>=0; j--) {
+						//final int c = (((bits & (1<<j)) >>> j));
+						final int c = ((bits >>> j) & 1);
+						buffer[base - j] = ncc[c];
+					}*/
+					base += 8;
+				}        			
+			}
+			else {
+				for (int x = 0; x < width; x += 8) {
+					final byte bits = bufferO[i];
+					i++;
+					for (byte j=7; j>=0; j--) {
+						if (base - j >= buffer.length) break;
+						buffer[base - j] = ncc[((bits >>> j) & 1)];
+					}
+					base += 8; 			
+				}
+			}
+		}
+		return converted;
+	}
 
     /**
      * Get the image's width
