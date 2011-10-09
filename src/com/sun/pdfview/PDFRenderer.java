@@ -23,6 +23,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
@@ -30,7 +31,10 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.awt.image.ConvolveOp;
 import java.awt.image.ImageObserver;
+import java.awt.image.Kernel;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -55,7 +59,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
     /** a weak reference to the image we render into.  For the image
      * to remain available, some other code must retain a strong reference to it.
      */
-    private WeakReference imageRef;
+    private WeakReference<BufferedImage> imageRef;
     /** the graphics object for use within an iteration.  Note this must be
      * set to null at the end of each iteration, or the image will not be
      * collected
@@ -78,6 +82,9 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
     private long then = 0;
     /** the sum of all the individual dirty regions since the last update */
     private Rectangle2D unupdatedRegion;
+    /** Use blur before image resize to enhance the result (Antialias) **/
+    public boolean useBlurResizingForImages = true;
+
     /** how long (in milliseconds) to wait between image updates */
     public static final long UPDATE_DURATION = 200;
     public static final float NOPHASE = -1000;
@@ -86,6 +93,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
     public static final int NOCAP = -1000;
     public static final float[] NODASH = null;
     public static final int NOJOIN = -1000;
+    
 
     /**
      * create a new PDFGraphics state
@@ -279,7 +287,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         }
 
         if (image.isImageMask()) {
-            bi = getMaskedImage(bi);
+        	bi = getMaskedImage(bi);
         }
 
         /*
@@ -288,11 +296,124 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         frame.pack();
         frame.show();
          */
+        // long t = System.currentTimeMillis();
+        Rectangle r = g.getTransform().createTransformedShape(new Rectangle(0,0,1,1)).getBounds();
+        boolean isBlured = false;
+        
+        //This is another possibility to enhance the quality of the images
+        //but it is slower (this could depend on the os and java version used)
+        //and the image quality is worse compared to the bluring method.
+        /*int it = 0;
+        int width = image.getWidth();
+        int height = image.getHeight();
+        while (width >= 2*r.getWidth() && height >= 2*r.getHeight()) {
+        	width = width / 2;
+        	height = height / 2;
+    		BufferedImage blured = new BufferedImage(width, 
+    				height, bi.getType());
+    		Graphics2D bg = (Graphics2D) blured.getGraphics();
+    		bg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
+    				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+    		bg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+    				RenderingHints.VALUE_ANTIALIAS_ON);
+    		bg.drawImage(bi, 0, 0, width, 
+    				height, null);
+    		if (it > 0) bi.flush();
+    		bi = blured;
+    		it++;
+        }
+        at = new AffineTransform(1f / width, 0,
+                0, -1f / height,
+                0, 1);
+        */
+        
+        if (useBlurResizingForImages && 
+        		bi.getType() != BufferedImage.TYPE_CUSTOM && 
+        		image.getWidth() >= 1.75*r.getWidth() && image.getHeight() >= 1.75*r.getHeight()){
 
+        	BufferedImageOp op;
+        	
+        	final float maxFactor = 3.5f;
+        	final boolean RESIZE = true;
+        	if (image.getWidth() > maxFactor*r.getWidth() && image.getHeight() > maxFactor*r.getHeight()){
+        		//First resize, otherwise we risk that we get out of heapspace
+        		int newHeight = (int)Math.round(maxFactor*r.getHeight());
+        		int newWidth = (int)Math.round(maxFactor*r.getWidth());
+        		if (!RESIZE) {
+        			newHeight = image.getHeight();
+        			newWidth = image.getWidth();
+        		}
+        		BufferedImage blured = new BufferedImage(newWidth, 
+        				newHeight, bi.getType());
+        		Graphics2D bg = (Graphics2D) blured.getGraphics();
+        		bg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
+        				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        		bg.drawImage(bi, 0, 0, newWidth, newHeight, null);
+        		bi = blured;
+                at = new AffineTransform(1f / bi.getWidth(), 0,
+                        0, -1f / bi.getHeight(),
+                        0, 1);
+                
+                final float weight = 1.0f/16.0f;
+            	final float[] blurKernel = {
+            			weight, weight, weight, weight,
+            			weight, weight, weight, weight,
+            			weight, weight, weight, weight,
+            			weight, weight, weight, weight,
+            	};
+                /*final float weight = 1.0f/32.0f;
+            	final float[] blurKernel = {
+            			weight, 2*weight, 2*weight, weight,
+            			2*weight, 3*weight, 3*weight, 2*weight,
+            			2*weight, 3*weight, 3*weight, 2*weight,
+            			weight, 2*weight, 2*weight, weight,
+            	};*/
+            	/*final float[] blurKernel = {
+            			weight, weight, weight, weight, weight,
+            			weight, weight, weight, weight, weight,
+            			weight, weight, weight, weight, weight,
+            			weight, weight, weight, weight, weight,
+            			weight, weight, weight, weight, weight
+            	};*/
+            	op = new ConvolveOp(new Kernel(4, 4, blurKernel), ConvolveOp.EDGE_NO_OP, null);            	
+        	}
+        	else {
+        		/*final float weight = 1.0f/9.0f;
+        		final float[] blurKernel = {
+        				weight, weight, weight,
+        				weight, weight, weight,
+        				weight, weight, weight
+        		};*/
+        		final float weight = 1.0f/18.0f;
+        		final float[] blurKernel = {
+        				1*weight, 2*weight, 1*weight,
+        				2*weight, 6*weight, 2*weight,
+        				1*weight, 2*weight, 1*weight
+        		};
+
+        		op = new ConvolveOp(new Kernel(3, 3, blurKernel), ConvolveOp.EDGE_NO_OP, null);
+        	}
+        	
+        	BufferedImage blured = op.createCompatibleDestImage(bi, bi.getColorModel());
+        	
+        	op.filter(bi, blured);
+        	bi = blured;
+        	isBlured = true;
+        }
         this.g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
+                
+        //Image quality is better when using texturepaint instead of drawimage
+        //but it is also slower :(
+        /*g.setPaint(new TexturePaint(bi, new Rectangle2D.Float(0, 0, 1, -1)));
+        g.fillRect(0, 0, 1, 1);*/
+		this.g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
+				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         if (!this.g.drawImage(bi, at, null)) {
             System.out.println("Image not completed!");
         }
+        // System.out.println("Time : "+(System.currentTimeMillis()-t));
+        
+        if (isBlured) bi.flush();
 
         // get the total transform that was executed
         AffineTransform bt = new AffineTransform(this.g.getTransform());
@@ -502,6 +623,15 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
     }
 
     /**
+     * If exists, returns the image which is used by the renderer.
+     * @return a BufferedImage or null
+     */
+    public BufferedImage getImage() {
+    	if (this.imageRef == null) return null;
+    	return (BufferedImage) this.imageRef.get();
+    }
+    
+    /**
      * Setup rendering.  Called before iteration begins
      */
     @Override
@@ -693,7 +823,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         }
 
         synchronized (this.observers) {
-            for (Iterator i = this.observers.iterator(); i.hasNext();) {
+            for (Iterator<ImageObserver> i = this.observers.iterator(); i.hasNext();) {
                 ImageObserver observer = (ImageObserver) i.next();
 
                 boolean result = observer.imageUpdate(bi, flags,
@@ -714,9 +844,16 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
      * that have a value in the image with the current paint
      */
     private BufferedImage getMaskedImage(BufferedImage bi) {
-        // get the color of the current paint
-        Color col = (Color) this.state.fillPaint.getPaint();
+        
+    	// get the color of the current paint
+    	final Paint paint = state.fillPaint.getPaint();
+    	if (!(paint instanceof Color)) {
+    		// TODO - support other types of Paint
+    		return bi;
+    	}
 
+    	Color col = (Color) paint;
+    	        
         // format as 8 bits each of ARGB
         int paintColor = col.getAlpha() << 24;
         paintColor |= col.getRed() << 16;
