@@ -165,12 +165,13 @@ public abstract class BaseWatchable implements Watchable, Runnable {
     }
 
     /**
-     * Stop this watchable.  Stop will cause all processing to cease,
+     * Stop this watchable if it is not already finished.  
+	 * Stop will cause all processing to cease,
      * and the watchable to be destroyed.
      */
     @Override
 	public void stop() {
-        setStatus(Watchable.STOPPED);
+    	if (!isFinished()) setStatus(Watchable.STOPPED);
     }
 
     /**
@@ -347,7 +348,7 @@ public abstract class BaseWatchable implements Watchable, Runnable {
     /** A class that lets us give it a target time or number of steps,
      * and will tell us to stop after that much time or that many steps
      */
-    class Gate {
+    static class Gate {
 
         /** whether this is a time-based (true) or step-based (false) gate */
         private boolean timeBased;

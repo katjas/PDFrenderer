@@ -67,7 +67,7 @@ public class PDFPage {
     rendered image */
     private Cache cache;
     /** a map from image info to weak references to parsers that are active */
-    private Map<ImageInfo,WeakReference> renderers;
+    public Map<ImageInfo,WeakReference> renderers;
 
     /** List of annotations for this page*/
     private List<PDFAnnotation> annots;
