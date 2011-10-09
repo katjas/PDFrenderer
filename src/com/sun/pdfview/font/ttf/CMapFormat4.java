@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import com.sun.pdfview.font.ttf.CMapFormat4.Segment;
+
 /**
  *
  * @author  jkaplan
@@ -284,8 +286,8 @@ public class CMapFormat4 extends CMap {
         buf.putShort(getRangeShift());
         
         // write the endCodes
-        for (Iterator i = this.segments.keySet().iterator(); i.hasNext();) {
-            Segment s = (Segment) i.next();
+        for (Iterator<Segment> i = this.segments.keySet().iterator(); i.hasNext();) {
+            Segment s = i.next();
             buf.putShort((short) s.endCode);
         }
         
@@ -293,14 +295,14 @@ public class CMapFormat4 extends CMap {
         buf.putShort((short) 0);
         
         // write the startCodes
-        for (Iterator i = this.segments.keySet().iterator(); i.hasNext();) {
-            Segment s = (Segment) i.next();
+        for (Iterator<Segment> i = this.segments.keySet().iterator(); i.hasNext();) {
+            Segment s = i.next();
             buf.putShort((short) s.startCode);
         }
         
         // write the idDeltas for segments using deltas
-        for (Iterator i = this.segments.keySet().iterator(); i.hasNext();) {
-            Segment s = (Segment) i.next();
+        for (Iterator<Segment> i = this.segments.keySet().iterator(); i.hasNext();) {
+            Segment s = i.next();
             
             if (!s.hasMap) {
                 Integer idDelta = (Integer) this.segments.get(s);
@@ -314,8 +316,8 @@ public class CMapFormat4 extends CMap {
         int glyphArrayOffset = 16 + (8 * getSegmentCount());
         
         // write the idRangeOffsets and maps for segments using maps
-        for (Iterator i = this.segments.keySet().iterator(); i.hasNext();) {
-            Segment s = (Segment) i.next();
+        for (Iterator<Segment> i = this.segments.keySet().iterator(); i.hasNext();) {
+            Segment s = i.next();
             
             if (s.hasMap) {
                 // first set the offset, which is the number of bytes from the
@@ -396,8 +398,8 @@ public class CMapFormat4 extends CMap {
         buf.append(indent + "EntrySelector: " + getEntrySelector() + "\n");
         buf.append(indent + "RangeShift   : " + getRangeShift() + "\n");
         
-        for (Iterator i = this.segments.keySet().iterator(); i.hasNext();) {
-            Segment s = (Segment) i.next();
+        for (Iterator<Segment> i = this.segments.keySet().iterator(); i.hasNext();) {
+            Segment s = i.next();
             
             buf.append(indent);
             buf.append("Segment: " + Integer.toHexString(s.startCode));
@@ -414,7 +416,7 @@ public class CMapFormat4 extends CMap {
         return buf.toString();
     }
     
-    class Segment implements Comparable {
+    static class Segment implements Comparable {
         /** the end code (highest code in this segment) */
         int endCode;
         

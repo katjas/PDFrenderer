@@ -374,7 +374,7 @@ public class Type1Font extends OutlineFont {
                     thing = thing.substring(0, thing.length() - 1);
                 }
                 if (thing.length() > 0) {
-                    ary[idx++] = Float.valueOf(thing).floatValue();
+                    ary[idx++] = Float.parseFloat(thing);
                 }
             }
             return ary;

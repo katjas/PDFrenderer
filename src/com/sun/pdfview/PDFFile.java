@@ -294,7 +294,9 @@ public class PDFFile {
      * ISO Spec 32000-1:2008 - Table 1
      */
     public static boolean isWhiteSpace(int c) {
-        switch (c) {
+        if (c == ' ' || c == NUL_CHAR || c == '\t' || c == '\n' || c == '\r' || c == FF_CHAR) return true;
+        return false;
+    	/*switch (c) { 
             case NUL_CHAR:  // Null (NULL)
             case '\t':      // Horizontal Tab (HT)
             case '\n':      // Line Feed (LF)
@@ -304,7 +306,7 @@ public class PDFFile {
                 return true;
             default:
                 return false;
-        }
+        }*/
     }
 
     /**

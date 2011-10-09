@@ -220,7 +220,7 @@ public class CmapTable extends TrueTypeTable {
         return buf.toString();
     }
     
-    class CmapSubtable implements Comparable {
+    static class CmapSubtable implements Comparable {
         /**
          * The platformID for this subtable
          */

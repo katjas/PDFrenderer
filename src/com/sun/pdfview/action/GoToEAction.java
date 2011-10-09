@@ -151,7 +151,7 @@ public class GoToEAction extends PDFAction {
 	 * @author  xond
 	 * @since 07.07.2009
 	 ****************************************************************************/
-	public class GoToETarget {
+	public static class GoToETarget {
 		private String relation;
 		private String nameInTree;
 		private String pageNo;

@@ -47,7 +47,7 @@ public class PDFShapeCmd extends PDFCmd {
     /** the style */
     private int style;
     /** the bounding box of the path */
-    private Rectangle2D bounds;
+    //private Rectangle2D bounds;
     /** the stroke style for the anti-antialias stroke */
     BasicStroke againstroke =
             new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
@@ -60,9 +60,10 @@ public class PDFShapeCmd extends PDFCmd {
      * convenience, BOTH = STROKE | FILL.
      */
     public PDFShapeCmd(GeneralPath gp, int style) {
-        this.gp = new GeneralPath(gp);
+        //this.gp = new GeneralPath(gp);
+    	this.gp = gp;
         this.style = style;
-        this.bounds = gp.getBounds2D();
+        //this.bounds = gp.getBounds2D();
     }
 
     /**

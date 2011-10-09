@@ -233,7 +233,7 @@ public class PatternType1 extends PDFPattern {
     /** 
      * This class overrides PDFPaint to paint in the pattern coordinate space
      */
-    class TilingPatternPaint extends PDFPaint {
+    static class TilingPatternPaint extends PDFPaint {
         /** the pattern to paint */
         private PatternType1 pattern;
         

@@ -314,7 +314,7 @@ public class TTFFont extends OutlineFont {
     }
 
     /** a point on the stack of points */
-    class PointRec {
+    static class PointRec {
 
         int x;
 
