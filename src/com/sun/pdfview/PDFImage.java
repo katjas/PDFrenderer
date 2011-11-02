@@ -141,11 +141,11 @@ public class PDFImage {
                     colors = useAsSMask? new Color[]{Color.BLACK, Color.WHITE}:new Color[]{Color.WHITE, Color.BLACK};
                 }
                 
-                float[] decode = new float[decodeArray.length];
+/*                float[] decode = new float[decodeArray.length];
                 for (int i = 0; i < decodeArray.length; i++) {
                     decode[i] = decodeArray[i].getFloatValue();
                 }
-                image.setDecode(decode);
+                image.setDecode(decode);*/
             }
             
             image.setColorSpace(new IndexedColor(colors));
