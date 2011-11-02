@@ -27,6 +27,12 @@ import com.sun.pdfview.PDFObject;
 
 /**
  * A representation, with parser, of an Adobe Type 1C font.
+ * You can find information about CFF and Type 1C font encoding
+ * in
+ * http://partners.adobe.com/public/developer/en/font/5176.CFF.pdf
+ * and
+ * http://partners.adobe.com/public/developer/en/font/5177.Type2.pdf
+ * 
  * @author Mike Wessler
  */
 public class Type1CFont extends OutlineFont {
@@ -42,6 +48,8 @@ public class Type1CFont extends OutlineFont {
     float[] stack = new float[100];
 
     int stackptr = 0;
+
+    int stemhints = 0;
 
     String names[];
 
@@ -154,7 +162,7 @@ public class Type1CFont extends OutlineFont {
             printData ();
             throw new RuntimeException ("Got a 255 code while reading dict");
         } else { // num was 255
-            this.fnum = (((this.data[this.pos] & 0xff) << 24) |
+        	this.fnum = (((this.data[this.pos] & 0xff) << 24) |
                     ((this.data[this.pos + 1] & 0xff) << 16) |
                     ((this.data[this.pos + 2] & 0xff) << 8) |
                     ((this.data[this.pos + 3] & 0xff))) / 65536f;
@@ -629,6 +637,7 @@ public class Type1CFont extends OutlineFont {
 
         // read the glyph itself
         this.stackptr = 0;
+        this.stemhints = 0;
         parseGlyph (r, gp, pt);
 
         // restore the start position
@@ -718,7 +727,6 @@ public class Type1CFont extends OutlineFont {
         int i;
         float x1, y1, x2, y2, x3, y3, ybase;
         int hold;
-        int stemhints = 0;
         while (this.pos < r.getEnd ()) {
             int cmd = readCommand (true);
             hold = 0;
@@ -805,14 +813,15 @@ public class Type1CFont extends OutlineFont {
                     }
                     pt.open = false;
                     this.stackptr = 0;
+                    stemhints = 0;
                     break;
                 case 18: // hstemhm
-                    stemhints += this.stackptr / 2;
+                    stemhints += (this.stackptr) / 2;
                     this.stackptr = 0;
                     break;
                 case 19: // hintmask
                 case 20: // cntrmask
-                    stemhints += this.stackptr / 2;
+                	stemhints += (this.stackptr) / 2;
                     this.pos += (stemhints - 1) / 8 + 1;
                     this.stackptr = 0;
                     break;
@@ -843,7 +852,7 @@ public class Type1CFont extends OutlineFont {
                     this.stackptr = 0;
                     break;
                 case 23: // vstemhm
-                    stemhints += this.stackptr / 2;
+                    stemhints += (this.stackptr) / 2;
                     this.stackptr = 0;
                     break;
                 case 24: // rcurveline
