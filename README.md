@@ -28,4 +28,4 @@ Done:
 * fixed compression issues
 * fixed size of outline fonts 
 * fixed several exceptions
-
+* Fixes various font encoding problems (Flex in Type 1, wrong stemhints in Type 1C and inverted presentation of Type 3)
