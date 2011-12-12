@@ -566,6 +566,12 @@ public class CCITTFaxDecoder {
 	 */
 	public CCITTFaxDecoder(int fillOrder, int w, int h) {
 		this.fillOrder = fillOrder;
+		// Some of the decode methods assume prevChangingElms 
+		// and currChaningElems are at least of length 2.
+		if(w<2) {
+		   w=2;
+		}
+
 		this.w = w;
 
 		this.bitPointer = 0;
@@ -1184,7 +1190,7 @@ public class CCITTFaxDecoder {
 			// Add the changing element beyond the current scanline for the
 			// other color too
 			// make sure that the index does not exceed the bounds of the array
-			if (currIndex <= this.w) {
+			if (currIndex < this.w) {
 				cce[currIndex++] = bitOffset;
 			}
 
