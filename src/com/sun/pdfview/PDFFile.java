@@ -1422,7 +1422,12 @@ public class PDFFile {
 
                 PDFObject actionObj = scan.getDictRef("A");
                 if (actionObj != null) {
-                    action = PDFAction.getAction(actionObj, getRoot());
+                    try {
+                        action = PDFAction.getAction(actionObj, getRoot());
+                    }
+                    catch (PDFParseException e) {
+                    	// oh well
+                    }
                 } else {
                     // try to create an action from a destination
                     PDFObject destObj = scan.getDictRef("Dest");
