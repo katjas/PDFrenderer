@@ -26,6 +26,7 @@ import java.util.Map;
 
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
+import com.sun.pdfview.font.cid.PDFCMap;
 
 /**
  * a Font definition for PDF files
@@ -153,13 +154,14 @@ public abstract class PDFFont {
                 font = new BuiltinFont(baseFont, obj, descriptor);
             }
         } else if (subType.equals("TrueType")) {
-            if (descriptor.getFontFile2() != null) {
-                // load a TrueType font
-                font = new TTFFont(baseFont, obj, descriptor);
-            } else {
+        	// TODO XOND 27.03.2012: use TTF when fixed!
+//            if (descriptor.getFontFile2() != null) {
+//                // load a TrueType font
+//                font = new TTFFont(baseFont, obj, descriptor);
+//            } else {
                 // fake it with a built-in font
                 font = new BuiltinFont(baseFont, obj, descriptor);
-            }
+//            }
         } else if (subType.equals("Type3")) {
             // load a type 3 font
             font = new Type3Font(baseFont, obj, resources, descriptor);
