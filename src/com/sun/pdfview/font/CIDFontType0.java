@@ -3,6 +3,7 @@ package com.sun.pdfview.font;
 import java.io.IOException;
 
 import com.sun.pdfview.PDFObject;
+import com.sun.pdfview.font.cid.PDFCMap;
 
 /*****************************************************************************
  * At the moment this is not fully supported to parse CID based fonts
@@ -58,5 +59,4 @@ public class CIDFontType0 extends BuiltinFont {
         }
 		return super.getGlyph(src, name);
     }
-
 }

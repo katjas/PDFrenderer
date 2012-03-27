@@ -16,13 +16,13 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package com.sun.pdfview.font;
+package com.sun.pdfview.font.cid;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
 import com.sun.pdfview.PDFObject;
-import com.sun.pdfview.font.cid.ToUnicodeMap;
 
 /**
  * A CMap maps from a character in a composite font to a font/glyph number
@@ -88,7 +88,7 @@ public abstract class PDFCMap {
      * Parse a CMap from a CMap stream
      */
     protected static PDFCMap parseCMap(PDFObject map) throws IOException {
-    	return new ToUnicodeMap(map);
+       	return new ToUnicodeMap(map);
     }
     
     /**

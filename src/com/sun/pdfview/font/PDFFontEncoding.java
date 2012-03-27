@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.sun.pdfview.PDFObject;
+import com.sun.pdfview.font.cid.PDFCMap;
 
 /**
  * The PDFFont encoding encapsulates the mapping from character codes

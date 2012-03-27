@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.sun.pdfview.PDFObject;
-import com.sun.pdfview.font.PDFCMap;
 
 /*****************************************************************************
  * Parses a CMAP and builds a lookup table to map CMAP based codes to unicode.
@@ -25,7 +24,27 @@ import com.sun.pdfview.font.PDFCMap;
 public class ToUnicodeMap extends PDFCMap {
 	
 	/*****************************************************************************
-	 * Small helper class to define a range.
+	 * Small helper class to define a code range.
+	 ****************************************************************************/
+
+	private static class CodeRangeMapping {
+		char srcStart;
+		char srcEnd;
+		
+		CodeRangeMapping(char srcStart, char srcEnd) {
+			this.srcStart = srcStart;
+			this.srcEnd = srcEnd;
+		}
+		
+		boolean contains(char c) {
+			return this.srcStart <= c 
+								&& c <= this.srcEnd;
+		}
+		
+	}
+	
+	/*****************************************************************************
+	 * Small helper class to define a char range.
 	 ****************************************************************************/
 
 	private static class CharRangeMapping {
@@ -52,6 +71,7 @@ public class ToUnicodeMap extends PDFCMap {
 	
 	private Map<Character, Character> singleCharMappings;
 	private List<CharRangeMapping> charRangeMappings;
+	private List<CodeRangeMapping> codeRangeMappings;
 
 	/*************************************************************************
 	 * Constructor
@@ -63,6 +83,7 @@ public class ToUnicodeMap extends PDFCMap {
 		super();
 		this.singleCharMappings = new HashMap<Character, Character>();
 		this.charRangeMappings = new ArrayList<CharRangeMapping>();
+		this.codeRangeMappings = new ArrayList<CodeRangeMapping>();
 		parseMappings(map);
 	}
 	
@@ -82,6 +103,9 @@ public class ToUnicodeMap extends PDFCMap {
 				}
 				if (line.contains("beginbfrange")) {
 					parseCharRangeMappingSection(bf);
+				}
+				if (line.contains("begincodespacerange")) {
+					parseCodeRangeMappingSection(bf);
 				}
 				line = bf.readLine();
 			}
@@ -106,6 +130,17 @@ public class ToUnicodeMap extends PDFCMap {
 		}
 	}
 
+	private void parseCodeRangeMappingSection(BufferedReader bf) throws IOException {
+		String line = bf.readLine();
+		while (line != null) {
+			if (line.contains("endcodespacerange")) {
+				break;
+			}
+			parseCodeRangeLine(line);
+			line = bf.readLine();
+		}
+	}
+
 	/*************************************************************************
 	 * @param line
 	 * @return
@@ -118,6 +153,15 @@ public class ToUnicodeMap extends PDFCMap {
 			Character srcEnd = parseChar(mapping[1]);
 			Character destStart = parseChar(mapping[2]);
 			this.charRangeMappings.add(new CharRangeMapping(srcStart, srcEnd, destStart));
+		}
+	}
+
+	private void parseCodeRangeLine(String line) {
+		String[] mapping = line.split(" ");
+		if (mapping.length == 2) {
+			Character srcStart = parseChar(mapping[0]);
+			Character srcEnd = parseChar(mapping[1]);
+			this.codeRangeMappings.add(new CodeRangeMapping(srcStart, srcEnd));
 		}
 	}
 
@@ -170,17 +214,23 @@ public class ToUnicodeMap extends PDFCMap {
 
 	/*************************************************************************
 	 * map
-	 * @see com.sun.pdfview.font.PDFCMap#map(char)
+	 * @see com.sun.pdfview.font.cid.PDFCMap#map(char)
 	 ************************************************************************/
 	@Override
 	public char map(char src) {
-		Character mappedChar = this.singleCharMappings.get(src);
-		if (mappedChar == null) {
-			mappedChar = lookupInRanges(src);
+		Character mappedChar = null;
+		for (CodeRangeMapping codeRange : this.codeRangeMappings) {
+			if(codeRange.contains(src)) {
+				mappedChar = this.singleCharMappings.get(src);
+				if (mappedChar == null) {
+					mappedChar = lookupInRanges(src);
+				}
+				break;
+			}
 		}
 		if (mappedChar == null) {
-			//TODO BROS 03.08.2011 Is this a good fallback?
-			mappedChar = src;
+			// TODO XOND 27.03.2012: PDF Spec. "9.7.6.3Handling Undefined Characters"
+			mappedChar = 0;
 		}
 		return mappedChar;
 	}
