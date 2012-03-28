@@ -2,6 +2,7 @@ package com.sun.pdfview.annotation;
 
 import java.io.IOException;
 import com.sun.pdfview.PDFObject;
+import com.sun.pdfview.annotation.PDFAnnotation.ANNOTATION_TYPE;
 
 /**
  * PDF annotation describing a widget.
@@ -46,8 +47,8 @@ public class WidgetAnnotation extends PDFAnnotation {
 		}
 	}
 
-	protected WidgetAnnotation(PDFObject annotObject) throws IOException {
-		super(annotObject, WIDGET_ANNOTATION);
+	public WidgetAnnotation(PDFObject annotObject) throws IOException {
+		super(annotObject, ANNOTATION_TYPE.WIDGET);
 		
 		// The type of field that this dictionary describes. Field type is
 		// present for terminal fields but is inherited from parent if absent

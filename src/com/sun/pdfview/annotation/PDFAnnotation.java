@@ -3,7 +3,11 @@ package com.sun.pdfview.annotation;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Rectangle2D.Float;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
 
+import com.sun.pdfview.PDFCmd;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 
@@ -17,34 +21,83 @@ import com.sun.pdfview.PDFParseException;
  * @since 03.07.2009
  ****************************************************************************/
 public class PDFAnnotation{
-	/** Definition of some annotation types*/
-	public static final String LINK = "Link";
-	public static final String WIDGET = "Widget";
+	public enum ANNOTATION_TYPE{
+		UNKNOWN("-", 0, PDFAnnotation.class),
+		LINK("Link", 1, LinkAnnotation.class),
+		WIDGET("Widget", 2, WidgetAnnotation.class),
+		STAMP("Stamp", 3, StampAnnotation.class),
+		FREETEXT("FreeText", 5, FreetextAnnotation.class),
+		// TODO 28.03.2012: add more annotation types
+		;
+		
+		private String definition; 
+		private int internalId;
+		private Class<?> className;
+		private ANNOTATION_TYPE(String definition, int typeId, Class<?> className) {
+			this.definition = definition;
+			this.internalId = typeId;
+			this.className = className;
+		}
+		/**
+		 * @return the definition
+		 */
+		public String getDefinition() {
+			return definition;
+		}
+		/**
+		 * @return the internalId
+		 */
+		public int getInternalId() {
+			return internalId;
+		}
+		
+		/**
+		 * @return the className
+		 */
+		public Class<?> getClassName() {
+			return className;
+		}
+		
+		/**
+		 * Get annotation type by it's type 
+		 * @param definition
+		 * @return
+		 */
+		public static ANNOTATION_TYPE getByDefinition(String definition) {
+			for (ANNOTATION_TYPE type : values()) {
+				if(type.definition.equals(definition)) {
+					return type;
+				}
+			}
+			return UNKNOWN;
+		}		
+	}
 	
 	/** Definition of some annotation sub-types*/
 	public static final String GOTO = "GoTo";
 	public static final String GOTOE = "GoToE";
 	public static final String GOTOR = "GoToR";
 	public static final String URI = "URI";
-
-	/** 
-	 * The supported annotation types, used as internal 
-	 * types and for getting the annotations via PDFPage
-	 **/
-	public static final int UINKNOWN_ANNOTATION = 0;
-	public static final int LINK_ANNOTATION = 1;
-	public static final int WIDGET_ANNOTATION = 2;
 	
-	private PDFObject pdfObj;
-	private int type;
-	private Float rect;
+	private final PDFObject pdfObj;
+	private final ANNOTATION_TYPE type;
+	private final Float rect;
 
 	/*************************************************************************
 	 * Constructor
 	 * @param annotObject - the PDFObject which contains the annotation description
 	 * @throws IOException 
 	 ************************************************************************/
-	protected PDFAnnotation(PDFObject annotObject, int type) throws IOException{
+	public PDFAnnotation(PDFObject annotObject) throws IOException{
+		this(annotObject, ANNOTATION_TYPE.UNKNOWN);
+	}
+
+	/*************************************************************************
+	 * Constructor
+	 * @param annotObject - the PDFObject which contains the annotation description
+	 * @throws IOException 
+	 ************************************************************************/
+	protected PDFAnnotation(PDFObject annotObject, ANNOTATION_TYPE type) throws IOException{
 		this.pdfObj = annotObject;
 		// in case a general "PdfAnnotation" is created the type is unknown
 		this.type = type;
@@ -64,14 +117,17 @@ public class PDFAnnotation{
 	public static PDFAnnotation createAnnotation(PDFObject parent) throws IOException{
 		PDFObject subtypeValue = parent.getDictRef("Subtype");
 		String subtypeS = subtypeValue.getStringValue();
-		if(LINK.equals(subtypeS)){
-			return new LinkAnnotation(parent);
-		}
-		if (WIDGET.equals(subtypeS)) {
-			return new WidgetAnnotation(parent);
-		}
-		// TODO implement other annotation types?
-		return new PDFAnnotation(parent, UINKNOWN_ANNOTATION);
+		
+		ANNOTATION_TYPE annotationType = ANNOTATION_TYPE.getByDefinition(subtypeS);
+		Class<?> className = annotationType.getClassName();
+		
+		Constructor<?> constructor;
+		try {
+			constructor = className.getConstructor(PDFObject.class);
+			return (PDFAnnotation)constructor.newInstance(parent);
+		} catch (Exception e) {
+			throw new PDFParseException("Could not parse annotation!", e);
+		} 
 	}
 
     /**
@@ -96,7 +152,7 @@ public class PDFAnnotation{
         }
     }
 
-    /*************************************************************************
+	/*************************************************************************
      * Get the PDF Object which contains the annotation values
      * @return PDFObject
      ************************************************************************/
@@ -108,7 +164,7 @@ public class PDFAnnotation{
 	 * Get the annotation type
 	 * @return int
 	 ************************************************************************/
-	public int getType() {
+	public ANNOTATION_TYPE getType() {
 		return this.type;
 	}
 
@@ -123,5 +179,13 @@ public class PDFAnnotation{
 	@Override
 	public String toString() {
 		return this.pdfObj.toString();
+	}
+	
+	/**
+	 * Get list of pdf commands for this annotation
+	 * @return 
+	 */
+	public List<PDFCmd> getPageCommandsForAnnotation() {
+		return new ArrayList<PDFCmd>();
 	}
 }

@@ -7,6 +7,7 @@ import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 import com.sun.pdfview.action.GoToAction;
 import com.sun.pdfview.action.PDFAction;
+import com.sun.pdfview.annotation.PDFAnnotation.ANNOTATION_TYPE;
 
 /*****************************************************************************
  * PDF annotation describing a link to either a location within the current
@@ -34,8 +35,8 @@ public class LinkAnnotation extends PDFAnnotation {
 	 * @param annotObject
 	 * @throws IOException 
 	 ************************************************************************/
-	protected LinkAnnotation(PDFObject annotObject) throws IOException {
-		super(annotObject, LINK_ANNOTATION);
+	public LinkAnnotation(PDFObject annotObject) throws IOException {
+		super(annotObject, ANNOTATION_TYPE.LINK);
 		// a link annotation can either have an action (GoTo or URI) or a destination (DEST)
 		PDFObject actionObj = annotObject.getDictRef("A");
 		if (actionObj != null) {

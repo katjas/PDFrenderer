@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.sun.pdfview.annotation.PDFAnnotation;
+import com.sun.pdfview.annotation.PDFAnnotation.ANNOTATION_TYPE;
 
 /**
  * A PDFPage encapsulates the parsed commands required to render a
@@ -67,7 +68,7 @@ public class PDFPage {
     rendered image */
     private Cache cache;
     /** a map from image info to weak references to parsers that are active */
-    public Map<ImageInfo,WeakReference> renderers;
+    public Map<ImageInfo,WeakReference<?>> renderers;
 
     /** List of annotations for this page*/
     private List<PDFAnnotation> annots;
@@ -105,7 +106,7 @@ public class PDFPage {
         this.bbox = bbox;
 
         // initialize the cache of images and parsers
-        this.renderers = Collections.synchronizedMap(new HashMap<ImageInfo,WeakReference>());
+        this.renderers = Collections.synchronizedMap(new HashMap<ImageInfo,WeakReference<?>>());
 
         // initialize the list of commands
         this.commands = Collections.synchronizedList(new ArrayList<PDFCmd>(250));
@@ -352,14 +353,14 @@ public class PDFPage {
     /**
      * get all the commands in the current page starting at the given index
      */
-    public List getCommands(int startIndex) {
+    public List<PDFCmd> getCommands(int startIndex) {
         return getCommands(startIndex, getCommandCount());
     }
 
     /*
      * get the commands in the page within the given start and end indices
      */
-    public List getCommands(int startIndex, int endIndex) {
+    public List<PDFCmd> getCommands(int startIndex, int endIndex) {
         return this.commands.subList(startIndex, endIndex);
     }
 
@@ -444,7 +445,7 @@ public class PDFPage {
 
         synchronized (this.renderers) {
             // find our renderer
-            WeakReference rendererRef = this.renderers.get(info);
+            WeakReference<?> rendererRef = this.renderers.get(info);
             if (rendererRef != null) {
                 PDFRenderer renderer = (PDFRenderer) rendererRef.get();
                 if (renderer != null) {
@@ -616,8 +617,8 @@ public class PDFPage {
      * Notify all images we know about that a command has been added
      */
     public void updateImages() {
-        for (Iterator i = this.renderers.values().iterator(); i.hasNext();) {
-            WeakReference ref = (WeakReference) i.next();
+        for (Iterator<WeakReference<?>> i = this.renderers.values().iterator(); i.hasNext();) {
+            WeakReference<?> ref = (WeakReference<?>) i.next();
             PDFRenderer renderer = (PDFRenderer) ref.get();
 
             if (renderer != null) {
@@ -642,7 +643,7 @@ public class PDFPage {
      * Get a list of all annotations of the given type for this PDF page
      * @return List<PDFAnnotation>
      ************************************************************************/
-	public List<PDFAnnotation> getAnnots(int type) {
+	public List<PDFAnnotation> getAnnots(ANNOTATION_TYPE type) {
 		List<PDFAnnotation> list = new ArrayList<PDFAnnotation>();
 		if(this.annots != null) {
 			for(PDFAnnotation annot:this.annots){
@@ -660,6 +661,23 @@ public class PDFPage {
      ************************************************************************/
 	public void setAnnots(List<PDFAnnotation> annots) {
 		this.annots = annots;
+		for (PDFAnnotation pdfAnnotation : annots) {
+			// add command to the page if needed
+			this.commands.addAll(pdfAnnotation.getPageCommandsForAnnotation());
+		}
+	}
+	
+	public static PDFImageCmd createImageCmd(PDFImage image) {
+		return new PDFImageCmd(image);
+	}
+	public static PDFPushCmd createPushCmd() {
+		return new PDFPushCmd();
+	}
+	public static PDFPopCmd createPopCmd() {
+		return new PDFPopCmd();
+	}
+	public static PDFXformCmd createXFormCmd(AffineTransform at) {
+		return new PDFXformCmd(new AffineTransform(at));
 	}
 }
 

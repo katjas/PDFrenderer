@@ -18,9 +18,10 @@
  */
 package com.sun.pdfview;
 
+import static java.awt.geom.Path2D.WIND_EVEN_ODD;
+
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
-import static java.awt.geom.GeneralPath.WIND_EVEN_ODD;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
@@ -64,7 +65,7 @@ public class PDFParser extends BaseWatchable {
     /** a weak reference to the page we render into.  For the page
      * to remain available, some other code must retain a strong reference to it.
      */
-    private WeakReference pageRef;
+    private final WeakReference<PDFPage> pageRef;
     /** the actual command, for use within a singe iteration.  Note that
      * this must be released at the end of each iteration to assure the
      * page can be collected if not in use
@@ -468,7 +469,7 @@ public class PDFParser extends BaseWatchable {
 	public int iterate() throws Exception {
         // make sure the page is still available, and create the reference
         // to it for use within this iteration
-        this.cmds = (PDFPage) this.pageRef.get();
+        this.cmds = this.pageRef.get();
         if (this.cmds == null) {
             System.out.println("Page gone.  Stopping");
             return Watchable.STOPPED;
@@ -766,16 +767,16 @@ public class PDFParser extends BaseWatchable {
                 popString();
             } else if (cmd.equals("DP")) {
                 // mark point with dictionary (role, ref)
-                // ref is either inline dict or name in "Properties" rsrc
-                Object ref = this.stack.pop();
+                // result is either inline dict or name in "Properties" rsrc
+                this.stack.pop();
                 popString();
             } else if (cmd.equals("BMC")) {
                 // begin marked content (role)
                 popString();
             } else if (cmd.equals("BDC")) {
                 // begin marked content with dict (role, ref)
-                // ref is either inline dict or name in "Properties" rsrc
-                Object ref = this.stack.pop();
+                // result is either inline dict or name in "Properties" rsrc
+                this.stack.pop();
                 popString();
             } else if (cmd.equals("EMC")) {
                 // end marked content

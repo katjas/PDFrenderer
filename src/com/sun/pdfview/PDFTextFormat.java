@@ -47,7 +47,7 @@ public class PDFTextFormat implements Cloneable {
     /** text knockout */
     private float tk = 0;
     /** current matrix transform */
-    private AffineTransform cur;
+    private final AffineTransform cur;
     /** matrix transform at start of line */
     private AffineTransform line;
     /** font */
@@ -58,13 +58,13 @@ public class PDFTextFormat implements Cloneable {
     private boolean inuse = false;
     //    private Object array[]= new Object[1];
     /** build text rep of word */
-    private StringBuffer word = new StringBuffer();
+    private final StringBuffer word = new StringBuffer();
 
     // this is where we build and keep the word list for this page.
     /** start location of the hunk of text */
-    private Point2D.Float wordStart;
+    private final Point2D.Float wordStart;
     /** location of the end of the previous hunk of text */
-    private Point2D.Float prevEnd;
+    private final Point2D.Float prevEnd;
 
     /**
      * create a new PDFTextFormat, with initial values
@@ -264,10 +264,10 @@ public class PDFTextFormat implements Cloneable {
         AffineTransform scale = new AffineTransform(this.fsize * this.th, 0, 0, this.fsize, 0, this.tr);
         AffineTransform at = new AffineTransform();
 
-        List l = this.font.getGlyphs(text);
+        List<PDFGlyph> l = this.font.getGlyphs(text);
 
-        for (Iterator i = l.iterator(); i.hasNext();) {
-            PDFGlyph glyph = (PDFGlyph) i.next();
+        for (Iterator<PDFGlyph> i = l.iterator(); i.hasNext();) {
+            PDFGlyph glyph = i.next();
 
             at.setTransform(this.cur);
             at.concatenate(scale);
