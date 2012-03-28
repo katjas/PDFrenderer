@@ -15,6 +15,7 @@ Done:
 -----
 * support function type 4 rendering (subset of the PostScript language, specification taken from http://www.adobe.com/devnet/acrobat/pdfs/adobe_supplement_iso32000.pdf)
 * support link annotations for being able to render links
+* rough support of stamp and freetext annotations
 * handle alternate colour spaces (colour space plus a function to be applied on the colour values)
 * fixes transparency issues / transparent masked images (even though transparency is still not completely supported)
 * corrected handling of overlapping shapes
@@ -26,4 +27,4 @@ Done:
 * fixed compression issues
 * fixed size of outline fonts 
 * fixed several exceptions
-* Fixes various font encoding problems (Flex in Type 1, wrong stemhints in Type 1C and inverted presentation of Type 3)
+* Fixed various font encoding problems (Flex in Type 1, wrong stemhints in Type 1C and inverted presentation of Type 3)
