@@ -99,6 +99,12 @@ public class FunctionType2 extends PDFFunction {
         }
     }
     
+    @Override
+    public int getNumOutputs() {
+    	//range can be null (only required for type 0 and type 4 functions), 
+    	//but c0 is required
+    	return c0.length;
+    }
     /**
      * Get the exponent
      */

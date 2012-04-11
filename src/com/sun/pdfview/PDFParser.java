@@ -18,9 +18,10 @@
  */
 package com.sun.pdfview;
 
+import static java.awt.geom.Path2D.WIND_EVEN_ODD;
+
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
-import static java.awt.geom.GeneralPath.WIND_EVEN_ODD;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
@@ -1161,6 +1162,11 @@ public class PDFParser extends BaseWatchable {
         if (bbox != null) {
             this.cmds.addFillPaint(shader.getPaint());
             this.cmds.addPath(new GeneralPath(bbox), PDFShapeCmd.FILL);
+        }
+        else {
+        	//if no bounding box is set, use the default user space
+            this.cmds.addFillPaint(shader.getPaint());
+            this.cmds.addPath(new GeneralPath(this.cmds.getBBox()), PDFShapeCmd.FILL);
         }
 
         this.cmds.addPop();
