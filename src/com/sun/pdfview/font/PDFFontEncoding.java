@@ -83,7 +83,12 @@ public class PDFFontEncoding {
             }
         } else {
             // loook at the "Type" entry of the encoding to determine the type
-            String typeStr = encoding.getDictRef("Type").getStringValue();
+            PDFObject type = encoding.getDictRef("Type");
+            String typeStr = "Encoding";
+            if (type != null) {
+            	//The type is optional (cf. Table 114 in PDF 32000-1:2008)
+            	typeStr = encoding.getDictRef("Type").getStringValue();
+            }
 
             if (typeStr.equals("Encoding")) {
                 // it is an encoding
