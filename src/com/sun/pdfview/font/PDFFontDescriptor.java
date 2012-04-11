@@ -22,6 +22,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
 import com.sun.pdfview.PDFObject;
+import com.sun.pdfview.PDFParser;
 
 /**
  *
@@ -65,7 +66,7 @@ public class PDFFontDescriptor {
     /** Holds the optional FontWeight (PDF 1.5) */
     private int fontWeight;
     /** Holds value of property italicAngle. */
-    private int italicAngle;
+    private int italicAngle = 0;
     /** Holds value of property stemV. */
     private int stemV;
     /** Holds value of property avgWidth. */
@@ -100,14 +101,36 @@ public class PDFFontDescriptor {
 
     /** Creates a new instance of PDFFontDescriptor */
     public PDFFontDescriptor(PDFObject obj) throws IOException {
-        // required parameters
-        setAscent(obj.getDictRef("Ascent").getIntValue());
-        setCapHeight(obj.getDictRef("CapHeight").getIntValue());
-        setDescent(obj.getDictRef("Descent").getIntValue());
-        setFlags(obj.getDictRef("Flags").getIntValue());
+        // required parameters, sometimes some of them are nonetheless missing
+    	//Example: http://paws.wcu.edu/tsfoguel/tikzpgfmanual.pdf
         setFontName(obj.getDictRef("FontName").getStringValue());
-        setItalicAngle(obj.getDictRef("ItalicAngle").getIntValue());
-        setStemV(obj.getDictRef("StemV").getIntValue());
+		setFlags(obj.getDictRef("Flags").getIntValue());
+    	
+        if (obj.getDictionary().containsKey("Ascent")) {
+    		setAscent(obj.getDictRef("Ascent").getIntValue());
+    	} else {
+    		PDFParser.debug("**** WARNING: Required parameter \"Ascent\" is missing", 10);
+    	}
+    	if (obj.getDictionary().containsKey("CapHeight")) {
+    		setCapHeight(obj.getDictRef("CapHeight").getIntValue());
+    	} else {
+    		PDFParser.debug("**** WARNING: Required parameter \"CapHeight\" is missing", 10);
+    	}
+    	if (obj.getDictionary().containsKey("Descent")) {
+    		setDescent(obj.getDictRef("Descent").getIntValue());
+    	} else {
+    		PDFParser.debug("**** WARNING: Required parameter \"Descent\" is missing", 10);
+    	}
+    	if (obj.getDictionary().containsKey("ItalicAngle")) {
+    		setItalicAngle(obj.getDictRef("ItalicAngle").getIntValue());
+    	} else {
+    		PDFParser.debug("**** WARNING: Required parameter \"ItalicAngle\" is missing", 10);
+    	}
+    	if (obj.getDictionary().containsKey("StemV")) {
+    		setStemV(obj.getDictRef("StemV").getIntValue());
+    	} else {
+    		PDFParser.debug("**** WARNING: Required parameter \"StemV\" is missing", 10);
+    	}
 
         // font bounding box
         PDFObject[] bboxdef = obj.getDictRef("FontBBox").getArray();
