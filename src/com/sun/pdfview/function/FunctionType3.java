@@ -19,6 +19,7 @@
 package com.sun.pdfview.function;
 
 import java.io.IOException;
+
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 
@@ -68,14 +69,11 @@ import com.sun.pdfview.PDFParseException;
  * </pre>
  */
 public class FunctionType3 extends PDFFunction {
-
-    /** 
-     * the actual samples, converted to integers.  The first index is
-     * input values (from 0 to size[m - 1] * size[m - 2] * ... * size[0]), 
-     * and the second is the output dimension within the sample (from 0 to n)
-     */
-    private int[][] samples;
-
+    
+    private PDFFunction[] functions;
+    private float[] bounds;
+    private float[] encode;
+    
     /** Creates a new instance of FunctionType3 */
     protected FunctionType3() {
         super(TYPE_3);
@@ -114,21 +112,27 @@ public class FunctionType3 extends PDFFunction {
             throw new PDFParseException("Functions required for function type 3!");
         }
         PDFObject[] functionsAry = functionsObj.getArray();
-        int[] size = new int[functionsAry.length];
+        functions = new PDFFunction[functionsAry.length];
         for (int i = 0; i < functionsAry.length; i++) {
-            size[i] = functionsAry[i].getIntValue();
+        	functions[i] = PDFFunction.getFunction(functionsAry[i]);
         }
-
+        
         // read the Bounds array (required)
         PDFObject boundsObj = obj.getDictRef("Bounds");
         if (boundsObj == null) {
             throw new PDFParseException("Bounds required for function type 3!");
         }
         PDFObject[] boundsAry = boundsObj.getArray();
-        int[] size1 = new int[boundsAry.length];
-        for (int i = 0; i < boundsAry.length; i++) {
-            size1[i] = boundsAry[i].getIntValue();
+        bounds = new float[boundsAry.length + 2];
+        if (bounds.length - 2 != functions.length - 1) {
+        	throw new PDFParseException("Bounds array must be of length " + (functions.length - 1));
         }
+        
+        for (int i = 0; i < boundsAry.length; i++) {
+            bounds[i+1] = boundsAry[i].getFloatValue();
+        }
+        bounds[0] = getDomain(0);
+        bounds[bounds.length-1] = getDomain(1);
 
         // read the encode array (required)
         PDFObject encodeObj = obj.getDictRef("Encode");
@@ -136,60 +140,44 @@ public class FunctionType3 extends PDFFunction {
             throw new PDFParseException("Encode required for function type 3!");
         }
         PDFObject[] encodeAry = encodeObj.getArray();
-        float[] encode = new float[encodeAry.length];
+        encode = new float[encodeAry.length];
+        if (encode.length != 2*functions.length) {
+        	throw new PDFParseException("Encode array must be of length " + 2*functions.length);
+        }
         for (int i = 0; i < encodeAry.length; i++) {
             encode[i] = encodeAry[i].getFloatValue();
         }
-        throw new PDFParseException("Unsupported function type 3.");
     }
 
     /**
-     * Map from <i>m</i> input values to <i>n</i> output values.
-     * The number of inputs <i>m</i> must be exactly one half the size of the
-     * domain.  The number of outputs should match one half the size of the
-     * range.
      *
-     * @param inputs an array of <i>m</i> input values
+     * @param inputs an array of <i>1</i> input values
      * @param outputs an array of size <i>n</i> which will be filled
      *                with the output values, or null to return a new array
      */
     @Override
 	protected void doFunction(float[] inputs, int inputOffset,
-            float[] outputs, int outputOffset) {
-        // calculate the encoded values for each input
-        float[] encoded = new float[getNumInputs()];
-//        for (int i = 0; i < getNumInputs(); i++) {
-//            // encode -- interpolate(x<i>, domain<2i>, domain<2i + 1>,
-//            //                       encode<2i>, encode<2i + 1>)
-//            encoded[i] = interpolate(inputs[i + inputOffset],
-//                                     getDomain(2 * i),
-//                                     getDomain((2 * i) + 1),
-//                                     getEncode(2 * i),
-//                                     getEncode((2 * i) + 1));
-//
-//            // clip to size of sample table -- min(max(e<i>, 0), size<i> - 1)
-//            encoded[i] = Math.max(encoded[i], 0);
-//            encoded[i] = Math.min(encoded[i], size[i] - 1);
-//        }
+			float[] outputs, int outputOffset) {
+    	
+    	float x = inputs[inputOffset];
 
-        // do some magic
-        for (int i = 0; i < getNumOutputs(); i++) {
-//            if (getOrder() == 1) {
-//                outputs[i + outputOffset] = multilinearInterpolate(encoded, i);
-//            } else {
-//                outputs[i + outputOffset] = multicubicInterpolate(encoded, i);
-//            }
-        }
-
-    // now adjust the output to be within range
-//        for (int i = 0; i < outputs.length; i++) {
-//            // decode -- interpolate(r<i>, 0, 2^bps - 1,
-//            //                       decode<2i>, decode<2i + 1>)
-//            outputs[i + outputOffset] = interpolate(outputs[i + outputOffset],
-//                                     0,
-//                                     (float) Math.pow(2, getBitsPerSample()) - 1,
-//                                     getDecode(2 * i),
-//                                     getDecode((2 * i) + 1));
-//        }
+    	// calculate the output values
+    	int p = bounds.length - 2;
+    	while (x < bounds[p]) p--;
+    	x = interpolate(x, bounds[p], bounds[p+1], encode[2*p], encode[2*p + 1]);
+    	float[] out = functions[p].calculate(new float[]{x});
+    	for (int i = 0; i < out.length; i++) {
+    		outputs[i + outputOffset] = out[i];
+    	}
+    }
+    
+    @Override
+    public int getNumInputs() {
+    	return 1;
+    }
+    
+    @Override
+    public int getNumOutputs() {
+    	return functions[0].getNumOutputs();
     }
 }

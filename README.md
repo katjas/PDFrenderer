@@ -15,6 +15,7 @@ To do:
 
 Done:
 -----
+* support function type 3 rendering (stitching functions)
 * support function type 4 rendering (subset of the PostScript language, specification taken from http://www.adobe.com/devnet/acrobat/pdfs/adobe_supplement_iso32000.pdf)
 * support link annotations for being able to render links
 * handle alternate colour spaces (colour space plus a function to be applied on the colour values)
