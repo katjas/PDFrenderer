@@ -123,8 +123,11 @@ public abstract class PDFShader {
                 shader = new ShaderType2();
                 break;
     
-            case FUNCTION_SHADING:
             case RADIAL_SHADING:
+            	shader = new ShaderType3();
+            	break;
+
+            case FUNCTION_SHADING:
             case FREE_FORM_SHADING:
             case LATTICE_SHADING:
             case COONS_PATCH_MESH_SHADING:

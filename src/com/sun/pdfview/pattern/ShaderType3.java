@@ -26,6 +26,7 @@ import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.ColorModel;
@@ -41,15 +42,21 @@ import com.sun.pdfview.PDFParseException;
 import com.sun.pdfview.function.PDFFunction;
 
 /**
- * A shader that performs axial shader based on a function.
+ * A shader that performs radial shader based on a function.
  */
-public class ShaderType2 extends PDFShader {
-    /** the start of the axis */
-    private Point2D axisStart;
+public class ShaderType3 extends PDFShader {
+    /** the center of the first circle */
+    private Point2D center1;
     
-    /** the end of the axis */
-    private Point2D axisEnd;
+    /** the center of the second circle */
+    private Point2D center2;
     
+    /** the radius of the first circle */
+    private float radius1;
+    
+    /** the radius of the second circle */
+    private float radius2;
+
     /** the domain minimum */
     private float minT = 0f;
     
@@ -66,8 +73,8 @@ public class ShaderType2 extends PDFShader {
     private PDFFunction[] functions;
      
     /** Creates a new instance of ShaderType2 */
-    public ShaderType2() {
-        super(2);
+    public ShaderType3() {
+        super(3);
     }
     
     /** 
@@ -82,12 +89,12 @@ public class ShaderType2 extends PDFShader {
             throw new PDFParseException("No coordinates found!");
         }
         PDFObject[] coords = coordsObj.getArray();
-        Point2D start = new Point2D.Float(coords[0].getFloatValue(),
+        center1 = new Point2D.Float(coords[0].getFloatValue(),
                                           coords[1].getFloatValue());
-        Point2D end   = new Point2D.Float(coords[2].getFloatValue(),
-                                          coords[3].getFloatValue());
-        setAxisStart(start);
-        setAxisEnd(end);
+        center2 = new Point2D.Float(coords[3].getFloatValue(),
+                                          coords[4].getFloatValue());
+        radius1 = coords[2].getFloatValue();
+        radius2 = coords[5].getFloatValue();
         
         // read the domain (optional)
         PDFObject domainObj = shaderObj.getDictRef("Domain");
@@ -124,36 +131,9 @@ public class ShaderType2 extends PDFShader {
      */
     @Override
 	public PDFPaint getPaint() {
-        return PDFPaint.getPaint(new Type2Paint());
+        return PDFPaint.getPaint(new Type3Paint());
     }
     
-    /** 
-     * Get the start of the axis
-     */
-    public Point2D getAxisStart() {
-        return this.axisStart;
-    }
-    
-    /**
-     * Set the start of the axis
-     */
-    protected void setAxisStart(Point2D axisStart) {
-        this.axisStart = axisStart;
-    }
-    
-    /** 
-     * Get the end of the axis
-     */
-    public Point2D getAxisEnd() {
-        return this.axisEnd;
-    }
-    
-    /**
-     * Set the start of the axis
-     */
-    protected void setAxisEnd(Point2D axisEnd) {
-        this.axisEnd = axisEnd;
-    }
     
     /** 
      * Get the domain minimum
@@ -228,8 +208,8 @@ public class ShaderType2 extends PDFShader {
     /**
      * A subclass of paint that uses this shader to generate a paint
      */
-    class Type2Paint implements Paint {
-        public Type2Paint() {
+    class Type3Paint implements Paint {
+        public Type3Paint() {
         }
         
         /** create a paint context */
@@ -247,10 +227,7 @@ public class ShaderType2 extends PDFShader {
                                                        Transparency.TRANSLUCENT,
                                                        DataBuffer.TYPE_BYTE);
             
-            Point2D devStart = xform.transform(getAxisStart(), null);
-            Point2D devEnd = xform.transform(getAxisEnd(), null);
-          
-            return new Type2PaintContext(model, devStart, devEnd);
+            return new Type3PaintContext(model, xform);
         }
                 
         @Override
@@ -263,33 +240,35 @@ public class ShaderType2 extends PDFShader {
      * A simple paint context that uses an existing raster in device
      * space to generate pixels
      */
-    class Type2PaintContext implements PaintContext {
+    class Type3PaintContext implements PaintContext {
         /** the color model */
         private ColorModel colorModel;
         
-        /** the start of the axis */
-        private Point2D start;
+        /** the transformation */
+        private AffineTransform invXform;
         
-        /** the end of the axis */
-        private Point2D end;
-        
-        
-        private float dt1t0;
-        private double dx1x0, dy1y0, sqdx1x0psqdy1y0;
+        private double dx1x0, dy1y0, dr1r0, sqr0, denom;
         
         /**
          * Create a paint context
          */
-        Type2PaintContext(ColorModel colorModel, Point2D start, Point2D end) {
+        Type3PaintContext(ColorModel colorModel, AffineTransform xform) {
             this.colorModel = colorModel;
-            this.start = start;
-            this.end = end;
             
-            //pre calculate some often used values
-            dt1t0 = getMaxT() - getMinT();
-            dx1x0 = end.getX() - start.getX();
-            dy1y0 = end.getY() - start.getY();
-            sqdx1x0psqdy1y0 = dx1x0*dx1x0 + dy1y0*dy1y0;
+            //Precalculate some often needed values; 
+            dx1x0 = center2.getX() - center1.getX();
+            dy1y0 = center2.getY() - center1.getY();
+            dr1r0 = radius2 - radius1;
+            sqr0 = radius1*radius1;
+            denom = dx1x0*dx1x0 + dy1y0*dy1y0 - dr1r0*dr1r0;
+            
+            try {
+				this.invXform = xform.createInverse();
+			}
+			catch (NoninvertibleTransformException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
         
         @Override
@@ -309,8 +288,10 @@ public class ShaderType2 extends PDFShader {
             PDFFunction functions[] = getFunctions();
             int numComponents = cs.getNumComponents();
 
-            float x0 = (float) this.start.getX();
-            float y0 = (float) this.start.getY();
+            float[] c1 = new float[2];
+            /*float[] c2 = new float[2];
+            invXform.transform(new float[]{x, y}, 0, c1, 0, 1);
+            invXform.transform(new float[]{x + w, y + h}, 0, c2, 0, 1);*/
             
             float[] inputs = new float[1];
             float[] outputs = new float[numComponents];
@@ -318,12 +299,14 @@ public class ShaderType2 extends PDFShader {
             // all the data, plus alpha channel
             int[] data = new int[w * h * (numComponents + 1)];
             
+            final int advance = 1;
             // for each device coordinate
             for (int j = 0; j < h; j++) {
-                for (int i = 0; i < w + 8; i += 8) {
-                    // find t for that user coordinate
-                    float xp = getXPrime(i + x, j + y, x0, y0);
-                    float t = getT(xp);
+                for (int i = 0; i < w + advance; i += advance) {
+                    invXform.transform(new float[]{x + i, y + j}, 0, c1, 0, 1);
+                	
+                    float s = calculateInputValues(c1[0], c1[1]);
+                    float t = (float)(getMinT() + s*(getMaxT() - getMinT()));
                     
                     // calculate the pixel values at t
                     inputs[0] = t;
@@ -335,7 +318,7 @@ public class ShaderType2 extends PDFShader {
                         } 
                     }
                  
-                    for (int q = i; q < i + 8 && q < w; q++) {
+                    for (int q = i; q < i + advance && q < w; q++) {
                         int base = (j * w + q) * (numComponents + 1);
                         for (int c = 0; c < numComponents; c++) {
                             data[base + c] = (int) (outputs[c] * 255);
@@ -354,29 +337,25 @@ public class ShaderType2 extends PDFShader {
         }
         
         /**
-         * x' = (x1 - x0) * (x - x0) + (y1 - y0) * (y - y0)
-         *      -------------------------------------------
-         *               (x1 - x0)^2 + (y1 - y0)^2
-         */
-        private float getXPrime(float x, float y, float x0, float y0) {
-           
-            double tp = ((dx1x0* (x - x0)) + (dy1y0 * (y - y0))) / sqdx1x0psqdy1y0;
-        
-            return (float) tp;
+         * From Adobe Technical Note #5600:
+         * 
+         * Given a geometric coordinate position (x, y) in or along the gradient gradient fill,
+         * the corresponding value of s can be determined by solving the quadratic
+         * constraint equation:
+         *
+         * [x - xc(s)]2 + [y - yc(s)]2 = [r(s)]2
+         *
+         * The following code calculates the 2 possible values of s
+         */                 
+        private float calculateInputValues(float x, float y) {
+            double p = (-0.25)*((x - center1.getX())*dx1x0 + (y - center1.getY())*dy1y0 - dr1r0) / denom;
+            double q = (Math.pow(x - center1.getX(), 2) + Math.pow(y - center1.getY(), 2) - sqr0) / denom;
+            double root = Math.sqrt(p*p - q);
+            double root1 = -p + root;
+            double root2 = -p - root;
+            //FIXME: Not correct (look in Adobe Technical Note #5600 for more details) 
+            if (root1 >= 0 && root1 <= 1 && root2 >= 0 && root2 <= 1) return (float) Math.max(root1, root2);
+            else return (float) root1;
         }
-        
-        /**
-         * t = t0 + (t1 - t0) x x'
-         */
-        private float getT(float xp) {
-        	
-            if (xp < 0) {
-                return getMinT();
-            } else if (xp > 1) {
-                return getMaxT();
-            } else {
-                return getMinT() + (dt1t0 * xp);
-            }
-        }
-    }
+    }        
 }
