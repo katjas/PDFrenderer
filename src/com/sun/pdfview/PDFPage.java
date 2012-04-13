@@ -22,6 +22,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
@@ -580,6 +581,10 @@ public class PDFPage {
         addCommand(new PDFShapeCmd(path, style));
     }
 
+    public void addShadeCommand(PDFPaint p, Rectangle2D box) {
+    	addCommand(new PDFShadeCommand(p, box));
+    }
+    
     /**
      * set the fill paint
      */
@@ -750,6 +755,34 @@ class PDFStrokeAlphaCmd extends PDFCmd {
         state.setStrokeAlpha(this.a);
         return null;
     }
+}
+
+/**
+ * set the shade paint
+ */
+class PDFShadeCommand extends PDFCmd {
+	
+	PDFPaint p;
+	Rectangle2D box;
+	
+	PDFShadeCommand(PDFPaint p, Rectangle2D box) {
+		this.p = p;
+		this.box = box;
+	}
+
+	PDFShadeCommand(PDFPaint p) {
+		this.p = p;
+		this.box = null;
+	}
+	
+	@Override
+	public Rectangle2D execute(PDFRenderer state) {
+		(new PDFFillPaintCmd(p)).execute(state);
+		Shape s = box;
+		if (s == null) s = state.getImage().getGraphics().getClip();
+		if (s == null) s = state.getImage().getData().getBounds();
+        return (new PDFShapeCmd(new GeneralPath(s), PDFShapeCmd.FILL)).execute(state);
+	}
 }
 
 /**

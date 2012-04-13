@@ -264,6 +264,7 @@ public class ShaderType3 extends PDFShader {
             
             try {
 				this.invXform = xform.createInverse();
+				System.out.println(invXform.getType());
 			}
 			catch (NoninvertibleTransformException e) {
 				// TODO Auto-generated catch block
@@ -289,9 +290,6 @@ public class ShaderType3 extends PDFShader {
             int numComponents = cs.getNumComponents();
 
             float[] c1 = new float[2];
-            /*float[] c2 = new float[2];
-            invXform.transform(new float[]{x, y}, 0, c1, 0, 1);
-            invXform.transform(new float[]{x + w, y + h}, 0, c2, 0, 1);*/
             
             float[] inputs = new float[1];
             float[] outputs = new float[numComponents];
@@ -302,30 +300,38 @@ public class ShaderType3 extends PDFShader {
             final int advance = 1;
             // for each device coordinate
             for (int j = 0; j < h; j++) {
-                for (int i = 0; i < w + advance; i += advance) {
-                    invXform.transform(new float[]{x + i, y + j}, 0, c1, 0, 1);
-                	
-                    float s = calculateInputValues(c1[0], c1[1]);
-                    float t = (float)(getMinT() + s*(getMaxT() - getMinT()));
-                    
-                    // calculate the pixel values at t
-                    inputs[0] = t;
-                    if (functions.length == 1) {
-                        functions[0].calculate(inputs, 0, outputs, 0);
-                    } else {
-                        for (int c = 0; c < functions.length; c++) {
-                            functions[c].calculate(inputs, 0, outputs, c);
-                        } 
-                    }
-                 
-                    for (int q = i; q < i + advance && q < w; q++) {
-                        int base = (j * w + q) * (numComponents + 1);
-                        for (int c = 0; c < numComponents; c++) {
-                            data[base + c] = (int) (outputs[c] * 255);
-                        }
-                        data[base + numComponents] = 255; 
-                    }
-                }
+            	for (int i = 0; i < w; i += advance) {
+            		invXform.transform(new float[]{x + i, y + j}, 0, c1, 0, 1);
+            		//FIXME: Not correct
+            		//s[0] <= s[1]
+            		float[] s = calculateInputValues(c1[0], c1[1]);
+            		if (extendStart == false) {
+            			s[0] = Math.max(0, s[0]);
+            			s[1] = Math.max(0, s[1]);
+            		}
+            		if (extendEnd == false) {
+            			s[0] = Math.min(1, s[0]);
+            			s[1] = Math.min(1, s[1]);                    	
+            		}
+            		float t = (float)(getMinT() + s[1]*(getMaxT() - getMinT()));
+            		// calculate the pixel values at t
+            		inputs[0] = t;
+            		if (functions.length == 1) {
+            			functions[0].calculate(inputs, 0, outputs, 0);
+            		} else {
+            			for (int c = 0; c < functions.length; c++) {
+            				functions[c].calculate(inputs, 0, outputs, c);
+            			} 
+            		}
+
+            		for (int q = i; q < i + advance && q < w; q++) {
+            			int base = (j * w + q) * (numComponents + 1);
+            			for (int c = 0; c < numComponents; c++) {
+            				data[base + c] = (int) (outputs[c] * 255);
+            			}
+            			data[base + numComponents] = 255; 
+            		}
+            	}
             }
             
             WritableRaster raster =
@@ -347,15 +353,13 @@ public class ShaderType3 extends PDFShader {
          *
          * The following code calculates the 2 possible values of s
          */                 
-        private float calculateInputValues(float x, float y) {
-            double p = (-0.25)*((x - center1.getX())*dx1x0 + (y - center1.getY())*dy1y0 - dr1r0) / denom;
-            double q = (Math.pow(x - center1.getX(), 2) + Math.pow(y - center1.getY(), 2) - sqr0) / denom;
-            double root = Math.sqrt(p*p - q);
-            double root1 = -p + root;
-            double root2 = -p - root;
-            //FIXME: Not correct (look in Adobe Technical Note #5600 for more details) 
-            if (root1 >= 0 && root1 <= 1 && root2 >= 0 && root2 <= 1) return (float) Math.max(root1, root2);
-            else return (float) root1;
+        private float[] calculateInputValues(float x, float y) {
+        	double p = -(x - center1.getX())*dx1x0 -(y - center1.getY())*dy1y0 - radius1*dr1r0;
+            double q = (Math.pow(x - center1.getX(), 2) + Math.pow(y - center1.getY(), 2) - sqr0);
+            double root = Math.sqrt(p*p - denom*q);
+            float root1 = (float) ((-p + root)/denom);
+            float root2 = (float) ((-p - root)/denom);
+            return new float[]{root1, root2};
         }
     }        
 }
