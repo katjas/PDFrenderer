@@ -518,6 +518,7 @@ public class PDFParser extends BaseWatchable {
                 float[] dashary = popFloatArray();
                 this.cmds.addDash(dashary, phase);
             } else if (cmd.equals("ri")) {
+            	popString();
                 // TODO: do something with rendering intent (page 197)
             } else if (cmd.equals("i")) {
                 popFloat();
@@ -1157,8 +1158,9 @@ public class PDFParser extends BaseWatchable {
         PDFShader shader = PDFShader.getShader(shaderObj, this.resources);
 
         this.cmds.addPush();
-
-        this.cmds.addShadeCommand(shader.getPaint(), shader.getBBox());
+        Rectangle2D bbox = shader.getBBox();
+        if (bbox == null) bbox = this.cmds.getBBox();
+        this.cmds.addShadeCommand(shader.getPaint(), bbox);
 
         this.cmds.addPop();
     }

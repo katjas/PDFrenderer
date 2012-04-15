@@ -18,6 +18,7 @@
  */
 package com.sun.pdfview;
 
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -25,6 +26,7 @@ import java.awt.Image;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
@@ -777,11 +779,24 @@ class PDFShadeCommand extends PDFCmd {
 	
 	@Override
 	public Rectangle2D execute(PDFRenderer state) {
-		(new PDFFillPaintCmd(p)).execute(state);
+		//TODO: Not sure this is the right way to get the area for the sh cmd
 		Shape s = box;
-		if (s == null) s = state.getImage().getGraphics().getClip();
-		if (s == null) s = state.getImage().getData().getBounds();
-        return (new PDFShapeCmd(new GeneralPath(s), PDFShapeCmd.FILL)).execute(state);
+
+		Shape clip = state.getImage().getGraphics().getClipBounds();
+		if (clip != null) s = clip;
+		if (s == null) {
+			s = state.getImage().getData().getBounds();
+			try {
+				s = state.getLastTransform().createInverse().createTransformedShape(s);
+			}
+			catch (NoninvertibleTransformException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+        state.setFillAlpha(1);
+		state.setFillPaint(p);
+		return (new PDFShapeCmd(new GeneralPath(s), PDFShapeCmd.FILL)).execute(state);
 	}
 }
 

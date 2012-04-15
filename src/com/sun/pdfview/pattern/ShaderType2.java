@@ -38,6 +38,7 @@ import java.io.IOException;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFPaint;
 import com.sun.pdfview.PDFParseException;
+import com.sun.pdfview.colorspace.PDFColorSpace;
 import com.sun.pdfview.function.PDFFunction;
 
 /**
@@ -303,48 +304,61 @@ public class ShaderType2 extends PDFShader {
         }
         
         @Override
-		public Raster getRaster(int x, int y, int w, int h) {
-            ColorSpace cs = getColorModel().getColorSpace();
-            
-            PDFFunction functions[] = getFunctions();
-            int numComponents = cs.getNumComponents();
+        public Raster getRaster(int x, int y, int w, int h) {
+        	ColorSpace cs = getColorModel().getColorSpace();
+            PDFColorSpace shadeCSpace = getColorSpace();
 
-            float x0 = (float) this.start.getX();
-            float y0 = (float) this.start.getY();
-            
-            float[] inputs = new float[1];
-            float[] outputs = new float[numComponents];
-            
-            // all the data, plus alpha channel
-            int[] data = new int[w * h * (numComponents + 1)];
-            
-            // for each device coordinate
-            for (int j = 0; j < h; j++) {
-                for (int i = 0; i < w + 8; i += 8) {
-                    // find t for that user coordinate
-                    float xp = getXPrime(i + x, j + y, x0, y0);
-                    float t = getT(xp);
-                    
-                    // calculate the pixel values at t
-                    inputs[0] = t;
-                    if (functions.length == 1) {
-                        functions[0].calculate(inputs, 0, outputs, 0);
-                    } else {
-                        for (int c = 0; c < functions.length; c++) {
-                            functions[c].calculate(inputs, 0, outputs, c);
-                        } 
-                    }
-                 
-                    for (int q = i; q < i + 8 && q < w; q++) {
-                        int base = (j * w + q) * (numComponents + 1);
-                        for (int c = 0; c < numComponents; c++) {
-                            data[base + c] = (int) (outputs[c] * 255);
-                        }
-                        data[base + numComponents] = 255; 
-                    }
-                }
-            }
-            
+
+        	PDFFunction functions[] = getFunctions();
+        	int numComponents = cs.getNumComponents();
+
+        	float x0 = (float) this.start.getX();
+        	float y0 = (float) this.start.getY();
+
+        	float[] inputs = new float[1];
+            float[] outputs = new float[shadeCSpace.getNumComponents()];
+            float[] outputRBG = new float[numComponents];
+
+        	// all the data, plus alpha channel
+        	int[] data = new int[w * h * (numComponents + 1)];
+
+        	// for each device coordinate
+        	for (int j = 0; j < h; j++) {
+        		for (int i = 0; i < w; i += 1) {
+        			boolean render = true;
+        			// find t for that user coordinate
+        			float xp = getXPrime(i + x, j + y, x0, y0);
+        			float t = 0;
+        			if (xp >= 0 && xp <= 1) t = getMinT() + (dt1t0 * xp);
+        			else if (xp < 0 && extendStart) t = getMinT();
+        			else if (xp > 1 && extendEnd) t = getMaxT();
+        			else render = false;
+
+        			if (render) {
+        				// calculate the pixel values at t
+        				inputs[0] = t;
+        				if (functions.length == 1) {
+        					functions[0].calculate(inputs, 0, outputs, 0);
+        				} else {
+        					for (int c = 0; c < functions.length; c++) {
+        						functions[c].calculate(inputs, 0, outputs, c);
+        					} 
+        				}
+        				if (functions[0].getNumOutputs() != numComponents) {
+        					//CMYK
+        					outputRBG = shadeCSpace.getColorSpace().toRGB(outputs);
+        				}
+        				else outputRBG = outputs;
+
+        				int base = (j * w + i) * (numComponents + 1);
+        				for (int c = 0; c < numComponents; c++) {
+        					data[base + c] = (int) (outputRBG[c] * 255);
+        				}
+        				data[base + numComponents] = 255; 
+        			}
+        		}
+        	}
+
             WritableRaster raster =
                 getColorModel().createCompatibleWritableRaster(w, h);
             raster.setPixels(0, 0, w, h, data);

@@ -19,11 +19,20 @@
 
 package com.sun.pdfview.pattern;
 
+import java.awt.AlphaComposite;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.Map;
 
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFPaint;
+import com.sun.pdfview.PDFRenderer;
 
 /**
  * A type 1 (tiling) pattern
@@ -31,7 +40,7 @@ import com.sun.pdfview.PDFPaint;
 public class PatternType2 extends PDFPattern {
         
     /** the shader */
-    private PDFShader shader;
+    public PDFShader shader;
         
     /** Creates a new instance of PatternType1 */
     public PatternType2() {
@@ -59,6 +68,70 @@ public class PatternType2 extends PDFPattern {
      */
     @Override
 	public PDFPaint getPaint(PDFPaint basePaint) {
-    	return shader.getPaint();
-    }    
+    	return new TilingPatternPaint(shader.getPaint().getPaint(), this);
+    }
+    
+    /** 
+     * This class overrides PDFPaint to paint in the pattern coordinate space
+     */
+    static class TilingPatternPaint extends PDFPaint {
+        /** the pattern to paint */
+        private PatternType2 pattern;
+        
+        /** Create a tiling pattern paint */
+        public TilingPatternPaint(Paint paint, PatternType2 pattern) {
+            super (paint);
+            
+            this.pattern = pattern;
+        }
+        
+        /**
+         * fill a path with the paint, and record the dirty area.
+         * @param state the current graphics state
+         * @param g the graphics into which to draw
+         * @param s the path to fill
+         * @param drawn a Rectangle2D into which the dirty area (area drawn)
+         * will be added.
+         */
+        @Override
+		public Rectangle2D fill(PDFRenderer state, Graphics2D g,
+                                GeneralPath s) {                        
+            // first transform s into device space
+            AffineTransform at = g.getTransform();
+            Shape xformed = s.createTransformedShape(at);
+                                    
+            // push the graphics state so we can restore it
+            state.push();
+            
+            // set the transform to be the inital transform concatentated
+            // with the pattern matrix
+            state.setTransform(state.getInitialTransform());
+            state.transform(this.pattern.getTransform());
+            
+            // now figure out where the shape should be
+            try {
+                at = state.getTransform().createInverse();
+            } catch (NoninvertibleTransformException nte) {
+                // oh well (?)
+            }
+            xformed = at.createTransformedShape(xformed);
+            
+            if (pattern.shader.getBackground() != null) {
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
+                g.setPaint(pattern.shader.getBackground().getPaint());
+                g.fill(xformed);            	
+            }
+            // set the paint and draw the xformed shape
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
+            g.setPaint(getPaint());
+            g.fill(xformed);
+            
+            // restore the graphics state
+            state.pop();
+            
+            // return the area changed
+            return s.createTransformedShape(g.getTransform()).getBounds2D();
+        }
+    }
+
 }

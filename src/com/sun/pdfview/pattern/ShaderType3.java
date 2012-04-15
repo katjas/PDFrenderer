@@ -39,6 +39,7 @@ import java.io.IOException;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFPaint;
 import com.sun.pdfview.PDFParseException;
+import com.sun.pdfview.colorspace.PDFColorSpace;
 import com.sun.pdfview.function.PDFFunction;
 
 /**
@@ -264,7 +265,6 @@ public class ShaderType3 extends PDFShader {
             
             try {
 				this.invXform = xform.createInverse();
-				System.out.println(invXform.getType());
 			}
 			catch (NoninvertibleTransformException e) {
 				// TODO Auto-generated catch block
@@ -285,14 +285,17 @@ public class ShaderType3 extends PDFShader {
         @Override
 		public Raster getRaster(int x, int y, int w, int h) {
             ColorSpace cs = getColorModel().getColorSpace();
+            PDFColorSpace shadeCSpace = getColorSpace();
             
             PDFFunction functions[] = getFunctions();
+            
             int numComponents = cs.getNumComponents();
 
             float[] c1 = new float[2];
             
             float[] inputs = new float[1];
-            float[] outputs = new float[numComponents];
+            float[] outputs = new float[shadeCSpace.getNumComponents()];
+            float[] outputRBG = new float[numComponents];
             
             // all the data, plus alpha channel
             int[] data = new int[w * h * (numComponents + 1)];
@@ -301,35 +304,46 @@ public class ShaderType3 extends PDFShader {
             // for each device coordinate
             for (int j = 0; j < h; j++) {
             	for (int i = 0; i < w; i += advance) {
+            		//Get point in user space
             		invXform.transform(new float[]{x + i, y + j}, 0, c1, 0, 1);
-            		//FIXME: Not correct
-            		//s[0] <= s[1]
+            		boolean render = true;
             		float[] s = calculateInputValues(c1[0], c1[1]);
-            		if (extendStart == false) {
-            			s[0] = Math.max(0, s[0]);
-            			s[1] = Math.max(0, s[1]);
+            		//s[0] <= s[1] holds
+            		//if (s[0] >= 0 && s[1] <= 1) s[1] = s[1];
+            		if (s[1] >= 0 && s[1] <= 1) s[1] = s[1];
+            		else if (extendEnd == true && s[1] >= 0 && radius1 + s[1]*dr1r0 >= 0) {
+            			s[1] = s[1];
             		}
-            		if (extendEnd == false) {
-            			s[0] = Math.min(1, s[0]);
-            			s[1] = Math.min(1, s[1]);                    	
+            		else if (s[0] >= 0 && s[0] <= 1) s[1] = s[0];
+            		else if (extendStart == true && s[1] <= 0 && radius1 + s[1]*dr1r0 >= 0) {
+            			s[1] = s[1];
             		}
-            		float t = (float)(getMinT() + s[1]*(getMaxT() - getMinT()));
-            		// calculate the pixel values at t
-            		inputs[0] = t;
-            		if (functions.length == 1) {
-            			functions[0].calculate(inputs, 0, outputs, 0);
-            		} else {
-            			for (int c = 0; c < functions.length; c++) {
-            				functions[c].calculate(inputs, 0, outputs, c);
-            			} 
+            		else if (extendStart == true && s[0] <= 1 && radius1 + s[0]*dr1r0 >= 0) {
+            			s[1] = s[0];
             		}
-
-            		for (int q = i; q < i + advance && q < w; q++) {
-            			int base = (j * w + q) * (numComponents + 1);
-            			for (int c = 0; c < numComponents; c++) {
-            				data[base + c] = (int) (outputs[c] * 255);
+            		else render = false;
+            		if (render) {
+            			float t = (float)(getMinT() + s[1]*(getMaxT() - getMinT()));
+            			// calculate the pixel values at t
+            			inputs[0] = t;
+            			if (functions.length == 1) {
+        					functions[0].calculate(inputs, 0, outputs, 0);
+            			} else {
+            				for (int c = 0; c < functions.length; c++) {
+            					functions[c].calculate(inputs, 0, outputs, c);
+            				} 
             			}
-            			data[base + numComponents] = 255; 
+        				if (functions[0].getNumOutputs() != numComponents) {
+        					//CMYK
+        					outputRBG = shadeCSpace.getColorSpace().toRGB(outputs);
+        				}
+        				else outputRBG = outputs;
+
+        				int base = (j * w + i) * (numComponents + 1);
+        				for (int c = 0; c < numComponents; c++) {
+        					data[base + c] = (int) (outputRBG[c] * 255);
+        				}
+        				data[base + numComponents] = 255; 
             		}
             	}
             }
@@ -359,7 +373,8 @@ public class ShaderType3 extends PDFShader {
             double root = Math.sqrt(p*p - denom*q);
             float root1 = (float) ((-p + root)/denom);
             float root2 = (float) ((-p - root)/denom);
-            return new float[]{root1, root2};
+            if (denom < 0) return new float[]{root1, root2};
+            else return new float[]{root2, root1};
         }
     }        
 }
