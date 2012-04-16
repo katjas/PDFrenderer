@@ -390,7 +390,7 @@ public class PDFImage {
 		final int width = converted.getWidth();
 		for (int y = 0; y < height; y++) {
 			int base = y*width + 7;
-			if ((y+1)*width < buffer.length) {
+			if (width % 8 == 0 && (y+1)*width < buffer.length) {
 				for (int x = 0; x < width; x += 8) {
 					final byte bits = bufferO[i];
 					i++;
