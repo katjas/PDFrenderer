@@ -264,7 +264,7 @@ public class PDFParser extends BaseWatchable {
             System.out.println("Encountered character: " + c + " (" + (char) c + ")");
             this.tok.type = Tok.UNK;
         }
-        debug("Read token: " + this.tok, -1);
+        if (-1 > debuglevel) debug("Read token: " + this.tok, -1);
         return this.tok;
     }
 
@@ -1352,11 +1352,11 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * A class to store state needed whiel rendering.  This includes the
+     * A class to store state needed while rendering.  This includes the
      * stroke and fill color spaces, as well as the text formatting
      * parameters.
      */
-    class ParserState implements Cloneable {
+    static class ParserState implements Cloneable {
 
         /** the fill color space */
         PDFColorSpace fillCS;
