@@ -629,7 +629,12 @@ public class PDFParser extends BaseWatchable {
                 // set up the pen to do a gradient fill according
                 // to the dictionary
                 PDFObject shobj = findResource(gdictname, "Shading");
-                doShader(shobj);
+                try {
+                	doShader(shobj);
+                } catch (PDFParseException ex) {
+                	//Shader not supported, just go ahead
+                	debug("**** WARNING!  "+ex.toString(), 10);
+                }
             } else if (cmd.equals("CS")) {
                 // set the stroke color space
                 this.state.strokeCS = parseColorSpace(new PDFObject(this.stack.pop()));
