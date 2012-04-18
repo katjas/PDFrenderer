@@ -124,7 +124,6 @@ public class ShaderType3 extends PDFShader {
             setExtendStart(extendArray[0].getBooleanValue());
             setExtendEnd(extendArray[1].getBooleanValue());
         }
-        
     }
     
     /**
@@ -299,6 +298,8 @@ public class ShaderType3 extends PDFShader {
             
             // all the data, plus alpha channel
             int[] data = new int[w * h * (numComponents + 1)];
+        	float lastInput = Float.POSITIVE_INFINITY;
+        	final float tol = TOLERANCE * (getMaxT() - getMinT());
             
             final int advance = 1;
             // for each device coordinate
@@ -322,23 +323,29 @@ public class ShaderType3 extends PDFShader {
             			s[1] = s[0];
             		}
             		else render = false;
+            		
             		if (render) {
             			float t = (float)(getMinT() + s[1]*(getMaxT() - getMinT()));
             			// calculate the pixel values at t
             			inputs[0] = t;
-            			if (functions.length == 1) {
-        					functions[0].calculate(inputs, 0, outputs, 0);
-            			} else {
-            				for (int c = 0; c < functions.length; c++) {
-            					functions[c].calculate(inputs, 0, outputs, c);
-            				} 
-            			}
-        				if (functions[0].getNumOutputs() != numComponents) {
-        					//CMYK
-        					outputRBG = shadeCSpace.getColorSpace().toRGB(outputs);
-        				}
-        				else outputRBG = outputs;
+            			if (Math.abs(lastInput - t) > tol) {
 
+            				if (functions.length == 1) {
+            					functions[0].calculate(inputs, 0, outputs, 0);
+            				} else {
+            					for (int c = 0; c < functions.length; c++) {
+            						functions[c].calculate(inputs, 0, outputs, c);
+            					} 
+            				}
+            				
+        					if (!shadeCSpace.getColorSpace().isCS_sRGB()) {
+        						//Can be quite slow
+        						outputRBG = shadeCSpace.getColorSpace().toRGB(outputs);
+        					}
+        					else outputRBG = outputs;
+
+        					lastInput = t;
+            			}
         				int base = (j * w + i) * (numComponents + 1);
         				for (int c = 0; c < numComponents; c++) {
         					data[base + c] = (int) (outputRBG[c] * 255);
@@ -365,7 +372,9 @@ public class ShaderType3 extends PDFShader {
          *
          * [x - xc(s)]2 + [y - yc(s)]2 = [r(s)]2
          *
-         * The following code calculates the 2 possible values of s
+         * The following code calculates the 2 possible values of s.
+         * 
+         * @return Two possible values of s with s[0] <= s[1]
          */                 
         private float[] calculateInputValues(float x, float y) {
         	double p = -(x - center1.getX())*dx1x0 -(y - center1.getY())*dy1y0 - radius1*dr1r0;

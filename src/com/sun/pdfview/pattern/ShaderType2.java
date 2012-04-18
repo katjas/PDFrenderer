@@ -274,10 +274,9 @@ public class ShaderType2 extends PDFShader {
         /** the end of the axis */
         private Point2D end;
         
-        
         private float dt1t0;
         private double dx1x0, dy1y0, sqdx1x0psqdy1y0;
-        
+                
         /**
          * Create a paint context
          */
@@ -308,7 +307,6 @@ public class ShaderType2 extends PDFShader {
         	ColorSpace cs = getColorModel().getColorSpace();
             PDFColorSpace shadeCSpace = getColorSpace();
 
-
         	PDFFunction functions[] = getFunctions();
         	int numComponents = cs.getNumComponents();
 
@@ -321,7 +319,9 @@ public class ShaderType2 extends PDFShader {
 
         	// all the data, plus alpha channel
         	int[] data = new int[w * h * (numComponents + 1)];
-
+        	float lastInput = Float.POSITIVE_INFINITY;
+        	final float tol = TOLERANCE * (getMaxT() - getMinT());
+        	
         	// for each device coordinate
         	for (int j = 0; j < h; j++) {
         		for (int i = 0; i < w; i += 1) {
@@ -337,19 +337,21 @@ public class ShaderType2 extends PDFShader {
         			if (render) {
         				// calculate the pixel values at t
         				inputs[0] = t;
-        				if (functions.length == 1) {
-        					functions[0].calculate(inputs, 0, outputs, 0);
-        				} else {
-        					for (int c = 0; c < functions.length; c++) {
-        						functions[c].calculate(inputs, 0, outputs, c);
-        					} 
+        				if (Math.abs(lastInput - t) > tol){
+        					if (functions.length == 1) {
+        						functions[0].calculate(inputs, 0, outputs, 0);
+        					} else {
+        						for (int c = 0; c < functions.length; c++) {
+        							functions[c].calculate(inputs, 0, outputs, c);
+        						} 
+        					}
+        					if (!shadeCSpace.getColorSpace().isCS_sRGB()) {
+        						//Can be quite slow
+        						outputRBG = shadeCSpace.getColorSpace().toRGB(outputs);
+        					}
+        					else outputRBG = outputs;
+            				lastInput = t;
         				}
-        				if (functions[0].getNumOutputs() != numComponents) {
-        					//CMYK
-        					outputRBG = shadeCSpace.getColorSpace().toRGB(outputs);
-        				}
-        				else outputRBG = outputs;
-
         				int base = (j * w + i) * (numComponents + 1);
         				for (int c = 0; c < numComponents; c++) {
         					data[base + c] = (int) (outputRBG[c] * 255);
@@ -377,20 +379,6 @@ public class ShaderType2 extends PDFShader {
             double tp = ((dx1x0* (x - x0)) + (dy1y0 * (y - y0))) / sqdx1x0psqdy1y0;
         
             return (float) tp;
-        }
-        
-        /**
-         * t = t0 + (t1 - t0) x x'
-         */
-        private float getT(float xp) {
-        	
-            if (xp < 0) {
-                return getMinT();
-            } else if (xp > 1) {
-                return getMaxT();
-            } else {
-                return getMinT() + (dt1t0 * xp);
-            }
-        }
+        }        
     }
 }
