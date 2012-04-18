@@ -36,6 +36,8 @@ public class AlternateColorSpace extends PDFColorSpace {
     /** The function */
     private PDFFunction function;
     
+    private AltColorSpace altcolorspace;
+    
     /** Creates a new instance of AlternateColorSpace */
     public AlternateColorSpace(PDFColorSpace alternate, PDFFunction function) {
         super(null);
@@ -76,7 +78,9 @@ public class AlternateColorSpace extends PDFColorSpace {
      * get the original Java ColorSpace.
      */
     @Override public ColorSpace getColorSpace() {
-	return this.alternate.getColorSpace();
+    	if (altcolorspace == null) altcolorspace = new AltColorSpace(function, alternate.getColorSpace());
+    	return altcolorspace;
+    	//return this.alternate.getColorSpace();
     }
     
 	/*************************************************************************
@@ -86,5 +90,6 @@ public class AlternateColorSpace extends PDFColorSpace {
 	public PDFFunction getFunktion() {
 		return this.function;		
 	}
+	
 	
 }
