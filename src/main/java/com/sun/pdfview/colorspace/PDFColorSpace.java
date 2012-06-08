@@ -73,7 +73,7 @@ public class PDFColorSpace {
                     ? ColorSpace.getInstance(ColorSpace.CS_GRAY)
                     : new ICC_ColorSpace(ICC_Profile.getInstance(
                             PDFColorSpace.class.getResourceAsStream(
-                                ("sGray.icc")))));
+                                ("/com/sun/pdfview/colorspace/sGray.icc")))));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
