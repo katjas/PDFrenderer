@@ -19,13 +19,27 @@
 package com.sun.pdfview;
 
 import java.awt.geom.Rectangle2D;
-import java.io.*;
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
-import com.sun.pdfview.action.*;
+import com.sun.pdfview.action.GoToAction;
+import com.sun.pdfview.action.PDFAction;
 import com.sun.pdfview.annotation.PDFAnnotation;
-import com.sun.pdfview.decrypt.*;
+import com.sun.pdfview.decrypt.EncryptionUnsupportedByPlatformException;
+import com.sun.pdfview.decrypt.EncryptionUnsupportedByProductException;
+import com.sun.pdfview.decrypt.IdentityDecrypter;
+import com.sun.pdfview.decrypt.PDFAuthenticationFailureException;
+import com.sun.pdfview.decrypt.PDFDecrypter;
+import com.sun.pdfview.decrypt.PDFDecrypterFactory;
+import com.sun.pdfview.decrypt.PDFPassword;
+import com.sun.pdfview.decrypt.UnsupportedEncryptionException;
 
 /**
  * An encapsulation of a .pdf file.  The methods of this class
@@ -1660,7 +1674,9 @@ public class PDFFile {
         	for (PDFObject object : array) {
                 try {
             		PDFAnnotation pdfAnnot = PDFAnnotation.createAnnotation(object);
-            		annotationList.add(pdfAnnot);
+            		if(pdfAnnot != null) {
+                		annotationList.add(pdfAnnot);
+            		}
                 }catch (PDFParseException e) {
         			// do nothing, annotations could not be parsed and links will not be displayed.
         		}

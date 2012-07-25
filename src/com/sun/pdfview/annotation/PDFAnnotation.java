@@ -116,6 +116,9 @@ public class PDFAnnotation{
 	 ************************************************************************/
 	public static PDFAnnotation createAnnotation(PDFObject parent) throws IOException{
 		PDFObject subtypeValue = parent.getDictRef("Subtype");
+		if(subtypeValue == null) {
+			return null;
+		}			
 		String subtypeS = subtypeValue.getStringValue();
 		
 		ANNOTATION_TYPE annotationType = ANNOTATION_TYPE.getByDefinition(subtypeS);
