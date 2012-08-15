@@ -94,10 +94,17 @@ public abstract class BaseWatchable implements Watchable, Runnable {
                     try {
                         // keep going until the status is no longer running,
                         // our gate tells us to stop, or no-one is watching
+                    	int laststatus = Watchable.RUNNING;
                         while ((getStatus() == Watchable.RUNNING) &&
                                 (this.gate == null || !this.gate.iterate())) {
                             // update the status based on this iteration
-                            setStatus(iterate());
+                        	int status = iterate();
+                        	if (status != laststatus) {
+                        		//update status only when necessary, this increases performance
+                        		setStatus(status);
+                        		laststatus = status;
+                        	}
+                        		
                         }
 
                         // make sure we are paused

@@ -608,7 +608,8 @@ public class PDFImage {
                         0, true);
             }
         } else if (cs instanceof AlternateColorSpace){
-            ColorSpace altCS = new AltColorSpace(((AlternateColorSpace) cs).getFunktion(), cs.getColorSpace());
+            //ColorSpace altCS = new AltColorSpace(((AlternateColorSpace) cs).getFunktion(), cs.getColorSpace());
+            ColorSpace altCS = cs.getColorSpace();
             int[] bits = new int[altCS.getNumComponents()];
             for (int i = 0; i <
                     bits.length; i++) {

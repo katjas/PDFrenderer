@@ -264,7 +264,7 @@ public class PDFParser extends BaseWatchable {
             System.out.println("Encountered character: " + c + " (" + (char) c + ")");
             this.tok.type = Tok.UNK;
         }
-        debug("Read token: " + this.tok, -1);
+        if (-1 > debuglevel) debug("Read token: " + this.tok, -1);
         return this.tok;
     }
 
@@ -518,6 +518,7 @@ public class PDFParser extends BaseWatchable {
                 float[] dashary = popFloatArray();
                 this.cmds.addDash(dashary, phase);
             } else if (cmd.equals("ri")) {
+            	popString();
                 // TODO: do something with rendering intent (page 197)
             } else if (cmd.equals("i")) {
                 popFloat();
@@ -1162,6 +1163,11 @@ public class PDFParser extends BaseWatchable {
         if (bbox != null) {
             this.cmds.addFillPaint(shader.getPaint());
             this.cmds.addPath(new GeneralPath(bbox), PDFShapeCmd.FILL);
+        }
+        else {
+        	//if no bounding box is set, use the default user space
+            this.cmds.addFillPaint(shader.getPaint());
+            this.cmds.addPath(new GeneralPath(this.cmds.getBBox()), PDFShapeCmd.FILL);
         }
 
         this.cmds.addPop();

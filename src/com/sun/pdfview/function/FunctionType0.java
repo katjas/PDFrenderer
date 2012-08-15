@@ -416,28 +416,6 @@ public class FunctionType0 extends PDFFunction {
     }
     
     /**
-     * Perform a linear interpolation.  Given a value x, and two points,
-     * (xmin, ymin), (xmax, ymax), where xmin <= x <= xmax, calculate a value
-     * y on the line from (xmin, ymin) to (xmax, ymax).
-     *
-     * @param x the x value of the input
-     * @param xmin the minimum x value
-     * @param ymin the minimum y value
-     * @param xmax the maximum x value
-     * @param ymax the maximum y value
-     * @return the y value interpolated from the given x
-     */
-    public static float interpolate(float x, float xmin, float xmax,
-                                    float ymin, float ymax)
-    {
-        float value = (ymax - ymin) / (xmax - xmin);
-        value *= x - xmin;
-        value += ymin;
-        
-        return value;
-    }
-    
-    /**
      * Get a sample based on an array of encoded values and a control
      * map.  For each bit in the map, if that bit is 0 the integer below 
      * the encoded value is selected, or if the bit is 1, the interger

@@ -55,8 +55,8 @@ public class AltColorSpace extends ColorSpace {
 	 */
 	@Override
 	public float[] toCIEXYZ(float[] p_colorvalue) {
-		p_colorvalue = this.fkt.calculate(p_colorvalue);
-		return this.origCs.toCIEXYZ(p_colorvalue);
+		float[] colorvalue = this.fkt.calculate(p_colorvalue);
+		return this.origCs.toCIEXYZ(colorvalue);
 	}
 
 	/**
@@ -67,7 +67,7 @@ public class AltColorSpace extends ColorSpace {
 	 */
 	@Override
 	public float[] toRGB(float[] p_colorvalue) {
-		p_colorvalue = this.fkt.calculate(p_colorvalue);
-		return this.origCs.toRGB(p_colorvalue);
+		float[] colorvalue = this.fkt.calculate(p_colorvalue);
+		return this.origCs.toRGB(colorvalue);
 	}
 }

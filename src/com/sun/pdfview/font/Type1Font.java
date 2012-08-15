@@ -497,6 +497,9 @@ public class Type1Font extends OutlineFont {
         //	System.out.println("--- cmd length is "+cs.length);
         int loc = 0;
         float x1, x2, x3, y1, y2, y3;
+        boolean flexMode = false;
+        float[] flexArray = new float[16];
+        int flexPt = 0;
         while (loc < cs.length) {
             int v = (cs[loc++]) & 0xff;
             if (v == 255) {
@@ -531,8 +534,14 @@ public class Type1Font extends OutlineFont {
                         this.sloc = 0;
                         break;
                     case 4:   // y vmoveto
-                        pt.y += pop();
-                        gp.moveTo(pt.x, pt.y);
+                		pt.y += pop();
+                    	if (flexMode) {
+                    		flexArray[flexPt++] = pt.x;
+                    		flexArray[flexPt++] = pt.y;
+                    	}
+                    	else{
+                    		gp.moveTo(pt.x, pt.y);
+                    	}
                         this.sloc = 0;
                         break;
                     case 5:   // x y rlineto
@@ -542,13 +551,13 @@ public class Type1Font extends OutlineFont {
                         this.sloc = 0;
                         break;
                     case 6:   // x hlineto
-                        pt.x += pop();
+                    	pt.x += pop();
                         gp.lineTo(pt.x, pt.y);
                         this.sloc = 0;
                         break;
                     case 7:   // y vlineto
-                        pt.y += pop();
-                        gp.lineTo(pt.x, pt.y);
+                    	pt.y += pop();
+                    	gp.lineTo(pt.x, pt.y);
                         this.sloc = 0;
                         break;
                     case 8:   // x1 y1 x2 y2 x3 y3 rcurveto
@@ -562,7 +571,7 @@ public class Type1Font extends OutlineFont {
                                 pt.x + x1 + x2, pt.y + y1 + y2,
                                 pt.x + x1 + x2 + x3, pt.y + y1 + y2 + y3);
                         pt.x += x1 + x2 + x3;
-                        pt.y += y1 + y2 + y3;
+                        pt.y += y1 + y2 + y3;                        
                         this.sloc = 0;
                         break;
                     case 9:   // closepath
@@ -571,6 +580,38 @@ public class Type1Font extends OutlineFont {
                         break;
                     case 10:  // n callsubr
                         int n = (int) pop();
+                        if (n == 1) {
+                        	flexMode = true;
+                        	flexPt = 0;
+                        	this.sloc = 0;
+                        	break;
+                        }
+                        if (n == 0) {
+                        	if (flexPt != 14) {
+                        		System.out.println("There must be 14 flex entries!");
+                        	}
+                        	else {
+                        		gp.curveTo(flexArray[2], flexArray[3], flexArray[4], 
+                        				flexArray[5],
+                        				flexArray[6], flexArray[7]);
+                        		gp.curveTo(flexArray[8], flexArray[9], flexArray[10], 
+                        				flexArray[11],
+                        				flexArray[12], flexArray[13]);
+                        		flexMode = false;
+                        		this.sloc = 0;
+                        		//System.out.println("End Flex " + flexPt);
+                        		break;
+                        	}
+                        }
+                        if (n == 2) {
+                        	if (flexMode == false) {
+                        		System.out.println("Flex mode assumed");
+                        	} 
+                        	else {
+                        		this.sloc = 0;
+                        		break;
+                        	}
+                        }
                         if (this.subrs[n] == null) {
                             System.out.println("No subroutine #" + n);
                         } else {
@@ -667,14 +708,26 @@ public class Type1Font extends OutlineFont {
                     case 20:  // x
                         throw new RuntimeException("Bad command (" + v + ")");
                     case 21:  // x y rmoveto
-                        pt.y += pop();
-                        pt.x += pop();
-                        gp.moveTo(pt.x, pt.y);
-                        this.sloc = 0;
+                		pt.y += pop();
+                		pt.x += pop();
+                    	if (flexMode) {
+                    		flexArray[flexPt++] = pt.x;
+                    		flexArray[flexPt++] = pt.y;
+                    	}
+                    	else{
+                    		gp.moveTo(pt.x, pt.y);
+                    	}
+                		this.sloc = 0;
                         break;
                     case 22:  // x hmoveto
-                        pt.x += pop();
-                        gp.moveTo(pt.x, pt.y);
+                		pt.x += pop();
+                    	if (flexMode) {
+                    		flexArray[flexPt++] = pt.x;
+                    		flexArray[flexPt++] = pt.y;
+                    	}
+                    	else {
+                    		gp.moveTo(pt.x, pt.y);
+                    	}
                         this.sloc = 0;
                         break;
                     case 23:  // x
