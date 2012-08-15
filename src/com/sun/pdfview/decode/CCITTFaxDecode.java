@@ -61,7 +61,12 @@ public class CCITTFaxDecode {
 			// as  result we can try one more time using the T6.
 			//first, reset buffer
 			destination = new byte[size];
-			decoder.decodeT6(destination, source, 0, rows);
+			try {
+				decoder.decodeT6(destination, source, 0, rows);
+			}catch (Exception e1) {
+				// do nothing
+				System.out.println("Error decoding CCITTFax image");
+			}
 		}
 		if (!getOptionFieldBoolean(dict, "BlackIs1", false)) {
 			for (int i = 0; i < destination.length; i++) {
