@@ -22,6 +22,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
 import com.sun.pdfview.PDFObject;
+import com.sun.pdfview.PDFParser;
 
 /**
  *
@@ -65,7 +66,7 @@ public class PDFFontDescriptor {
     /** Holds the optional FontWeight (PDF 1.5) */
     private int fontWeight;
     /** Holds value of property italicAngle. */
-    private int italicAngle;
+    private int italicAngle = 0;
     /** Holds value of property stemV. */
     private int stemV;
     /** Holds value of property avgWidth. */

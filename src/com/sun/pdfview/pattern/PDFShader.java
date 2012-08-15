@@ -80,8 +80,11 @@ public abstract class PDFShader {
     public final static int             COONS_PATCH_MESH_SHADING = 6;
     public final static int             TENSOR_PRODUCTS_MESH_SHADING = 7;
 
+    /** The tolerance for reevaluating the shading function again */
+    public static float TOLERANCE = 1e-4f;
+
     /** the type of the shading (1 through 7)*/
-    private int type;
+    private final int type;
     
     /** the colorspace */
     private PDFColorSpace colorSpace;
@@ -123,8 +126,11 @@ public abstract class PDFShader {
                 shader = new ShaderType2();
                 break;
     
-            case FUNCTION_SHADING:
             case RADIAL_SHADING:
+            	shader = new ShaderType3();
+            	break;
+
+            case FUNCTION_SHADING:
             case FREE_FORM_SHADING:
             case LATTICE_SHADING:
             case COONS_PATCH_MESH_SHADING:

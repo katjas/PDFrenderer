@@ -79,6 +79,9 @@ public abstract class PDFPattern {
             case 1:
                 pattern = new PatternType1();
                 break;
+            case 2:
+            	pattern = new PatternType2();
+            	break;
             default:
                 throw new PDFParseException("Unknown pattern type " + type);
         }       

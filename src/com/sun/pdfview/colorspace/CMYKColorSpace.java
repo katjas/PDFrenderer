@@ -20,6 +20,9 @@
 package com.sun.pdfview.colorspace;
 
 import java.awt.color.ColorSpace;
+import java.awt.color.ICC_ColorSpace;
+import java.awt.color.ICC_Profile;
+import java.io.IOException;
 
 /**
  * A ColorSpace for the CMYK color space.
@@ -31,11 +34,21 @@ import java.awt.color.ColorSpace;
  */
 public class CMYKColorSpace extends ColorSpace {
 
+	private ICC_Profile icc;
+	private ICC_ColorSpace icc_cs;
+	
 	/**
 	 * Create a new CMYKColorSpace Instance.
 	 */
 	public CMYKColorSpace() {
 		super(ColorSpace.TYPE_CMYK, 4);
+		try {
+			icc = ICC_Profile.getInstance(getClass().getResourceAsStream("/ch/randelshofer/media/jpeg/Generic_CMYK_Profile.icc"));
+			icc_cs = new ICC_ColorSpace(icc);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -48,6 +61,9 @@ public class CMYKColorSpace extends ColorSpace {
 	 */
 	@Override
 	public float[] fromCIEXYZ(float[] p_colorvalue) {
+		if (icc_cs != null) {
+			return icc_cs.fromCIEXYZ(p_colorvalue);
+		}
 		ColorSpace l_cs = ColorSpace.getInstance(ColorSpace.TYPE_RGB);
 		float[] l_rgb = l_cs.toCIEXYZ(p_colorvalue);		
 		return fromRGB(l_rgb);
@@ -69,6 +85,10 @@ public class CMYKColorSpace extends ColorSpace {
 	 */
 	@Override
 	public float[] fromRGB(float[] p_rgbvalue) {
+		if (icc_cs != null) {
+			return icc_cs.fromRGB(p_rgbvalue);
+		}
+
 		/* TODO: Maybe we should do a better job to determine when black should 
 		 * be used and pulled out? -- At this time, it's not necessary for our
 		 * (Scantegrity's) uses.
@@ -107,6 +127,10 @@ public class CMYKColorSpace extends ColorSpace {
 	 */
 	@Override
 	public float[] toCIEXYZ(float[] p_colorvalue) {
+		if (icc_cs != null) {
+			return icc_cs.toCIEXYZ(p_colorvalue);
+		}
+
 		float[] l_rgb = toRGB(p_colorvalue);
 		ColorSpace l_cs = ColorSpace.getInstance(ColorSpace.TYPE_RGB);
 		return l_cs.toCIEXYZ(l_rgb);
@@ -126,6 +150,9 @@ public class CMYKColorSpace extends ColorSpace {
 	 */
 	@Override
 	public float[] toRGB(float[] p_colorvalue) {
+		if (icc_cs != null) {
+			return icc_cs.toRGB(p_colorvalue);
+		}
 		float[] l_res = {0,0,0};
 		if (p_colorvalue.length >= 4)
 		{

@@ -5,6 +5,8 @@ This is a fork of [pdf-renderer](http://java.net/projects/pdf-renderer) (covered
 
 The principal objective of the fork is to improve the original PDF renderer. The original version is able to handle most of the PDF 1.4 features, but has several bugs and missing functionality.
 
+It uses an [improved version of JPedal's JBig2 decoder API](https://github.com/Borisvl/JBIG2-Image-Decoder).
+
 To do:
 ------
 * some colours are displayed incorrect, there seem to be open issues regarding colour space handling
@@ -20,7 +22,7 @@ Done:
 * fixes transparency issues / transparent masked images (even though transparency is still not completely supported)
 * corrected handling of overlapping shapes
 * better support Type0 fonts that use embedded CID fonts
-* jbig2 image format decoded with "jpedal" API
+* jbig2 image format decoded with (improved) "jpedal" API
 * DeviceCMY / DeviceRGB colour spaces are working now, but some PDFs are still displayed in wrong format.
 * Improved reading of CMYK images. Some colours are still displayed wrong. (using the ch.randelshofer.media.jpeg.JPEGImageIO API)
 * Improved run length decoding (corrected reading of buffer) 
