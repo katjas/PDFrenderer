@@ -61,7 +61,7 @@ public class PDFParser extends BaseWatchable {
     private int loc;
     private boolean resend = false;
     private Tok tok;
-    private boolean catchexceptions;   // Indicates state of BX...EX
+    private boolean catchexceptions = true;   // Indicates state of BX...EX
     /** a weak reference to the page we render into.  For the page
      * to remain available, some other code must retain a strong reference to it.
      */
