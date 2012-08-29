@@ -18,18 +18,29 @@
 
 package com.sun.pdfview.decrypt;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.security.GeneralSecurityException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.ShortBufferException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 import com.sun.pdfview.PDFStringUtil;
-
-import javax.crypto.*;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.security.*;
-import java.util.List;
-import java.util.Arrays;
 
 /**
  * Standard simple decrypter for versions 1, 2 and 4 of the Standard
@@ -233,6 +244,11 @@ public class StandardDecrypter implements PDFDecrypter {
 
     @Override
 	public boolean isEncryptionPresent() {
+        return true;
+    }
+    
+    @Override
+	public boolean isEncryptionPresent(String cryptFilterName) {
         return true;
     }
 

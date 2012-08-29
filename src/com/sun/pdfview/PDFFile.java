@@ -470,6 +470,29 @@ public class PDFFile {
     }
 
     /**
+     * Get the next non-white space character
+     * @param buf the buffer to read from
+     * @return the next non-whitespace character
+     */
+    private int nextNonWhitespaceChar(ByteBuffer buf) {
+        int c;
+        while (isWhiteSpace(c = buf.get())) {
+            // nothing
+        }
+        return c;
+    }
+
+    /**
+     * Consume all sequential whitespace from the current buffer position,
+     * leaving the buffer positioned at non-whitespace
+     * @param buf the buffer to read from
+     */
+    private void consumeWhitespace(ByteBuffer buf) {
+        nextNonWhitespaceChar(buf);
+        buf.position(buf.position() - 1);
+    }
+
+    /**
      * requires the next few characters (after whitespace) to match the
      * argument.
      * @param match the next few characters after any whitespace that
@@ -478,9 +501,7 @@ public class PDFFile {
      */
     private boolean nextItemIs(String match) throws IOException {
         // skip whitespace
-        int c;
-        while (isWhiteSpace(c = this.buf.get())) {
-        }
+        int c = nextNonWhitespaceChar(buf);
         for (int i = 0; i < match.length(); i++) {
             if (i > 0) {
                 c = this.buf.get();
@@ -1650,12 +1671,12 @@ public class PDFFile {
 
         PDFObject mediaboxObj = getInheritedValue(pageObj, "MediaBox");
         if (mediaboxObj != null) {
-            mediabox = parseRect(mediaboxObj);
+            mediabox = parseNormalisedRectangle(mediaboxObj);
         }
 
         PDFObject cropboxObj = getInheritedValue(pageObj, "CropBox");
         if (cropboxObj != null) {
-            cropbox = parseRect(cropboxObj);
+            cropbox = parseNormalisedRectangle(cropboxObj);
         }
 
         PDFObject rotateObj = getInheritedValue(pageObj, "Rotate");
@@ -1765,26 +1786,50 @@ public class PDFFile {
         return null;
     }
 
-    /**
-     * get a Rectangle2D.Float representation for a PDFObject that is an
-     * array of four Numbers.
-     * @param obj a PDFObject that represents an Array of exactly four
-     * Numbers.
-     */
-    public Rectangle2D.Float parseRect(PDFObject obj) throws IOException {
-        if (obj.getType() == PDFObject.ARRAY) {
-            PDFObject bounds[] = obj.getArray();
-            if (bounds.length == 4) {
-                return new Rectangle2D.Float(bounds[0].getFloatValue(),
-                        bounds[1].getFloatValue(),
-                        bounds[2].getFloatValue() - bounds[0].getFloatValue(),
-                        bounds[3].getFloatValue() - bounds[1].getFloatValue());
+    public static Rectangle2D parseNormalisedRectangle(PDFObject obj)
+            throws IOException {
+
+        if (obj != null) {
+            if (obj.getType() == PDFObject.ARRAY) {
+                PDFObject bounds[] = obj.getArray();
+                if (bounds.length == 4) {
+                    final double x0 = bounds[0].getDoubleValue();
+                    final double y0 = bounds[1].getDoubleValue();
+                    final double x1 = bounds[2].getDoubleValue();
+                    final double y1 = bounds[3].getDoubleValue();
+
+                    final double minX;
+                    final double maxY;
+                    final double maxX;
+                    final double minY;
+
+                    if (x0 < x1) {
+                        minX = x0;
+                        maxX = x1;
+                    } else {
+                        minX = x1;
+                        maxX = x0;
+                    }
+                    if (y0 < y1) {
+                        minY = y0;
+                        maxY = y1;
+                    } else {
+                        minY = y1;
+                        maxY = y0;
+                    }
+
+                    return new Rectangle2D.Double(minX, minY, Math.abs(maxX - minX), Math.abs(maxY - minY));
+
+                } else {
+                    throw new PDFParseException("Rectangle definition didn't have 4 elements");
+                }
             } else {
-                throw new PDFParseException("Rectangle definition didn't have 4 elements");
+                throw new PDFParseException("Rectangle definition not an array");
             }
         } else {
-            throw new PDFParseException("Rectangle definition not an array");
+            throw new PDFParseException("Rectangle not present");
         }
+
     }
 
     /**

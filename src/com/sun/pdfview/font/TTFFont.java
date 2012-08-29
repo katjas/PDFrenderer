@@ -20,7 +20,12 @@ package com.sun.pdfview.font;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
+import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.Collection;
 
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.font.ttf.AdobeGlyphList;
@@ -46,6 +51,10 @@ public class TTFFont extends OutlineFont {
     /** the number of units per em in the font */
     private float unitsPerEm;
 
+    public TTFFont (String baseFont, PDFObject fontObj,
+                    PDFFontDescriptor descriptor) throws IOException {
+        this(baseFont, fontObj, descriptor, null);
+    }
     /**
      * create a new TrueTypeFont object based on a description of the
      * font from the PDF file.  If the description happens to contain
@@ -54,7 +63,7 @@ public class TTFFont extends OutlineFont {
      * and use that to generate an appropriate font.
      */
     public TTFFont (String baseFont, PDFObject fontObj,
-                    PDFFontDescriptor descriptor)
+                    PDFFontDescriptor descriptor, File fontFile)
             throws IOException {
         super (baseFont, fontObj, descriptor);
 
@@ -70,16 +79,42 @@ public class TTFFont extends OutlineFont {
         // } catch (Exception ex) {
         //    ex.printStackTrace();
         // }
-        if (ttfObj != null) {
-            this.font = TrueTypeFont.parseFont (ttfObj.getStreamBuffer ());
+        if (ttfObj != null || fontFile != null) {
+            if (ttfObj != null) {
+                font = TrueTypeFont.parseFont (ttfObj.getStreamBuffer ());
+            } else {
+                final RandomAccessFile raFile = fontFile != null ? new RandomAccessFile(fontFile, "r") : null;
+                final FileChannel fc = raFile.getChannel();
+                try {
+                    MappedByteBuffer mappedFont = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+                    font = TrueTypeFont.parseFont(mappedFont);
+                    mappedFont = null;
+                } finally {
+                    try {
+                        fc.close();
+                    } catch (IOException ioEx) {
+                        // swallow
+                    }
+                    try {
+                        raFile.close();
+                    } catch (IOException ioEx) {
+                        // swallow
+                    }
+                }
+            }
             // read the units per em from the head table
-            HeadTable head = (HeadTable) this.font.getTable ("head");
-            this.unitsPerEm = head.getUnitsPerEm ();
+            HeadTable head = (HeadTable) font.getTable ("head");
+            unitsPerEm = head.getUnitsPerEm ();
         } else {
-            this.font = null;
+            font = null;
         }
 //        System.out.println ("TTFFont: ttfObj: " + ttfObj + ", fontName: " + fontName);
 
+    }
+
+    public Collection<String> getNames()
+    {
+        return font.getNames();
     }
 
     /**

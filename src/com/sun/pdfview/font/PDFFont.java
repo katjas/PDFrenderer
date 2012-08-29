@@ -18,21 +18,36 @@
  */
 package com.sun.pdfview.font;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 import com.sun.pdfview.font.cid.PDFCMap;
+import com.sun.pdfview.font.ttf.TrueTypeFont;
 
 /**
  * a Font definition for PDF files
  * @author Mike Wessler
  */
 public abstract class PDFFont {
+
+    private static final FilenameFilter TTF_FILTER = new FilenameFilter() {
+        @Override
+		public boolean accept(File dir, String name) {
+            return name.toLowerCase().endsWith(".ttf");
+        }
+    };
+
+    private static Map<String,File> namedFontsToLocalTtfFiles = null;
 
     /** the font SubType of this font */
     private String subtype;
@@ -46,6 +61,8 @@ public abstract class PDFFont {
     private PDFCMap unicodeMap;
     /** a cache of glyphs indexed by character */
     private Map<Character,PDFGlyph> charCache;
+
+
 
     /**
      * get the PDFFont corresponding to the font described in a PDFObject.
@@ -142,7 +159,10 @@ public abstract class PDFFont {
             font = new Type0Font(baseFont, obj, descriptor);
         } else if (subType.equals("Type1")) {
             // load a type1 font
-        	if (descriptor.getFontFile() != null) {
+            if (descriptor == null) {
+                // it's one of the built-in fonts
+                font = new BuiltinFont(baseFont, obj);
+            } else if (descriptor.getFontFile() != null) {
                 // it's a Type1 font, included.
                 font = new Type1Font(baseFont, obj, descriptor);
             } else if (descriptor.getFontFile3() != null) {
@@ -154,13 +174,23 @@ public abstract class PDFFont {
                 font = new BuiltinFont(baseFont, obj, descriptor);
             }
         } else if (subType.equals("TrueType")) {
-        	// TODO XOND 27.03.2012: use TTF when fixed!
+        	// TODO XOND 27.03.2012: use TTF when fixed! 
 //            if (descriptor.getFontFile2() != null) {
 //                // load a TrueType font
 //                font = new TTFFont(baseFont, obj, descriptor);
 //            } else {
-                // fake it with a built-in font
-                font = new BuiltinFont(baseFont, obj, descriptor);
+                final File extFontFile = findExternalTtf(baseFont);
+                if (extFontFile != null) {
+                	try {
+                        font = new TTFFont(baseFont, obj, descriptor, extFontFile);
+                	}catch (Exception e) {
+                		// fake it with a built-in font
+                		font = new BuiltinFont(baseFont, obj, descriptor);
+					}
+                } else {
+                    // fake it with a built-in font
+                    font = new BuiltinFont(baseFont, obj, descriptor);
+                }
 //            }
         } else if (subType.equals("Type3")) {
             // load a type 3 font
@@ -190,7 +220,118 @@ public abstract class PDFFont {
         return font;
     }
 
-	/**
+    private static File findExternalTtf(String fontName) {
+        ensureNamedTtfFontFiles();
+        return namedFontsToLocalTtfFiles.get(fontName);
+    }
+
+    private synchronized static void ensureNamedTtfFontFiles() {
+        if (namedFontsToLocalTtfFiles == null) {
+            namedFontsToLocalTtfFiles = new HashMap<String, File>();
+
+            if (Boolean.getBoolean("PDFRenderer.avoidExternalTtf")) {
+                return;
+            }
+
+            for (final String fontDirName : getFontSearchPath()) {
+
+                final File fontDir = new File(fontDirName);
+                if (fontDir.exists()) {
+                    for (final File ttfFile : fontDir.listFiles(TTF_FILTER)) {
+                        if (ttfFile.canRead()) {
+                            try {
+                                byte[] fontBytes;
+                                RandomAccessFile fontRa = null;
+                                try {
+                                    fontRa = new RandomAccessFile (ttfFile, "r");
+                                    int size = (int) fontRa.length ();
+                                    fontBytes = new byte[size];
+                                    fontRa.readFully(fontBytes);
+                                } finally {
+                                    if (fontRa != null) {
+                                        fontRa.close();
+                                    }
+                                }
+
+                                TrueTypeFont ttf = TrueTypeFont.parseFont(fontBytes);
+                                for (final String fontName : ttf.getNames()) {
+                                    if (!namedFontsToLocalTtfFiles.containsKey(fontName)) {
+                                        namedFontsToLocalTtfFiles.put(fontName, ttfFile);
+                                    }
+                                }
+                            } catch (Throwable t) {
+                                // I'm not sure how much confidence we should have
+                                // in the font parsing, so we'll avoid relying on
+                                // this not to fail
+                                System.err.println("Problem parsing " + ttfFile);
+                                t.printStackTrace(System.err);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    private static String[] getFontSearchPath() {
+        String pathProperty = System.getProperty("PDFRenderer.fontSearchPath");
+        if (pathProperty != null) {
+            return pathProperty.split(Pattern.quote(File.pathSeparator));
+        } else {
+            return getDefaultFontSearchPath();
+        }
+    }
+
+
+    private static String[] getDefaultFontSearchPath()
+    {
+        String osName = null;
+        try {
+            osName = System.getProperty("os.name");
+        } catch (SecurityException e) {
+            // preserve null osName
+        }
+
+        if (osName == null) {
+            // Makes it a bit tricky to figure out a nice default
+            return new String[0];
+        }
+
+        osName = osName != null ? osName.toLowerCase() : "";
+        if (osName.startsWith("windows")) {
+            // start with some reasonable default
+            String path = "C:/WINDOWS/Fonts";
+            try {
+                String windir = System.getenv("WINDIR");
+                if (windir != null) {
+                    path = windir + "/Fonts/";
+                }
+            } catch (SecurityException secEx) {
+                // drop through and accept default path
+            }
+            return new String[] { path };
+        } else if (osName != null && osName.startsWith("mac")) {
+            List<String> paths = new ArrayList<String>(Arrays.asList(
+                    "/Library/Fonts",
+                    "/Network/Library/Fonts",
+                    "/System/Library/Fonts",
+                    "/System Folder/Fonts"));
+            // try and add the user font dir at the front
+            try {
+                paths.add(0, System.getProperty("user.home") + "/Library/Fonts");
+            } catch (SecurityException e) {
+                // I suppose we just won't use the user fonts
+            }
+            return paths.toArray(new String[paths.size()]);
+        } else {
+            // Feel free to insert some reasonable defaults for other
+            // (UNIX, most likely) platforms here
+            return new String[0];
+        }
+    }
+
+    /**
      * Get the subtype of this font.
      * @return the subtype, one of: Type0, Type1, TrueType or Type3
      */

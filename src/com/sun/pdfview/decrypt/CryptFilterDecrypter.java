@@ -19,11 +19,11 @@
 
 package com.sun.pdfview.decrypt;
 
-import com.sun.pdfview.PDFObject;
-import com.sun.pdfview.PDFParseException;
-
 import java.nio.ByteBuffer;
 import java.util.Map;
+
+import com.sun.pdfview.PDFObject;
+import com.sun.pdfview.PDFParseException;
 
 /**
  * Implements Version 4 standard decryption, whereby the Encrypt dictionary
@@ -65,14 +65,14 @@ public class CryptFilterDecrypter implements PDFDecrypter {
         this.decrypters = decrypters;
         assert this.decrypters.containsKey("Identity") :
                 "Crypt Filter map does not contain required Identity filter";
-        this.defaultStreamDecrypter = this.decrypters.get(defaultStreamCryptName);
-        if (this.defaultStreamDecrypter == null) {
+        defaultStreamDecrypter = this.decrypters.get(defaultStreamCryptName);
+        if (defaultStreamDecrypter == null) {
             throw new PDFParseException(
                     "Unknown crypt filter specified as default for streams: " +
                             defaultStreamCryptName);
         }
-        this.defaultStringDecrypter = this.decrypters.get(defaultStringCryptName);
-        if (this.defaultStringDecrypter == null) {
+        defaultStringDecrypter = this.decrypters.get(defaultStringCryptName);
+        if (defaultStringDecrypter == null) {
             throw new PDFParseException(
                     "Unknown crypt filter specified as default for strings: " +
                             defaultStringCryptName);
@@ -85,9 +85,9 @@ public class CryptFilterDecrypter implements PDFDecrypter {
             throws PDFParseException {
         final PDFDecrypter decrypter;
         if (cryptFilterName == null) {
-            decrypter = this.defaultStreamDecrypter;
+            decrypter = defaultStreamDecrypter;
         } else {
-            decrypter = this.decrypters.get(cryptFilterName);
+            decrypter = decrypters.get(cryptFilterName);
             if (decrypter == null) {
                 throw new PDFParseException("Unknown CryptFilter: " +
                         cryptFilterName);
@@ -107,12 +107,12 @@ public class CryptFilterDecrypter implements PDFDecrypter {
     @Override
 	public String decryptString(int objNum, int objGen, String inputBasicString)
             throws PDFParseException {
-        return this.defaultStringDecrypter.decryptString(objNum, objGen, inputBasicString);
+        return defaultStringDecrypter.decryptString(objNum, objGen, inputBasicString);
     }
 
     @Override
 	public boolean isEncryptionPresent() {
-        for (final PDFDecrypter decrypter : this.decrypters.values()) {
+        for (final PDFDecrypter decrypter : decrypters.values()) {
             if (decrypter.isEncryptionPresent()) {
                 return true;
             }
@@ -121,12 +121,19 @@ public class CryptFilterDecrypter implements PDFDecrypter {
     }
 
     @Override
+	public boolean isEncryptionPresent(String cryptFilterName) {
+        PDFDecrypter decrypter = decrypters.get(cryptFilterName);
+        return decrypter != null && decrypter.isEncryptionPresent(cryptFilterName);
+    }
+
+    @Override
 	public boolean isOwnerAuthorised() {
-        for (final PDFDecrypter decrypter : this.decrypters.values()) {
+        for (final PDFDecrypter decrypter : decrypters.values()) {
             if (decrypter.isOwnerAuthorised()) {
                 return true;
             }
         }
         return false;
     }
+
 }

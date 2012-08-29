@@ -1,4 +1,5 @@
-/* Copyright 2008 Pirion Systems Pty Ltd, 139 Warry St,
+/*
+ * Copyright 2008 Pirion Systems Pty Ltd, 139 Warry St,
  * Fortitude Valley, Queensland, Australia
  *
  * This library is free software; you can redistribute it and/or
@@ -18,9 +19,11 @@
 
 package com.sun.pdfview.decrypt;
 
+import java.nio.ByteBuffer;
+
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
-import java.nio.ByteBuffer;
+import com.sun.pdfview.PDFStringUtil;
 
 /**
  * A decrypter decrypts streams and strings in a PDF document. {@link
@@ -91,4 +94,11 @@ public interface PDFDecrypter {
      * @return whether encryption is present
      */
     public boolean isEncryptionPresent();
+
+    /**
+     * Determines whether decryption applies for a given crypt filter name
+     * @param cryptFilterName the crypt filter name
+     * @return whether the given crypt filter decrypts or not
+     */
+    boolean isEncryptionPresent(String cryptFilterName);
 }

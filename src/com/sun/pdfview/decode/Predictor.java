@@ -19,9 +19,8 @@
 
 package com.sun.pdfview.decode;
 
-import java.nio.ByteBuffer;
-
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
@@ -85,7 +84,7 @@ public abstract class Predictor {
                 // no predictor
                 return null;
             case 2:
-                throw new PDFParseException("Tiff Predictor not supported");
+            	predictor = new TIFFPredictor();
             case 10:
             case 11:
             case 12:

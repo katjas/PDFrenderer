@@ -21,6 +21,7 @@ package com.sun.pdfview.font.ttf;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.SortedMap;
@@ -341,6 +342,11 @@ public class NameTable extends TrueTypeTable {
         }
         
         return buf.toString();
+    }
+    
+    public Collection<String> getNames()
+    {
+    	return Collections.unmodifiableCollection(records.values());
     }
     
     /**

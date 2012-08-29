@@ -138,4 +138,16 @@ public class PDFXref {
     public void setObject(PDFObject obj) {
         this.reference = new SoftReference<PDFObject>(obj);
     }
+    
+    @Override
+	public boolean equals(Object obj) {
+        return (obj instanceof PDFXref) &&
+                ((PDFXref)obj).id == id &&
+                ((PDFXref)obj).generation == generation;
+    }
+
+    @Override
+    public int hashCode() {
+        return id ^ (generation << 8);
+    }
 }

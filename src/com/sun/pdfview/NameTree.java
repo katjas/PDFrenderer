@@ -1,4 +1,6 @@
 /*
+ * $Id: NameTree.java,v 1.3 2009/01/16 16:26:09 tomoke Exp $
+ *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
  *
@@ -49,7 +51,7 @@ public class NameTree {
      * @return the object associated with str,  if found, or null if not
      */
     public PDFObject find(String key) throws IOException {
-        return find(this.root, key);
+        return find(root, key);
     }
 
     /**

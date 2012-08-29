@@ -290,42 +290,50 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         	bi = getMaskedImage(bi);
         }
 
-        /*
-        javax.swing.JFrame frame = new javax.swing.JFrame("Original Image");
-        frame.getContentPane().add(new javax.swing.JLabel(new javax.swing.ImageIcon(bi)));
-        frame.pack();
-        frame.show();
-         */
-        // long t = System.currentTimeMillis();
         Rectangle r = g.getTransform().createTransformedShape(new Rectangle(0,0,1,1)).getBounds();
         boolean isBlured = false;
         
-        //This is another possibility to enhance the quality of the images
-        //but it is slower (this could depend on the os and java version used)
-        //and the image quality is worse compared to the bluring method.
-        /*int it = 0;
-        int width = image.getWidth();
-        int height = image.getHeight();
-        while (width >= 2*r.getWidth() && height >= 2*r.getHeight()) {
-        	width = width / 2;
-        	height = height / 2;
-    		BufferedImage blured = new BufferedImage(width, 
-    				height, bi.getType());
-    		Graphics2D bg = (Graphics2D) blured.getGraphics();
-    		bg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
-    				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-    		bg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
-    				RenderingHints.VALUE_ANTIALIAS_ON);
-    		bg.drawImage(bi, 0, 0, width, 
-    				height, null);
-    		if (it > 0) bi.flush();
-    		bi = blured;
-    		it++;
+        if (useBlurResizingForImages && 
+        		bi.getType() != BufferedImage.TYPE_CUSTOM && 
+        		image.getWidth() >= 1.75*r.getWidth() && image.getHeight() >= 1.75*r.getHeight()){
+        	try {
+            	return smartDrawImage(image, bi, r, at);
+        	}catch (Exception e) {
+				// do nothing, just go on with the "default" processing 
+			}
         }
-        at = new AffineTransform(1f / width, 0,
-                0, -1f / height,
-                0, 1);
-        */
+        
+        this.g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
+                
+        //Image quality is better when using texturepaint instead of drawimage
+        //but it is also slower :(
+		this.g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
+				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        if (!this.g.drawImage(bi, at, null)) {
+            System.out.println("Image not completed!");
+        }
+        if (isBlured) bi.flush();
+
+        // get the total transform that was executed
+        AffineTransform bt = new AffineTransform(this.g.getTransform());
+        bt.concatenate(at);
+
+        double minx = bi.getMinX();
+        double miny = bi.getMinY();
+
+        double[] points = new double[]{
+            minx, miny, minx + bi.getWidth(), miny + bi.getHeight()
+        };
+        bt.transform(points, 0, points, 0, 2);
+
+        return new Rectangle2D.Double(points[0], points[1],
+                points[2] - points[0],
+                points[3] - points[1]);
+
+    }
+
+    private Rectangle2D smartDrawImage(PDFImage image, BufferedImage bi, Rectangle r, AffineTransform at) {
+        boolean isBlured = false;
         
         if (useBlurResizingForImages && 
         		bi.getType() != BufferedImage.TYPE_CUSTOM && 
@@ -361,29 +369,9 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
             			weight, weight, weight, weight,
             			weight, weight, weight, weight,
             	};
-                /*final float weight = 1.0f/32.0f;
-            	final float[] blurKernel = {
-            			weight, 2*weight, 2*weight, weight,
-            			2*weight, 3*weight, 3*weight, 2*weight,
-            			2*weight, 3*weight, 3*weight, 2*weight,
-            			weight, 2*weight, 2*weight, weight,
-            	};*/
-            	/*final float[] blurKernel = {
-            			weight, weight, weight, weight, weight,
-            			weight, weight, weight, weight, weight,
-            			weight, weight, weight, weight, weight,
-            			weight, weight, weight, weight, weight,
-            			weight, weight, weight, weight, weight
-            	};*/
             	op = new ConvolveOp(new Kernel(4, 4, blurKernel), ConvolveOp.EDGE_NO_OP, null);            	
         	}
         	else {
-        		/*final float weight = 1.0f/9.0f;
-        		final float[] blurKernel = {
-        				weight, weight, weight,
-        				weight, weight, weight,
-        				weight, weight, weight
-        		};*/
         		final float weight = 1.0f/18.0f;
         		final float[] blurKernel = {
         				1*weight, 2*weight, 1*weight,
@@ -396,23 +384,20 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         	
         	BufferedImage blured = op.createCompatibleDestImage(bi, bi.getColorModel());
         	
-        	op.filter(bi, blured);
+           	op.filter(bi, blured);
         	bi = blured;
         	isBlured = true;
         }
+        
         this.g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
                 
         //Image quality is better when using texturepaint instead of drawimage
         //but it is also slower :(
-        /*g.setPaint(new TexturePaint(bi, new Rectangle2D.Float(0, 0, 1, -1)));
-        g.fillRect(0, 0, 1, 1);*/
 		this.g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
 				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         if (!this.g.drawImage(bi, at, null)) {
             System.out.println("Image not completed!");
         }
-        // System.out.println("Time : "+(System.currentTimeMillis()-t));
-        
         if (isBlured) bi.flush();
 
         // get the total transform that was executed
@@ -430,9 +415,8 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         return new Rectangle2D.Double(points[0], points[1],
                 points[2] - points[0],
                 points[3] - points[1]);
-
     }
-
+    
     /**
      * add the path to the current clip.  The new clip will be the intersection
      * of the old clip and given path.
@@ -574,7 +558,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         }
 
         // update the new observer to the current state
-        Image i = (Image) this.imageRef.get();
+        Image i = this.imageRef.get();
         if (rendererFinished()) {
             // if we're finished, just send a finished notification, don't
             // add to the list of observers
@@ -628,7 +612,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
      */
     public BufferedImage getImage() {
     	if (this.imageRef == null) return null;
-    	return (BufferedImage) this.imageRef.get();
+    	return this.imageRef.get();
     }
     
     /**
@@ -639,7 +623,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         Graphics2D graphics = null;
 
         if (this.imageRef != null) {
-            BufferedImage bi = (BufferedImage) this.imageRef.get();
+            BufferedImage bi = this.imageRef.get();
             if (bi != null) {
                 graphics = bi.createGraphics();
             }
@@ -678,7 +662,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         // object.  If it is, and the graphics is no longer valid, then just quit
         BufferedImage bi = null;
         if (this.imageRef != null) {
-            bi = (BufferedImage) this.imageRef.get();
+            bi = this.imageRef.get();
             if (bi == null) {
                 System.out.println("Image went away.  Stopping");
                 return Watchable.STOPPED;
@@ -824,7 +808,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
 
         synchronized (this.observers) {
             for (Iterator<ImageObserver> i = this.observers.iterator(); i.hasNext();) {
-                ImageObserver observer = (ImageObserver) i.next();
+                ImageObserver observer = i.next();
 
                 boolean result = observer.imageUpdate(bi, flags,
                         startx, starty,

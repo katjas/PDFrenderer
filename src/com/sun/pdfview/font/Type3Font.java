@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFPage;
 import com.sun.pdfview.PDFParser;
@@ -92,16 +93,9 @@ public class Type3Font extends PDFFont {
         this.charProcs = fontObj.getDictRef("CharProcs").getDictionary();
 
         // get the font bounding box
-        PDFObject[] bboxdef = fontObj.getDictRef("FontBBox").getArray();
-        float[] bboxfdef = new float[4];
-        for (int i = 0; i < 4; i++) {
-            bboxfdef[i] = bboxdef[i].getFloatValue();
-        }
-        this.bbox = new Rectangle2D.Float(bboxfdef[0], bboxfdef[1],
-                bboxfdef[2] - bboxfdef[0],
-                bboxfdef[3] - bboxfdef[1]);
-        if (this.bbox.isEmpty()) {
-            this.bbox = null;
+        bbox = PDFFile.parseNormalisedRectangle(fontObj.getDictRef("FontBBox"));
+        if (bbox.isEmpty()) {
+            bbox = null;
         }
 
         // get the widths

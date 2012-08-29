@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -418,6 +419,15 @@ public class TrueTypeFont {
         return buf.toString ();
     }
 
+    public Collection<String> getNames() {
+        NameTable table = (NameTable) getTable("name");
+        if (table != null) {
+            return table.getNames();
+        } else {
+            return Collections.emptyList();
+        }
+    }
+    
     /**
      * @param args the command line arguments
      */
