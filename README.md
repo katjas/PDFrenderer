@@ -30,3 +30,4 @@ Done:
 * fixed size of outline fonts 
 * fixed several exceptions
 * Fixed various font encoding problems (Flex in Type 1, wrong stemhints in Type 1C and inverted presentation of Type 3)
+* fixed rotation of text (http://java.net/jira/browse/PDF_RENDERER-91)
