@@ -31,3 +31,8 @@ Done:
 * fixed several exceptions
 * Fixed various font encoding problems (Flex in Type 1, wrong stemhints in Type 1C and inverted presentation of Type 3)
 * fixed rotation of text (http://java.net/jira/browse/PDF_RENDERER-91)
+* JPEG decoding with imageio
+* Work-around lack of YCCK decoding support in standard JRE image readers and thus allow CMYK jpeg images without using 3rd party image readers (e.g., JAI)
+* Employ local TTF files if available instead of using the built-ins as substitutes. Scanning of available TTFs will take some time on the first request for an unavailable TTF. This behaviour can be disabled by setting the system property PDFRenderer.avoidExternalTtf to true. The PDFRenderer.fontSearchPath system property can be used to alter the search path, though Windows and Mac OS X defaults should hopefully be sensible. 
+* Added TIFF Type 2 Predictor for decoding
+
