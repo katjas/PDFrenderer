@@ -35,4 +35,5 @@ Done:
 * Work-around lack of YCCK decoding support in standard JRE image readers and thus allow CMYK jpeg images without using 3rd party image readers (e.g., JAI)
 * Employ local TTF files if available instead of using the built-ins as substitutes. Scanning of available TTFs will take some time on the first request for an unavailable TTF. This behaviour can be disabled by setting the system property PDFRenderer.avoidExternalTtf to true. The PDFRenderer.fontSearchPath system property can be used to alter the search path, though Windows and Mac OS X defaults should hopefully be sensible. 
 * Added TIFF Type 2 Predictor for decoding
+* use built in font as workaround for MMType1 fonts instead of throwing an exception
 
