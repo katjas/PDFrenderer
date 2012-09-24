@@ -208,6 +208,9 @@ public abstract class PDFFont {
         	}else {
                 font = new CIDFontType0(baseFont, obj, descriptor);
         	}
+		} else if (subType.equals("MMType1")) {
+			// not yet implemented, fake it with a built-in font
+			font = new BuiltinFont(baseFont, obj, descriptor);
         } else {
             throw new PDFParseException("Don't know how to handle a '" +
                     subType + "' font");
