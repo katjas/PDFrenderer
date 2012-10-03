@@ -104,7 +104,7 @@ public class PDFImage {
 	/** the decode array */
 	private float[] decode;
 	/** the actual image data */
-	private PDFObject imageObj;
+	private final PDFObject imageObj;
 
 	/**
 	 * Create an instance of a PDFImage
@@ -1051,7 +1051,7 @@ public class PDFImage {
     private class JpegDecoder
     {
         /** The jpeg bytes */
-        private ByteBuffer jpegData;
+        private final ByteBuffer jpegData;
         /** The color model employed */
         private ColorModel cm;
         /** Whether the YCCK decode work-around should be used */

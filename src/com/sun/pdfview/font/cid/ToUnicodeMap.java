@@ -69,9 +69,9 @@ public class ToUnicodeMap extends PDFCMap {
 		
 	}
 	
-	private Map<Character, Character> singleCharMappings;
-	private List<CharRangeMapping> charRangeMappings;
-	private List<CodeRangeMapping> codeRangeMappings;
+	private final Map<Character, Character> singleCharMappings;
+	private final List<CharRangeMapping> charRangeMappings;
+	private final List<CodeRangeMapping> codeRangeMappings;
 
 	/*************************************************************************
 	 * Constructor
@@ -208,8 +208,12 @@ public class ToUnicodeMap extends PDFCMap {
 		if (charDef.endsWith(">")) {
 			charDef = charDef.substring(0, charDef.length()-1);
 		}
-		int result = Integer.decode("0x"+charDef);
-		return (char) result;
+		try {
+			int result = Integer.decode("0x" + charDef);
+			return (char) result;
+		} catch (NumberFormatException e) {
+			return (char) ' ';
+		}
 	}
 
 	/*************************************************************************

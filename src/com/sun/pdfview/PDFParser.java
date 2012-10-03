@@ -1193,7 +1193,7 @@ public class PDFParser extends BaseWatchable {
         PDFObject gsobj = findResource(name, "ExtGState");
         // get LW, LC, LJ, Font, SM, CA, ML, D, RI, FL, BM, ca
         // out of the reference, which is a dictionary
-        PDFObject d;
+		PDFObject d;
         if ((d = gsobj.getDictRef("LW")) != null) {
             this.cmds.addStrokeWidth(d.getFloatValue());
         }

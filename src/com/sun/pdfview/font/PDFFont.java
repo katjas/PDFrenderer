@@ -159,10 +159,7 @@ public abstract class PDFFont {
             font = new Type0Font(baseFont, obj, descriptor);
         } else if (subType.equals("Type1")) {
             // load a type1 font
-            if (descriptor == null) {
-                // it's one of the built-in fonts
-                font = new BuiltinFont(baseFont, obj);
-            } else if (descriptor.getFontFile() != null) {
+			if (descriptor.getFontFile() != null) {
                 // it's a Type1 font, included.
                 font = new Type1Font(baseFont, obj, descriptor);
             } else if (descriptor.getFontFile3() != null) {
@@ -174,7 +171,7 @@ public abstract class PDFFont {
                 font = new BuiltinFont(baseFont, obj, descriptor);
             }
         } else if (subType.equals("TrueType")) {
-        	// TODO XOND 27.03.2012: use TTF when fixed! 
+			// TODO 27.03.2012: use TTF when fixed!
 //            if (descriptor.getFontFile2() != null) {
 //                // load a TrueType font
 //                font = new TTFFont(baseFont, obj, descriptor);
