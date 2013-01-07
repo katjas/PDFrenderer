@@ -635,7 +635,6 @@ public class PDFImage {
 
 		byte[] buffer = ((DataBufferByte) converted.getRaster().getDataBuffer())
 				.getData();
-
 		int i = 0;
 		final int height = converted.getHeight();
 		final int width = converted.getWidth();
@@ -645,20 +644,13 @@ public class PDFImage {
 				for (int x = 0; x < width; x += 8) {
 					final byte bits = bufferO[i];
 					i++;
-					buffer[base - 7] = ncc[((bits >>> 7) & 1)];
-					buffer[base - 6] = ncc[((bits >>> 6) & 1)];
-					buffer[base - 5] = ncc[((bits >>> 5) & 1)];
-					buffer[base - 4] = ncc[((bits >>> 4) & 1)];
-					buffer[base - 3] = ncc[((bits >>> 3) & 1)];
-					buffer[base - 2] = ncc[((bits >>> 2) & 1)];
-					buffer[base - 1] = ncc[((bits >>> 1) & 1)];
-					buffer[base] = ncc[(bits & 1)];
-
-					/*
-					 * for (byte j=7; j>=0; j--) { //final int c = (((bits &
-					 * (1<<j)) >>> j)); final int c = ((bits >>> j) & 1);
-					 * buffer[base - j] = ncc[c]; }
-					 */
+					for (byte j = 7; j >= 0; j--) {
+						if (buffer.length <= (base - j)) {
+							break;
+						}
+						final int c = ((bits >>> j) & 1);
+						buffer[base - j] = ncc[c];
+					}
 					base += 8;
 				}
 			} else {
