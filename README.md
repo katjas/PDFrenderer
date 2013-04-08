@@ -15,6 +15,7 @@ To do:
 
 Done:
 -----
+* support for widget annotation containing digital signature
 * support function type 4 rendering (subset of the PostScript language, specification taken from http://www.adobe.com/devnet/acrobat/pdfs/adobe_supplement_iso32000.pdf)
 * support link annotations for being able to render links
 * rough support of stamp and freetext annotations
