@@ -1207,18 +1207,19 @@ public class PDFFile {
         PDFDecrypter newDefaultDecrypter = null;
         
         while (true) {
-			PDFObject xrefObj=readObject(-1, -1, IdentityDecrypter.getInstance());
-			
-			PDFObject[] wNums = xrefObj.getDictionary().get("W").getArray();
+			PDFObject xrefObj = readObject(-1, -1, IdentityDecrypter.getInstance());
+			PDFObject pdfObject = xrefObj.getDictionary().get("W");
+			if (pdfObject == null) {
+				break;
+			}
+			PDFObject[] wNums = pdfObject.getArray();
 			int l1 = wNums[0].getIntValue();
 			int l2 = wNums[1].getIntValue();
 			int l3 = wNums[2].getIntValue();
-			int entrySize = l1+l2+l3;
 	
 			int size = xrefObj.getDictionary().get("Size").getIntValue();
 
 			byte[] strmbuf = xrefObj.getStream();
-			int strmEntries = strmbuf.length / entrySize;
 			int strmPos = 0;
 			
 			PDFObject idxNums = xrefObj.getDictionary().get("Index");
