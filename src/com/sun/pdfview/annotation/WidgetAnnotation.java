@@ -218,7 +218,11 @@ public class WidgetAnnotation extends PDFAnnotation {
 	@Override
 	public List<PDFCmd> getPageCommandsForAnnotation() {
 		List<PDFCmd> pageCommandsForAnnotation = super.getPageCommandsForAnnotation();
-		pageCommandsForAnnotation.addAll(cmd);
+		// cmd might be null if there is no AP (appearance dictionary) 
+		// AP is optional see PDF Reference 1.7 table 8.15
+		if (this.cmd != null) {
+			pageCommandsForAnnotation.addAll(this.cmd);
+		}
 		return pageCommandsForAnnotation;
 	}
 	
