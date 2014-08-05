@@ -29,5 +29,9 @@
 			<fileset dir="${build}" />
 			<fileset dir="stdclasses" excludes="unpublic/jbig2.jar" />
 		</jar>
+		<!-- build maven sources jar -->
+		<jar destfile="PDFrenderer-sources.jar">
+			<fileset dir="${basedir}/src" />
+		</jar>
 	</target>
 </project>
