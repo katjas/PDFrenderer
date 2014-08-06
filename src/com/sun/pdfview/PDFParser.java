@@ -364,6 +364,8 @@ public class PDFParser extends BaseWatchable {
                     c = '\b';
                 } else if (c == 'f') {
                     c = '\f';
+                } else if (c == '\n' || c == '\r') {
+                	continue;
                 }
             }
             sb.append((char) c);
