@@ -30,11 +30,11 @@ import java.util.Map;
 public class Cache {
 
     /** the pages in the cache, mapped by page number */
-    private Map<Integer,SoftReference> pages;
+    private Map<Integer,SoftReference<PageRecord>> pages;
 
     /** Creates a new instance of a Cache */
     public Cache() {
-        this.pages = Collections.synchronizedMap(new HashMap<Integer,SoftReference>());
+        this.pages = Collections.synchronizedMap(new HashMap<Integer,SoftReference<PageRecord>>());
     }
 
     /**
@@ -183,7 +183,7 @@ public class Cache {
         rec.value = page;
         rec.generator = parser;
 
-        this.pages.put(pageNumber, new SoftReference<Record>(rec));
+        this.pages.put(pageNumber, new SoftReference<PageRecord>(rec));
 
         return rec;
     }
@@ -195,11 +195,11 @@ public class Cache {
      */
     PageRecord getPageRecord(Integer pageNumber) {
         // System.out.println("Request for page " + pageNumber);
-        SoftReference ref = this.pages.get(pageNumber);
+        SoftReference<PageRecord> ref = this.pages.get(pageNumber);
         if (ref != null) {
             String val = (ref.get() == null) ? " not in " : " in ";
             // System.out.println("Page " + pageNumber + val + "cache");
-            return (PageRecord) ref.get();
+            return ref.get();
         }
 
         // System.out.println("Page " + pageNumber + " not in cache");
@@ -211,9 +211,9 @@ public class Cache {
      * Remove a page's record from the cache
      */
     PageRecord removePageRecord(Integer pageNumber) {
-        SoftReference ref = this.pages.remove(pageNumber);
+        SoftReference<PageRecord> ref = this.pages.remove(pageNumber);
         if (ref != null) {
-            return (PageRecord) ref.get();
+            return ref.get();
         }
 
         // not in cache
@@ -227,7 +227,7 @@ public class Cache {
     Record addImageRecord(PDFPage page, ImageInfo info,
             BufferedImage image, PDFRenderer renderer) {
         // first, find or create the relevant page record
-        Integer pageNumber = Integer.valueOf(page.getPageNumber());
+        int pageNumber = page.getPageNumber();
         PageRecord pageRec = getPageRecord(pageNumber);
         if (pageRec == null) {
             pageRec = addPageRecord(pageNumber, page, null);
@@ -257,11 +257,11 @@ public class Cache {
 
         PageRecord pageRec = getPageRecord(pageNumber);
         if (pageRec != null) {
-            SoftReference ref = pageRec.images.get(info);
+            SoftReference<Record> ref = pageRec.images.get(info);
             if (ref != null) {
                 String val = (ref.get() == null) ? " not in " : " in ";
                 // System.out.println("Image on page " + pageNumber + val + " cache");
-                return (Record) ref.get();
+                return ref.get();
             }
         }
 
@@ -278,9 +278,9 @@ public class Cache {
         Integer pageNumber = Integer.valueOf(page.getPageNumber());
         PageRecord pageRec = getPageRecord(pageNumber);
         if (pageRec != null) {
-            SoftReference ref = pageRec.images.remove(info);
+            SoftReference<Record> ref = pageRec.images.remove(info);
             if (ref != null) {
-                return (Record) ref.get();
+                return ref.get();
             }
 
         }

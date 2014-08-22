@@ -193,8 +193,8 @@ public class TrueTypeFont {
         int curOffset = 12 + (getNumTables () * 16);
 
         // write the tables
-        for (Iterator i = this.tables.keySet ().iterator (); i.hasNext ();) {
-            String tagString = (String) i.next ();
+        for (Iterator<String> i = this.tables.keySet ().iterator (); i.hasNext ();) {
+            String tagString = i.next ();
             int tag = TrueTypeTable.stringToTag (tagString);
 
             ByteBuffer data = null;
@@ -336,7 +336,7 @@ public class TrueTypeFont {
 
         // for each directory entry, get the size,
         // and don't forget the padding!
-        for (Iterator i = this.tables.values ().iterator (); i.hasNext ();) {
+        for (Iterator<Object> i = this.tables.values ().iterator (); i.hasNext ();) {
             Object tableObj = i.next ();
 
             // add the length of the entry
@@ -366,8 +366,8 @@ public class TrueTypeFont {
         int offset = 12 + (getNumTables () * 16);
 
         // find the head table
-        for (Iterator i = this.tables.keySet ().iterator (); i.hasNext ();) {
-            String tagString = (String) i.next ();
+        for (Iterator<String> i = this.tables.keySet ().iterator (); i.hasNext ();) {
+            String tagString = i.next ();
 
             // adjust the checksum
             if (tagString.equals ("head")) {
@@ -403,12 +403,12 @@ public class TrueTypeFont {
         System.out.println ("EntrySelector: " + getEntrySelector ());
         System.out.println ("RangeShift   : " + getRangeShift ());
 
-        for (Iterator i = this.tables.entrySet ().iterator (); i.hasNext ();) {
-            Map.Entry e = (Map.Entry) i.next ();
+        for (Iterator<Map.Entry<String, Object>> i = this.tables.entrySet ().iterator (); i.hasNext ();) {
+            Map.Entry<String, Object> e = i.next ();
 
             TrueTypeTable table = null;
             if (e.getValue () instanceof ByteBuffer) {
-                table = getTable ((String) e.getKey ());
+                table = getTable (e.getKey ());
             } else {
                 table = (TrueTypeTable) e.getValue ();
             }
