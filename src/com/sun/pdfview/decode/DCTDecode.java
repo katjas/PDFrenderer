@@ -1,4 +1,6 @@
 /*
+ * $Id: DCTDecode.java,v 1.3 2010-06-14 17:32:08 lujke Exp $
+ *
  * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
  * Santa Clara, California 95054, U.S.A. All rights reserved.
  *
@@ -19,19 +21,19 @@
 
 package com.sun.pdfview.decode;
 
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
 import java.awt.image.ImageObserver;
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
-
-import javax.swing.ImageIcon;
-
-import ch.randelshofer.media.jpeg.JPEGImageIO;
 
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
+import com.sun.pdfview.colorspace.PDFColorSpace;
 
 /**
  * decode a DCT encoded array into a byte array.  This class uses Java's
@@ -46,9 +48,21 @@ public class DCTDecode {
      * <p>
      * DCT is the format used by JPEG images, so this class simply
      * loads the DCT-format bytes as an image, then reads the bytes out
-     * of the image to create the array.  Unfortunately, their most
-     * likely use is to get turned BACK into an image, so this isn't
-     * terribly efficient... but is is general... don't hit, please.
+     * of the image to create the array.  If this were to be used
+     * against image objects we'd end up wasting a lot of work, because
+     * we'd be generating a buffered image here, writing out the bytes,
+     * and then generating a buffered image again from those bytes in the
+     * PDFImage class.
+     * <p>
+     * Luckily, the image processing has been optimised to detect
+     * DCT decodes at the end of filters, in which case it avoids
+     * running the stream through this filter, and just directly
+     * generates a BufferedImage from the DCT encoded byte stream.
+     * As such, this decode will be invoked only if there's been
+     * some very unusual employment of filters in the PDF - e.g.,
+     * DCTDecode applied to non-image data, or if DCTDecode is not at
+     * the end of a Filter dictionary entry. This is permissible but
+     * unlikely to occur in practice.
      * <p>
      * The DCT-encoded stream may have 1, 3 or 4 samples per pixel, depending
      * on the colorspace of the image.  In decoding, we look for the colorspace
@@ -59,58 +73,98 @@ public class DCTDecode {
      * @param buf the DCT-encoded buffer
      * @param params the parameters to the decoder (ignored)
      * @return the decoded buffer
-     * @throws PDFParseException 
      */
-    protected static ByteBuffer decode(PDFObject dict, ByteBuffer buf, PDFObject params) throws PDFParseException {
-		// BEGIN PATCH W. Randelshofer Completely rewrote decode routine in
-		// order to
-		// support JPEG images in the CMYK color space.
-		BufferedImage bimg = loadImageData(buf);
-		byte[] output = ImageDataDecoder.decodeImageData(bimg);
-		return ByteBuffer.wrap(output);
-		// END PATCH W. Randelshofer Completely rewrote decode routine in order
-		// to
-		// support JPEG images in the CMYK color space.
+    protected static ByteBuffer decode(PDFObject dict, ByteBuffer buf,
+        PDFObject params) throws PDFParseException
+    {
+	//	System.out.println("DCTDecode image info: "+params);
+        buf.rewind();
+        
+        // copy the data into a byte array required by createimage
+        byte[] ary = new byte[buf.remaining()];
+        buf.get(ary);
+        
+        // wait for the image to get drawn
+	Image img= Toolkit.getDefaultToolkit().createImage(ary);
+	MyTracker mt= new MyTracker(img);
+	mt.waitForAll();
+        
+        // the default components per pixel is 3
+        int numComponents = 3;
+        
+        // see if we have a colorspace
+        try {
+            PDFObject csObj = dict.getDictRef("ColorSpace");
+            if (csObj != null) {
+                // we do, so get the number of components
+                PDFColorSpace cs = PDFColorSpace.getColorSpace(csObj, null);
+                numComponents = cs.getNumComponents();
+            }
+        } catch (IOException ioe) {
+            // oh well
+        }
+        
+        
+        // figure out the type
+        int type = BufferedImage.TYPE_INT_RGB;
+        if (numComponents == 1) {
+            type = BufferedImage.TYPE_BYTE_GRAY;
+        } else if (numComponents == 4) {
+            type = BufferedImage.TYPE_INT_ARGB;
+        }
+        
+        // create a buffered image
+        BufferedImage bimg = new BufferedImage(img.getWidth(null),
+					       img.getHeight(null),
+					       type);
+        Graphics bg= bimg.getGraphics();
+        
+        // draw the image onto it
+	bg.drawImage(img, 0, 0, null);
+        
+	byte[] output = null;
 
+        // incidentally, there's a bit of an optimisation we could apply here,
+        // if we weren't pretty confident that this isn't actually going to
+        // be called, anyway. Namely, if we just use JAI to read in the data
+        // the underlying data buffer seems to typically be byte[] based,
+        // and probably already in the desired arrangement (and if not, that
+        // could be engineered by supplying our own sample model). As it is,
+        // we won't bother, since this code is most likely not going
+        // to be used.        
+
+        if (type == BufferedImage.TYPE_INT_RGB) {
+            // read back the data
+            DataBufferInt db = (DataBufferInt) bimg.getData().getDataBuffer();
+            int[] data = db.getData();
+        
+            output = new byte[data.length*3];
+            for (int i=0; i<data.length; i++) {
+                output[i*3]= (byte)(data[i]>>16);
+                output[i*3+1]= (byte)(data[i]>>8);
+                output[i*3+2]= (byte)(data[i]);
+            }
+        } else if (type == BufferedImage.TYPE_BYTE_GRAY) {
+            DataBufferByte db = (DataBufferByte) bimg.getData().getDataBuffer();
+            output = db.getData(); 
+        } else if (type == BufferedImage.TYPE_INT_ARGB) {
+            // read back the data
+            DataBufferInt db = (DataBufferInt) bimg.getData().getDataBuffer();
+            int[] data = db.getData();
+        
+            output = new byte[data.length*4];
+            for (int i=0; i<data.length; i++) {
+                output[i*4]= (byte)(data[i]>>24);
+                output[i*4+1]= (byte)(data[i]>>16);
+                output[i*4+2]= (byte)(data[i]>>8);
+                output[i*4+3]= (byte)(data[i]);
+            }
+        }
+        
+	//	System.out.println("Translated data");
+	return ByteBuffer.wrap(output);
     }
-
-	
-	/*************************************************************************
-	 * @param buf
-	 * @return
-	 * @throws PDFParseException
-	 ************************************************************************/
-	
-	private static BufferedImage loadImageData(ByteBuffer buf)
-			throws PDFParseException {
-		buf.rewind();
-		byte[] input = new byte[buf.remaining()];
-		buf.get(input);
-		BufferedImage bimg;
-		try {
-			try {
-				bimg = JPEGImageIO.read(new ByteArrayInputStream(input), false);				
-			} catch (IllegalArgumentException colorProfileMismatch) {
-				// we experienced this problem with an embedded jpeg
-				// that specified a icc color profile with 4 components 
-				// but the raster had only 3 bands (apparently YCC encoded)
-				Image img = Toolkit.getDefaultToolkit().createImage(input);
-				// wait until image is loaded using ImageIcon for convenience
-				ImageIcon imageIcon = new ImageIcon(img);
-				// copy to buffered image
-				bimg = new BufferedImage(imageIcon.getIconWidth(), imageIcon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
-				bimg.getGraphics().drawImage(img, 0, 0 , null);
-			}			
-		} catch (Exception ex) {
-			PDFParseException ex2 = new PDFParseException("DCTDecode failed");
-			ex2.initCause(ex);
-			throw ex2;
-		}
-
-		return bimg;
-	}
 }
-
 
 /**
  * Image tracker.  I'm not sure why I'm not using the default Java
@@ -135,7 +189,7 @@ class MyTracker implements ImageObserver {
 			       int width, int height) {
 	if ((infoflags & (ALLBITS | ERROR | ABORT))!=0) {
 	    synchronized(this) {
-		this.done= true;
+		done= true;
 		notifyAll();
 	    }
 	    return false;
@@ -147,10 +201,11 @@ class MyTracker implements ImageObserver {
      * Wait until the image is done, then return.
      */
     public synchronized void waitForAll() {
-	if (!this.done) {
+	if (!done) {
 	    try {
 		wait();
 	    } catch (InterruptedException ie) {}
 	}
     }
 }
+
