@@ -3,10 +3,10 @@ package com.sun.pdfview.decode;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.jpedal.jbig2.JBIG2Decoder;
-import org.jpedal.jbig2.JBIG2Exception;
 
 import com.sun.pdfview.PDFObject;
+import com.sun.pdfview.decode.jbig2.JBIG2Decoder;
+import com.sun.pdfview.decode.jbig2.JBIG2Exception;
 
 /*****************************************************************************
  * Decoder for jbig2 images within PDFs.

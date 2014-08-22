@@ -1,25 +1,24 @@
 <project name="PDFrenderer" basedir="." default="jar">
 
-	<property name="build" value="build"/>
+	<property name="build" value="${basedir}/build"/>
 	<property file="build.properties"/>
 	
 	<target name="clean">
-		<delete dir="${build}"/>
-		<delete file="PDFrenderer.jar"/>
+		<delete dir="${build}" />
+		<delete file="PDFrenderer.jar" />
+		<delete file="PDFrenderer-sources.jar" />
 	</target>
 
 	<target name="init" depends="clean">
 		<mkdir dir="${build}"/>
 		<copy todir="${build}">
-		<fileset dir="src" excludes="**/*.java"/>
+			<fileset dir="src" excludes="**/*.java"/>
 		</copy>
 	</target>	
 	
 	<target name="compile" depends="init">
 		<!-- Compile the java code -->
-		<javac srcdir="src" destdir="${build}">
-			<classpath path="stdclasses/unpublic/jbig2.jar"></classpath>
-			<classpath path="stdclasses"></classpath>
+		<javac srcdir="${basedir}/src" destdir="${build}">
 		</javac>
 	</target>	
 	
@@ -27,7 +26,6 @@
 		<!-- Build the jar file -->
 		<jar destfile="PDFrenderer.jar">
 			<fileset dir="${build}" />
-			<fileset dir="stdclasses" excludes="unpublic/jbig2.jar" />
 		</jar>
 		<!-- build maven sources jar -->
 		<jar destfile="PDFrenderer-sources.jar">
