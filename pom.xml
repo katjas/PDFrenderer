@@ -9,7 +9,10 @@
 	<name>pdf-renderer</name>
 	<version>1.1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
-
+	<url>https://github.com/Z-z-z-z/PDFrenderer/</url>
+	<issueManagement>
+		<url>https://github.com/Z-z-z-z/PDFrenderer/issues/</url>
+	</issueManagement>
 	<build>
 		<plugins>
 			<plugin>
@@ -49,4 +52,5 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+	<description>Java library for rendering PDF documents</description>
 </project>

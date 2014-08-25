@@ -43,7 +43,7 @@ public class CMYKColorSpace extends ColorSpace {
 	public CMYKColorSpace() {
 		super(ColorSpace.TYPE_CMYK, 4);
 		try {
-			icc = ICC_Profile.getInstance(getClass().getResourceAsStream("/ch/randelshofer/media/jpeg/Generic_CMYK_Profile.icc"));
+			icc = ICC_Profile.getInstance(getClass().getResourceAsStream("/com/sun/pdfview/colorspace/Generic_CMYK_Profile.icc"));
 			icc_cs = new ICC_ColorSpace(icc);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
