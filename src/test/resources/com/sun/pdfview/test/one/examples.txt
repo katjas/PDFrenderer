@@ -1,0 +1,68 @@
+http://www.tcpdf.org/examples.php
+
+1.first example with default Header and Footer
+2.without Header and Footer
+3.custom Header and Footer
+4.text Stretching with Cell()
+5.Multicell()
+6.WriteHTML()
+7.independent columns with WriteHTMLCell()
+8.external UTF-8 Unicode text file
+9.Image()
+10.text on multiple columns
+11.table with primitive methods
+12.graphic methods
+13.graphic transformations
+14.forms and javascript
+15.index with Bookmarks()
+16.document encryption
+17.independent columns with MultiCell()
+18.Persian and Arabic language on RTL document
+19.alternative config file
+20.complex alignment with Multicell()
+21.writeHTML() text flow
+22.CMYK colors
+23.page groups
+24.object visibility with setVisibility() and layers with startLayer()
+25.object transparency with SetAlpha()
+26.text clipping
+27.1D barcodes
+28.multiple page formats
+29.Set PDF viewer display preferences with setViewerPreferences()
+30.colour gradients
+31.pie chart graphic
+32.EPS/AI vectorial image with ImageEPS()
+33.mixed font types (TrueType Unicode, core, CID-0)
+34.clipping masks
+35.border styles with SetLineStyle()
+36.PDF text annotations
+37.spot colors
+38.unembedded CID-0 CJK font
+39.HTML text justification
+40.booklet mode (double-sided pages)
+41.file attachment
+42.image with transparency (alpha channel)
+43.disk caching
+44.move, copy and delete pages
+45.table of contents
+46.text hyphenation
+47.transactions and UNDO
+48.HTML tables with header and rowspan
+49.call TCPDF methods in HTML
+50.2D barcodes (QR-Code, Datamatrix ECC200 and PDF417)
+51.image as a page background
+52.digital signature certification
+53.javascript functions
+54.XHTML form
+55.core fonts dump
+56.crop marks and registration marks
+57.vertical alignment and metrics on Cell()
+58.SVG vectorial image with ImageSVG()
+59.table of contents with HTML templates
+60.advanced page settings
+61.XHTML + CSS
+62.XObject templates
+63.text stretching and spacing (tracking/kerning)
+64.no-write page regions
+65.PDF/A-1b (ISO 19005-1:2005) document
+
