@@ -7,11 +7,30 @@ The principal objective of the fork is to improve the original PDF renderer. The
 
 It uses an [improved version of JPedal's JBig2 decoder API](https://github.com/Borisvl/JBIG2-Image-Decoder).
 
-To do:
+Maven Repository for pdf-renderer
 ------
-* some colours are displayed incorrect, there seem to be open issues regarding colour space handling
-* some fonts can't be rendered and are replaced with built in fonts 
-* embedded Type0 font with a CIDType0 font is not supported correctly. Currently there is a hack in the code to fall back to the built in fonts in this case.
+Maven Repository for pdf-renderer project created.
+
+Usage:
+
+	<dependencies>
+    ...
+		<dependency>
+			<groupId>org.pdfrenderer</groupId>
+			<artifactId>pdf-renderer</artifactId>
+			<version>1.1.0-SNAPSHOT</version>
+		</dependency>
+	...	
+    </dependencies>
+    ...
+	<repositories>
+		<repository>
+			<id>ossrh</id>
+			<name>ossrh</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</repository>
+	</repositories>
+
 
 Done:
 -----
