@@ -20,11 +20,14 @@
 package com.sun.pdfview.decode;
 
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
+
+import javax.swing.ImageIcon;
+
 import ch.randelshofer.media.jpeg.JPEGImageIO;
 
 import com.sun.pdfview.PDFObject;
@@ -85,12 +88,25 @@ public class DCTDecode {
 		buf.get(input);
 		BufferedImage bimg;
 		try {
-			bimg = JPEGImageIO.read(new ByteArrayInputStream(input), false);
-		} catch (IOException ex) {
+			try {
+				bimg = JPEGImageIO.read(new ByteArrayInputStream(input), false);				
+			} catch (IllegalArgumentException colorProfileMismatch) {
+				// we experienced this problem with an embedded jpeg
+				// that specified a icc color profile with 4 components 
+				// but the raster had only 3 bands (apparently YCC encoded)
+				Image img = Toolkit.getDefaultToolkit().createImage(input);
+				// wait until image is loaded using ImageIcon for convenience
+				ImageIcon imageIcon = new ImageIcon(img);
+				// copy to buffered image
+				bimg = new BufferedImage(imageIcon.getIconWidth(), imageIcon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+				bimg.getGraphics().drawImage(img, 0, 0 , null);
+			}			
+		} catch (Exception ex) {
 			PDFParseException ex2 = new PDFParseException("DCTDecode failed");
 			ex2.initCause(ex);
 			throw ex2;
 		}
+
 		return bimg;
 	}
 }
