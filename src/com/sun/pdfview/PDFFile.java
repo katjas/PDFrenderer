@@ -949,13 +949,13 @@ public class PDFFile {
         // we've already read the 4 0 obj bit.  Next thing up is the object.
         // object descriptions end with the keyword endobj
         long debugpos = this.buf.position();
-	PDFObject obj= readObject(objNum, objGen, decrypter);
+        PDFObject obj = readObject(objNum, objGen, decrypter);
         // see if it's a dictionary.  If so, this could be a stream.
-	PDFObject endkey= readObject(objNum, objGen, decrypter);
-        if (endkey.getType() != PDFObject.KEYWORD) {
-            throw new PDFParseException("Expected 'stream' or 'endobj'");
+        PDFObject endkey = readObject(objNum, objGen, decrypter);
+        if (endkey.getType() != PDFObject.KEYWORD && endkey.getType() != PDFObject.STREAM) {
+            System.out.println("WARNING: Expected 'stream' or 'endobj' but was " + endkey.getType() + " " + String.valueOf(endkey.getStringValue()));
         }
-        if (obj.getType() == PDFObject.DICTIONARY && endkey.getStringValue().equals("stream")) {
+        if (obj.getType() == PDFObject.DICTIONARY && endkey.getStringValue() != null && endkey.getStringValue().equals("stream")) {
             // skip until we see \n
             readLine();
             ByteBuffer data = readStream(obj);
@@ -963,13 +963,12 @@ public class PDFFile {
                 data = ByteBuffer.allocate(0);
             }
             obj.setStream(data);
-	    endkey= readObject(objNum, objGen, decrypter);
+            endkey = readObject(objNum, objGen, decrypter);
         }
         // at this point, obj is the object, keyword should be "endobj"
         String endcheck = endkey.getStringValue();
         if (endcheck == null || !endcheck.equals("endobj")) {
             System.out.println("WARNING: object at " + debugpos + " didn't end with 'endobj'");
-        //throw new PDFParseException("Object musst end with 'endobj'");
         }
         obj.setObjectId(objNum, objGen);
         return obj;
