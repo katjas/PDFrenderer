@@ -109,8 +109,8 @@ public class HeadTable extends TrueTypeTable {
      */
     @Override
 	public void setData(ByteBuffer data) {
-        if (data.remaining() != 54) {
-            throw new IllegalArgumentException("Bad Head table size");
+        if (data.remaining() < 54) {
+            throw new IllegalArgumentException("Bad Head table size " + data.remaining());
         }
         setVersion(data.getInt());
         setFontRevision(data.getInt());
