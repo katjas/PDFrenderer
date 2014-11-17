@@ -302,16 +302,25 @@ public class PDFPage {
             at = new AffineTransform(0, -1, -1, 0, width, height);
             break;
         }
+        double clipW;
+        double clipH;
         if (clip == null) {
             clip = getBBox();
+            clipW = clip.getWidth();
+            clipH = clip.getHeight();
         } else if (getRotation() == 90 || getRotation() == 270) {
             int tmp = width;
             width = height;
             height = tmp;
+            clipW = clip.getHeight();
+            clipH = clip.getWidth();
+        } else {
+            clipW = clip.getWidth();
+            clipH = clip.getHeight();
         }
         // now scale the image to be the size of the clip
-        double scaleX = width / clip.getWidth();
-        double scaleY = height / clip.getHeight();
+        double scaleX = width / clipW;
+        double scaleY = height / clipH;
         at.scale(scaleX, scaleY);
         // create a transform that moves the top left corner of the clip region
         // (minX, minY) to (0,0) in the image
