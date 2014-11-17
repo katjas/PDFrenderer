@@ -6,18 +6,17 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 package com.sun.pdfview;
-
 import static java.awt.geom.Path2D.WIND_EVEN_ODD;
 
 import java.awt.geom.AffineTransform;
@@ -25,35 +24,53 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 
 import com.sun.pdfview.colorspace.PDFColorSpace;
 import com.sun.pdfview.colorspace.PatternSpace;
+import com.sun.pdfview.decode.PDFDecoder;
 import com.sun.pdfview.font.PDFFont;
 import com.sun.pdfview.pattern.PDFShader;
 
 /**
- * PDFParser is the class that parses a PDF content stream and
- * produces PDFCmds for a PDFPage.  You should never ever see it run:
- * it gets created by a PDFPage only if needed, and may even run in
- * its own thread.
- *
- * @author Mike Wessler
- */
+* PDFParser is the class that parses a PDF content stream and
+* produces PDFCmds for a PDFPage. You should never ever see it run:
+* it gets created by a PDFPage only if needed, and may even run in
+* its own thread.
+*
+* @author Mike Wessler
+*/
 public class PDFParser extends BaseWatchable {
     /** emit a file of DCT stream data. */
-    public final static String  DEBUG_DCTDECODE_DATA = "debugdctdecode";
-
+    public final static String DEBUG_DCTDECODE_DATA = "debugdctdecode";
+    public static final boolean DISABLE_TEXT = true;
+    public static final boolean DISABLE_IMAGES = false;
+    public static final boolean DISABLE_PATH_STROKE = false;
+    public static final boolean DISABLE_PATH_FILL = false;
+    public static final boolean DISABLE_PATH_STROKE_FILL = false;
+    public static final boolean DISABLE_CLIP = true;
+    public static final boolean DISABLE_FORMS = true;
+    public static final boolean DISABLE_SHADER = true;
+    public static final boolean SHOW_TEXT_REGIONS = false;
+    public static final boolean SHOW_TEXT_ANCHOR = true;
+    public static final boolean DEBUG_TEXT = false;
+    public static final boolean DEBUG_IMAGES = false;
+    public static final boolean DEBUG_OPERATORS = true;
+    public static final int DEBUG_STOP_AT_INDEX = 0;
+    public static final boolean DISABLE_THUMBNAILS = true;
+    public static final long DRAW_DELAY = 0;
+    private int mDebugCommandIndex;
     // ---- parsing variables
-
-    private Stack<Object> stack;          // stack of Object
-    private Stack<ParserState> parserStates;    // stack of RenderState
+    private Stack<Object> stack; // stack of Object
+    private Stack<ParserState> parserStates; // stack of RenderState
     // the current render state
     private ParserState state;
     private GeneralPath path;
@@ -61,19 +78,26 @@ public class PDFParser extends BaseWatchable {
     private int loc;
     private boolean resend = false;
     private Tok tok;
-    private boolean catchexceptions = true;   // Indicates state of BX...EX
-    /** a weak reference to the page we render into.  For the page
-     * to remain available, some other code must retain a strong reference to it.
-     */
+    private boolean catchexceptions = true; // Indicates state of BX...EX
+    /**
+    * a weak reference to the page we render into. For the page
+    * to remain available, some other code must retain a strong reference to
+    * it.
+    */
     private final WeakReference<PDFPage> pageRef;
-    /** the actual command, for use within a singe iteration.  Note that
-     * this must be released at the end of each iteration to assure the
-     * page can be collected if not in use
-     */
+    /**
+    * the actual command, for use within a singe iteration. Note that
+    * this must be released at the end of each iteration to assure the
+    * page can be collected if not in use
+    */
     private PDFPage cmds;
     // ---- result variables
     byte[] stream;
-    HashMap<String,PDFObject> resources;
+    HashMap<String, PDFObject> resources;
+
+    private static class DebugStopException extends Exception {
+    }
+
     public static int debuglevel = 4000;
 
     public static void debug(String msg, int level) {
@@ -99,33 +123,37 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * Don't call this constructor directly.  Instead, use
-     * PDFFile.getPage(int pagenum) to get a PDFPage.  There should
-     * never be any reason for a user to create, access, or hold
-     * on to a PDFParser.
-     */
-    public PDFParser(PDFPage cmds, byte[] stream, 
-            HashMap<String,PDFObject> resources) {
+    * Don't call this constructor directly. Instead, use
+    * PDFFile.getPage(int pagenum) to get a PDFPage. There should
+    * never be any reason for a user to create, access, or hold
+    * on to a PDFParser.
+    */
+    public PDFParser(PDFPage cmds, byte[] stream, HashMap<String, PDFObject> resources) {
         super();
-
         this.pageRef = new WeakReference<PDFPage>(cmds);
         this.resources = resources;
         if (resources == null) {
-            this.resources = new HashMap<String,PDFObject>();
+            this.resources = new HashMap<String, PDFObject>();
         }
-
         this.stream = stream;
+        try {
+            FileOutputStream fos = new FileOutputStream(new File("output.txt"));
+            fos.write(stream);
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-
-    /////////////////////////////////////////////////////////////////
-    //  B E G I N   R E A D E R   S E C T I O N
-    /////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////
+    // B E G I N R E A D E R S E C T I O N
+    // ///////////////////////////////////////////////////////////////
     /**
-     * a token from a PDF Stream
-     */
+    * a token from a PDF Stream
+    */
     static class Tok {
-
         /** begin bracket &lt; */
         public static final int BRKB = 11;
         /** end bracket &gt; */
@@ -185,18 +213,18 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * put the current token back so that it is returned again by
-     * nextToken().
-     */
+    * put the current token back so that it is returned again by
+    * nextToken().
+    */
     private void throwback() {
         this.resend = true;
     }
 
     /**
-     * get the next token.
-     * TODO: this creates a new token each time.  Is this strictly
-     * necessary?
-     */
+    * get the next token.
+    * TODO: this creates a new token each time. Is this strictly
+    * necessary?
+    */
     private Tok nextToken() {
         if (this.resend) {
             this.resend = false;
@@ -221,14 +249,13 @@ public class PDFParser extends BaseWatchable {
                 c = this.stream[this.loc++];
             }
             if (this.loc < this.stream.length) {
-                c = this.stream[this.loc++];      // eat the newline
+                c = this.stream[this.loc++]; // eat the newline
                 if (c == '\r') {
-                    c = this.stream[this.loc++];  // eat a following return
+                    c = this.stream[this.loc++]; // eat a following return
                 }
             }
             debug("Read comment: " + comment.toString(), -1);
         }
-
         if (c == '[') {
             this.tok.type = Tok.ARYB;
         } else if (c == ']') {
@@ -264,26 +291,27 @@ public class PDFParser extends BaseWatchable {
             System.out.println("Encountered character: " + c + " (" + (char) c + ")");
             this.tok.type = Tok.UNK;
         }
-        if (-1 > debuglevel) debug("Read token: " + this.tok, -1);
+        if (-1 > debuglevel) {
+            debug("Read token: " + this.tok, -1);
+        }
         return this.tok;
     }
 
     /**
-     * read a name (sequence of non-PDF-delimiting characters) from the
-     * stream.
-     */
+    * read a name (sequence of non-PDF-delimiting characters) from the
+    * stream.
+    */
     private String readName() {
         int start = this.loc;
-        while (this.loc < this.stream.length && 
-                PDFFile.isRegularCharacter(this.stream[this.loc])) {
+        while (this.loc < this.stream.length && PDFFile.isRegularCharacter(this.stream[this.loc])) {
             this.loc++;
         }
         return new String(this.stream, start, this.loc - start);
     }
 
     /**
-     * read a floating point number from the stream
-     */
+    * read a floating point number from the stream
+    */
     private double readNum() {
         int c = this.stream[this.loc++];
         boolean neg = c == '-';
@@ -319,17 +347,20 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * <p>read a String from the stream.  Strings begin with a '('
-     * character, which has already been read, and end with a balanced ')'
-     * character.  A '\' character starts an escape sequence of up
-     * to three octal digits.</p>
-     *
-     * <p>Parenthesis must be enclosed by a balanced set of parenthesis,
-     * so a string may enclose balanced parenthesis.</p>
-     *
-     * @return the string with escape sequences replaced with their
-     * values
-     */
+    * <p>
+    * read a String from the stream. Strings begin with a '(' character, which has already been
+    * read, and end with a balanced ')' character. A '\' character starts an escape sequence of up
+    * to three octal digits.
+    * </p>
+    *
+    * <p>
+    * Parenthesis must be enclosed by a balanced set of parenthesis, so a string may enclose
+    * balanced parenthesis.
+    * </p>
+    *
+    * @return the string with escape sequences replaced with their
+    * values
+    */
     private String readString() {
         int parenLevel = 0;
         StringBuffer sb = new StringBuffer();
@@ -372,28 +403,25 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * read a byte array from the stream.  Byte arrays begin with a '<'
-     * character, which has already been read, and end with a '>'
-     * character.  Each byte in the array is made up of two hex characters,
-     * the first being the high-order bit.
-     *
-     * We translate the byte arrays into char arrays by combining two bytes
-     * into a character, and then translate the character array into a string.
-     * [JK FIXME this is probably a really bad idea!]
-     *
-     * @return the byte array
-     */
+    * read a byte array from the stream. Byte arrays begin with a '<'
+    * character, which has already been read, and end with a '>'
+    * character. Each byte in the array is made up of two hex characters,
+    * the first being the high-order bit.
+    *
+    * We translate the byte arrays into char arrays by combining two bytes
+    * into a character, and then translate the character array into a string.
+    * [JK FIXME this is probably a really bad idea!]
+    *
+    * @return the byte array
+    */
     private String readByteArray() {
         StringBuffer buf = new StringBuffer();
-
         int count = 0;
         char w = (char) 0;
-
         // read individual bytes and format into a character array
         while ((this.loc < this.stream.length) && (this.stream[this.loc] != '>')) {
             char c = (char) this.stream[this.loc];
             byte b = (byte) 0;
-
             if (c >= '0' && c <= '9') {
                 b = (byte) (c - '0');
             } else if (c >= 'a' && c <= 'f') {
@@ -404,33 +432,28 @@ public class PDFParser extends BaseWatchable {
                 this.loc++;
                 continue;
             }
-
             // calculate where in the current byte this character goes
             int offset = 1 - (count % 2);
             w |= (0xf & b) << (offset * 4);
-
             // increment to the next char if we've written four bytes
             if (offset == 0) {
                 buf.append(w);
                 w = (char) 0;
             }
-
             count++;
             this.loc++;
         }
-
         // ignore trailing '>'
         this.loc++;
-
         return buf.toString();
     }
 
-    /////////////////////////////////////////////////////////////////
-    //  B E G I N   P A R S E R   S E C T I O N
-    /////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////
+    // B E G I N P A R S E R S E C T I O N
+    // ///////////////////////////////////////////////////////////////
     /**
-     * Called to prepare for some iterations
-     */
+    * Called to prepare for some iterations
+    */
     @Override
     public void setup() {
         this.stack = new Stack<Object>();
@@ -439,58 +462,54 @@ public class PDFParser extends BaseWatchable {
         this.path = new GeneralPath();
         this.loc = 0;
         this.clip = 0;
-
-        //initialize the ParserState
-        this.state.fillCS =
-                PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_GRAY);
-        this.state.strokeCS =
-                PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_GRAY);
+        // initialize the ParserState
+        this.state.fillCS = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_GRAY);
+        this.state.strokeCS = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_GRAY);
         this.state.textFormat = new PDFTextFormat();
-
-    // HexDump.printData(stream);
-    // System.out.println(dumpStream());
+        // HexDump.printData(stream);
+        // System.out.println(dumpStream());
     }
 
     /**
-     * parse the stream.  commands are added to the PDFPage initialized
-     * in the constructor as they are encountered.
-     * <p>
-     * Page numbers in comments refer to the Adobe PDF specification.<br>
-     * commands are listed in PDF spec 32000-1:2008 in Table A.1
-     *
-     * @return <ul><li>Watchable.RUNNING when there are commands to be processed
-     *             <li>Watchable.COMPLETED when the page is done and all
-     *                 the commands have been processed
-     *             <li>Watchable.STOPPED if the page we are rendering into is
-     *                 no longer available
-     *         </ul> 
-     */
+    * parse the stream. commands are added to the PDFPage initialized
+    * in the constructor as they are encountered.
+    * <p>
+    * Page numbers in comments refer to the Adobe PDF specification.<br>
+    * commands are listed in PDF spec 32000-1:2008 in Table A.1
+    *
+    * @return <ul>
+    * <li>Watchable.RUNNING when there are commands to be processed <li>Watchable.COMPLETED
+    * when the page is done and all the commands have been processed <li>Watchable.STOPPED
+    * if the page we are rendering into is no longer available
+    * </ul>
+    */
     @Override
-	public int iterate() throws Exception {
+    public int iterate() throws Exception {
         // make sure the page is still available, and create the reference
         // to it for use within this iteration
         this.cmds = this.pageRef.get();
         if (this.cmds == null) {
-            System.out.println("Page gone.  Stopping");
+            System.out.println("Page gone. Stopping");
             return Watchable.STOPPED;
         }
-
-        Object obj = parseObject();
-
+        Object obj;
+        try {
+            obj = parseObject();
+        } catch (DebugStopException e) {
+            return Watchable.STOPPED;
+        }
         // if there's nothing left to parse, we're done
         if (obj == null) {
             return Watchable.COMPLETED;
         }
-
         if (obj instanceof Tok) {
-            // it's a command.  figure out what to do.
+            // it's a command. figure out what to do.
             // (if not, the token will be "pushed" onto the stack)
             String cmd = ((Tok) obj).name;
             debug("Command: " + cmd + " (stack size is " + this.stack.size() + ")", 0);
             if (cmd.equals("q")) {
                 // push the parser state
                 this.parserStates.push((ParserState) this.state.clone());
-
                 // push graphics state
                 this.cmds.addPush();
             } else if (cmd.equals("Q")) {
@@ -516,13 +535,15 @@ public class PDFParser extends BaseWatchable {
                 // set dash style and phase
                 float phase = popFloat();
                 float[] dashary = popFloatArray();
-                this.cmds.addDash(dashary, phase);
+                if (!PDFParser.DISABLE_PATH_STROKE) {
+                    this.cmds.addDash(dashary, phase);
+                }
             } else if (cmd.equals("ri")) {
-            	popString();
+                popString();
                 // TODO: do something with rendering intent (page 197)
             } else if (cmd.equals("i")) {
                 popFloat();
-            // TODO: do something with flatness tolerance
+                // TODO: do something with flatness tolerance
             } else if (cmd.equals("gs")) {
                 // set graphics state to values in a named dictionary
                 setGSState(popString());
@@ -544,8 +565,7 @@ public class PDFParser extends BaseWatchable {
                 // path curve; first control point= start
                 float a[] = popFloat(4);
                 Point2D cp = this.path.getCurrentPoint();
-                this.path.curveTo((float) cp.getX(), (float) cp.getY(),
-                        a[0], a[1], a[2], a[3]);
+                this.path.curveTo((float) cp.getX(), (float) cp.getY(), a[0], a[1], a[2], a[3]);
             } else if (cmd.equals("y")) {
                 // path curve; last control point= end
                 float a[] = popFloat(4);
@@ -563,54 +583,72 @@ public class PDFParser extends BaseWatchable {
                 this.path.closePath();
             } else if (cmd.equals("S")) {
                 // stroke the path
-                this.cmds.addPath(this.path, PDFShapeCmd.STROKE | this.clip);
+                if (!PDFParser.DISABLE_PATH_STROKE || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                    this.cmds.addPath(this.path, PDFShapeCmd.STROKE | this.clip);
+                }
                 this.clip = 0;
                 this.path = new GeneralPath();
             } else if (cmd.equals("s")) {
                 // close and stroke the path
                 this.path.closePath();
-                this.cmds.addPath(this.path, PDFShapeCmd.STROKE | this.clip);
+                if (!PDFParser.DISABLE_PATH_STROKE || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                    this.cmds.addPath(this.path, PDFShapeCmd.STROKE | this.clip);
+                }
                 this.clip = 0;
                 this.path = new GeneralPath();
             } else if (cmd.equals("f") || cmd.equals("F")) {
                 // fill the path (close/not close identical)
-                this.cmds.addPath(this.path, PDFShapeCmd.FILL | this.clip);
+                if (!PDFParser.DISABLE_PATH_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                    this.cmds.addPath(this.path, PDFShapeCmd.FILL | this.clip);
+                }
                 this.clip = 0;
                 this.path = new GeneralPath();
             } else if (cmd.equals("f*")) {
                 // fill the path using even/odd rule
                 this.path.setWindingRule(WIND_EVEN_ODD);
-                this.cmds.addPath(this.path, PDFShapeCmd.FILL | this.clip);
+                if (!PDFParser.DISABLE_PATH_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                    this.cmds.addPath(this.path, PDFShapeCmd.FILL | this.clip);
+                }
                 this.clip = 0;
                 this.path = new GeneralPath();
             } else if (cmd.equals("B")) {
                 // fill and stroke the path
-                this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip);
+                if (!PDFParser.DISABLE_PATH_STROKE_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                    this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip);
+                }
                 this.clip = 0;
                 this.path = new GeneralPath();
             } else if (cmd.equals("B*")) {
                 // fill path using even/odd rule and stroke it
                 this.path.setWindingRule(WIND_EVEN_ODD);
-                this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip);
+                if (!PDFParser.DISABLE_PATH_STROKE_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                    this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip);
+                }
                 this.clip = 0;
                 this.path = new GeneralPath();
             } else if (cmd.equals("b")) {
                 // close the path, then fill and stroke it
                 this.path.closePath();
-                this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip);
+                if (!PDFParser.DISABLE_PATH_STROKE_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                    this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip);
+                }
                 this.clip = 0;
                 this.path = new GeneralPath();
             } else if (cmd.equals("b*")) {
                 // close path, fill using even/odd rule, then stroke it
                 this.path.closePath();
                 this.path.setWindingRule(WIND_EVEN_ODD);
-                this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip);
+                if (!PDFParser.DISABLE_PATH_STROKE_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                    this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip);
+                }
                 this.clip = 0;
                 this.path = new GeneralPath();
             } else if (cmd.equals("n")) {
                 // clip with the path and discard it
-                if (this.clip != 0) {
-                    this.cmds.addPath(this.path, this.clip);
+                if (!PDFParser.DISABLE_CLIP) {
+                    if (this.clip != 0) {
+                        this.cmds.addPath(this.path, this.clip);
+                    }
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
@@ -629,7 +667,9 @@ public class PDFParser extends BaseWatchable {
                 // set up the pen to do a gradient fill according
                 // to the dictionary
                 PDFObject shobj = findResource(gdictname, "Shading");
-                doShader(shobj);
+                if (!PDFParser.DISABLE_SHADER) {
+                    doShader(shobj);
+                }
             } else if (cmd.equals("CS")) {
                 // set the stroke color space
                 this.state.strokeCS = parseColorSpace(new PDFObject(this.stack.pop()));
@@ -660,42 +700,40 @@ public class PDFParser extends BaseWatchable {
                 }
             } else if (cmd.equals("G")) {
                 // set the stroke color to a Gray value
-                this.state.strokeCS =
-                        PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_GRAY);
+                this.state.strokeCS = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_GRAY);
                 this.cmds.addStrokePaint(this.state.strokeCS.getPaint(popFloat(1)));
             } else if (cmd.equals("g")) {
                 // set the fill color to a Gray value
-                this.state.fillCS =
-                        PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_GRAY);
+                this.state.fillCS = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_GRAY);
                 this.cmds.addFillPaint(this.state.fillCS.getPaint(popFloat(1)));
             } else if (cmd.equals("RG")) {
                 // set the stroke color to an RGB value
-                this.state.strokeCS =
-                        PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_RGB);
+                this.state.strokeCS = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_RGB);
                 this.cmds.addStrokePaint(this.state.strokeCS.getPaint(popFloat(3)));
             } else if (cmd.equals("rg")) {
                 // set the fill color to an RGB value
-                this.state.fillCS =
-                        PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_RGB);
+                this.state.fillCS = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_RGB);
                 this.cmds.addFillPaint(this.state.fillCS.getPaint(popFloat(3)));
             } else if (cmd.equals("K")) {
                 // set the stroke color to a CMYK value
-                this.state.strokeCS =
-                        PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_CMYK);
+                this.state.strokeCS = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_CMYK);
                 this.cmds.addStrokePaint(this.state.strokeCS.getPaint(popFloat(4)));
             } else if (cmd.equals("k")) {
                 // set the fill color to a CMYK value
-                this.state.fillCS =
-                        PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_CMYK);
+                this.state.fillCS = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_CMYK);
                 this.cmds.addFillPaint(this.state.fillCS.getPaint(popFloat(4)));
             } else if (cmd.equals("Do")) {
                 // make a do call on the referenced object
-                PDFObject xobj = findResource(popString(), "XObject");
+                String name = popString();
+                if (PDFParser.DEBUG_IMAGES) {
+                    System.out.println("XObject reference to " + name);
+                }
+                PDFObject xobj = findResource(name, "XObject");
                 doXObject(xobj);
             } else if (cmd.equals("BT")) {
                 processBTCmd();
             } else if (cmd.equals("ET")) {
-                // end of text.  noop
+                // end of text. noop
                 this.state.textFormat.end();
             } else if (cmd.equals("Tc")) {
                 // set character spacing
@@ -713,7 +751,7 @@ public class PDFParser extends BaseWatchable {
                 // set text font
                 float sz = popFloat();
                 String fontref = popString();
-   				this.state.textFormat.setFont(getFontFrom(fontref), sz);
+                this.state.textFormat.setFont(getFontFrom(fontref), sz);
             } else if (cmd.equals("Tr")) {
                 // set text rendering mode
                 this.state.textFormat.setMode(popInt());
@@ -726,7 +764,7 @@ public class PDFParser extends BaseWatchable {
                 float x = popFloat();
                 this.state.textFormat.carriageReturn(x, y);
             } else if (cmd.equals("TD")) {
-                // set leading and matrix:  -y TL x y Td
+                // set leading and matrix: -y TL x y Td
                 float y = popFloat();
                 float x = popFloat();
                 this.state.textFormat.setLeading(-y);
@@ -741,7 +779,7 @@ public class PDFParser extends BaseWatchable {
                 // show text
                 this.state.textFormat.doText(this.cmds, popString());
             } else if (cmd.equals("\'")) {
-                // next line and show text:  T* string Tj
+                // next line and show text: T* string Tj
                 this.state.textFormat.carriageReturn();
                 this.state.textFormat.doText(this.cmds, popString());
             } else if (cmd.equals("\"")) {
@@ -760,9 +798,9 @@ public class PDFParser extends BaseWatchable {
                 // parse inline image
                 parseInlineImage();
             } else if (cmd.equals("BX")) {
-                this.catchexceptions = true;     // ignore errors
+                this.catchexceptions = true; // ignore errors
             } else if (cmd.equals("EX")) {
-                this.catchexceptions = false;    // stop ignoring errors
+                this.catchexceptions = false; // stop ignoring errors
             } else if (cmd.equals("MP")) {
                 // mark point (role= mark role name)
                 popString();
@@ -797,15 +835,15 @@ public class PDFParser extends BaseWatchable {
                 // push graphics state
                 this.cmds.addPush();
             } else if (cmd.equals("qBT")) {// 'q' & 'BT' mushed together!
-                // push the parser state
+            // push the parser state
                 this.parserStates.push((ParserState) this.state.clone());
                 // push graphics state
                 this.cmds.addPush();
                 processBTCmd();
             } else if (cmd.equals("q1")) {
-            	debug("**** WARNING: Not handled command: " + cmd + " **************************", 10);
-            }else if (cmd.equals("q0")) {
-            	debug("**** WARNING: Not handled command: " + cmd + " **************************", 10);
+                debug("**** WARNING: Not handled command: " + cmd + " **************************", 10);
+            } else if (cmd.equals("q0")) {
+                debug("**** WARNING: Not handled command: " + cmd + " **************************", 10);
             } else {
                 if (this.catchexceptions) {
                     debug("**** WARNING: Unknown command: " + cmd + " **************************", 10);
@@ -820,49 +858,79 @@ public class PDFParser extends BaseWatchable {
         } else {
             this.stack.push(obj);
         }
-
         // release or reference to the page object, so that it can be
         // gc'd if it is no longer in use
         this.cmds = null;
-
         return Watchable.RUNNING;
     }
 
+    private void onNextObject(Tok obj) throws DebugStopException {
+        String progress;
+        if (true) {
+            double percent = (100d * this.loc) / this.stream.length;
+            NumberFormat nf = NumberFormat.getInstance();
+            nf.setMinimumFractionDigits(1);
+            nf.setMaximumFractionDigits(1);
+            progress = nf.format(percent) + "%";
+        } else {
+            progress = this.loc + " of " + this.stream.length;
+        }
+        String operators = "";
+        for (Object operator : this.stack) {
+            operators += operator + " ";
+        }
+        if (DEBUG_OPERATORS) {
+            System.out.println("parser{" + hashCode() + "} " + progress + ": #" + mDebugCommandIndex + " \t" + operators + obj.name);
+        }
+        mDebugCommandIndex++;
+        if (PDFParser.DEBUG_STOP_AT_INDEX > 0 && mDebugCommandIndex > PDFParser.DEBUG_STOP_AT_INDEX) {
+            System.err.println("Debugging: stopped at instruction #" + mDebugCommandIndex);
+            throw new DebugStopException();
+        }
+        if (PDFParser.DRAW_DELAY > 0) {
+            try {
+                Thread.sleep(PDFParser.DRAW_DELAY);
+            } catch (InterruptedException e) {
+            }
+        }
+    }
+
     /**
-     * abstracted command processing for Q command. Used directly and as
-     * part of processing of mushed QBT command.
-     */
+    * abstracted command processing for Q command. Used directly and as
+    * part of processing of mushed QBT command.
+    */
     private void processQCmd() {
         // pop graphics state ('Q')
         this.cmds.addPop();
         // pop the parser state
-        if(this.parserStates.isEmpty() == false)
+        if (this.parserStates.isEmpty() == false) {
             this.state = this.parserStates.pop();
+        }
     }
 
     /**
-     * abstracted command processing for BT command. Used directly and as
-     * part of processing of mushed QBT command.
-     */
+    * abstracted command processing for BT command. Used directly and as
+    * part of processing of mushed QBT command.
+    */
     private void processBTCmd() {
-        // begin text block:  reset everything.
+        // begin text block: reset everything.
         this.state.textFormat.reset();
     }
 
     /**
-     * Cleanup when iteration is done
-     */
+    * Cleanup when iteration is done
+    */
     @Override
     public void cleanup() {
         this.state.textFormat.flush();
         this.cmds.finish();
-
         this.stack = null;
         this.parserStates = null;
         this.state = null;
         this.path = null;
         this.cmds = null;
     }
+
     boolean errorwritten = false;
 
     public void dumpStreamToError() {
@@ -875,7 +943,8 @@ public class PDFParser extends BaseWatchable {
             FileOutputStream fos = new FileOutputStream(oops);
             fos.write(this.stream);
             fos.close();
-        } catch (IOException ioe) { /* Do nothing */ }
+        } catch (IOException ioe) { /* Do nothing */
+        }
         ;
     }
 
@@ -884,38 +953,39 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * take a byte array and write a temporary file with it's data.
-     * This is intended to capture data for analysis, like after decoders.
-     *
-     * @param ary
-     * @param name
-     */
-    public static void emitDataFile (byte [] ary, String name) {
+    * take a byte array and write a temporary file with it's data.
+    * This is intended to capture data for analysis, like after decoders.
+    *
+    * @param ary
+    * @param name
+    */
+    public static void emitDataFile(byte[] ary, String name) {
         FileOutputStream ostr;
-
         try {
-            File file = File.createTempFile ("DateFile", name);
-            ostr = new FileOutputStream (file);
-            System.out.println ("Write: " + file.getPath ());
-            ostr.write (ary);
-            ostr.close ();
+            File file = File.createTempFile("DateFile", name);
+            ostr = new FileOutputStream(file);
+            System.out.println("Write: " + file.getPath());
+            ostr.write(ary);
+            ostr.close();
         } catch (IOException ex) {
             // ignore
         }
     }
 
-    /////////////////////////////////////////////////////////////////
-    //  H E L P E R S
-    /////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////
+    // H E L P E R S
+    // ///////////////////////////////////////////////////////////////
     /**
-     * get a property from a named dictionary in the resources of this
-     * content stream.
-     * @param name the name of the property in the dictionary
-     * @param inDict the name of the dictionary in the resources
-     * @return the value of the property in the dictionary
-     */
-    private PDFObject findResource(String name, String inDict)
-            throws IOException {
+    * get a property from a named dictionary in the resources of this
+    * content stream.
+    *
+    * @param name
+    * the name of the property in the dictionary
+    * @param inDict
+    * the name of the dictionary in the resources
+    * @return the value of the property in the dictionary
+    */
+    private PDFObject findResource(String name, String inDict) throws IOException {
         if (inDict != null) {
             PDFObject in = this.resources.get(inDict);
             if (in == null || in.getType() != PDFObject.DICTIONARY) {
@@ -928,15 +998,17 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * Insert a PDF object into the command stream.  The object must
-     * either be an Image or a Form, which is a set of PDF commands
-     * in a stream.
-     * @param obj the object to insert, an Image or a Form.
-     */
+    * Insert a PDF object into the command stream. The object must
+    * either be an Image or a Form, which is a set of PDF commands
+    * in a stream.
+    *
+    * @param obj
+    * the object to insert, an Image or a Form.
+    */
     private void doXObject(PDFObject obj) throws IOException {
         String type = obj.getDictRef("Subtype").getStringValue();
         if (type == null) {
-            type = obj.getDictRef ("S").getStringValue ();
+            type = obj.getDictRef("S").getStringValue();
         }
         if (type.equals("Image")) {
             doImage(obj);
@@ -948,27 +1020,41 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * Parse image data into a Java BufferedImage and add the image
-     * command to the page.
-     * @param obj contains the image data, and a dictionary describing
-     * the width, height and color space of the image.
-     */
+    * Parse image data into a Java BufferedImage and add the image
+    * command to the page.
+    *
+    * @param obj
+    * contains the image data, and a dictionary describing
+    * the width, height and color space of the image.
+    */
     private void doImage(PDFObject obj) throws IOException {
-        this.cmds.addImage(PDFImage.createImage(obj, this.resources, false));
+        if (!PDFParser.DISABLE_IMAGES) {
+            if (PDFParser.DEBUG_IMAGES) {
+                final boolean jpegDecode = PDFDecoder.isLastFilter(obj, PDFDecoder.DCT_FILTERS);
+                if (jpegDecode) {
+                    System.out.println("Image is JPEG");
+                } else {
+                    System.out.println("Image not JPEG");
+                }
+            }
+            this.cmds.addImage(PDFImage.createImage(obj, this.resources, false));
+        }
     }
 
     /**
-     * Inject a stream of PDF commands onto the page.  Optimized to cache
-     * a parsed stream of commands, so that each Form object only needs
-     * to be parsed once.
-     * @param obj a stream containing the PDF commands, a transformation
-     * matrix, bounding box, and resources.
-     */
+    * Inject a stream of PDF commands onto the page. Optimized to cache
+    * a parsed stream of commands, so that each Form object only needs
+    * to be parsed once.
+    *
+    * @param obj
+    * a stream containing the PDF commands, a transformation
+    * matrix, bounding box, and resources.
+    */
     private void doForm(PDFObject obj) throws IOException {
         // check to see if we've already parsed this sucker
         PDFPage formCmds = (PDFPage) obj.getCache();
         if (formCmds == null) {
-            // rats.  parse it.
+            // rats. parse it.
             AffineTransform at;
             Rectangle2D bbox;
             PDFObject matrix = obj.getDictRef("Matrix");
@@ -982,55 +1068,47 @@ public class PDFParser extends BaseWatchable {
                 at = new AffineTransform(elts);
             }
             PDFObject bobj = obj.getDictRef("BBox");
-            bbox = new Rectangle2D.Float(bobj.getAt(0).getFloatValue(),
-                    bobj.getAt(1).getFloatValue(),
-                    bobj.getAt(2).getFloatValue(),
-                    bobj.getAt(3).getFloatValue());
+            bbox = new Rectangle2D.Float(bobj.getAt(0).getFloatValue(), bobj.getAt(1).getFloatValue(), bobj.getAt(2).getFloatValue(), bobj.getAt(3).getFloatValue());
             formCmds = new PDFPage(bbox, 0);
             formCmds.addXform(at);
-
-            HashMap<String,PDFObject> r = new HashMap<String,PDFObject>(this.resources);
+            HashMap<String, PDFObject> r = new HashMap<String, PDFObject>(this.resources);
             PDFObject rsrc = obj.getDictRef("Resources");
             if (rsrc != null) {
                 r.putAll(rsrc.getDictionary());
             }
-
             PDFParser form = new PDFParser(formCmds, obj.getStream(), r);
             form.go(true);
-
             obj.setCache(formCmds);
         }
-        this.cmds.addPush();
-        this.cmds.addCommands(formCmds);
-        this.cmds.addPop();
+        if (!PDFParser.DISABLE_FORMS) {
+            this.cmds.addPush();
+            this.cmds.addCommands(formCmds);
+            this.cmds.addPop();
+        }
     }
 
     /**
-     * Set the values into a PatternSpace
-     */
+    * Set the values into a PatternSpace
+    */
     private PDFPaint doPattern(PatternSpace patternSpace) throws IOException {
         float[] components = null;
-
         String patternName = popString();
         PDFObject pattern = findResource(patternName, "Pattern");
-
         if (pattern == null) {
             throw new PDFParseException("Unknown pattern : " + patternName);
         }
-
         if (this.stack.size() > 0) {
             components = popFloat(this.stack.size());
         }
-
         return patternSpace.getPaint(pattern, components, this.resources);
     }
 
     /**
-     * Parse the next object out of the PDF stream.  This could be a
-     * Double, a String, a HashMap (dictionary), Object[] array, or
-     * a Tok containing a PDF command.
-     */
-    private Object parseObject() throws PDFParseException {
+    * Parse the next object out of the PDF stream. This could be a
+    * Double, a String, a HashMap (dictionary), Object[] array, or
+    * a Tok containing a PDF command.
+    */
+    private Object parseObject() throws PDFParseException, DebugStopException {
         Tok t = nextToken();
         if (t.type == Tok.NUM) {
             return Double.valueOf(this.tok.value);
@@ -1039,7 +1117,7 @@ public class PDFParser extends BaseWatchable {
         } else if (t.type == Tok.NAME) {
             return this.tok.name;
         } else if (t.type == Tok.BRKB) {
-            HashMap<String,PDFObject> hm = new HashMap<String,PDFObject>();
+            HashMap<String, PDFObject> hm = new HashMap<String, PDFObject>();
             String name = null;
             Object obj;
             while ((obj = parseObject()) != null) {
@@ -1066,6 +1144,7 @@ public class PDFParser extends BaseWatchable {
             }
             return ary.toArray();
         } else if (t.type == Tok.CMD) {
+            onNextObject(t);
             return t;
         }
         debug("**** WARNING! parseObject unknown token! (t.type=" + t.type + ") *************************", 4);
@@ -1073,17 +1152,20 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * Parse an inline image.  An inline image starts with BI (already
-     * read, contains a dictionary until ID, and then image data until
-     * EI.
-     */
-    private void parseInlineImage() throws IOException {
+    * Parse an inline image. An inline image starts with BI (already
+    * read, contains a dictionary until ID, and then image data until
+    * EI.
+    */
+    private void parseInlineImage() throws IOException, DebugStopException {
         // build dictionary until ID, then read image until EI
-        HashMap<String,PDFObject> hm = new HashMap<String,PDFObject>();
+        HashMap<String, PDFObject> hm = new HashMap<String, PDFObject>();
         while (true) {
             Tok t = nextToken();
-            if (t.type == Tok.CMD && t.name.equals("ID")) {
-                break;
+            if (t.type == Tok.CMD) {
+                onNextObject(t);
+                if (t.name.equals("ID")) {
+                    break;
+                }
             }
             // it should be a name;
             String name = t.name;
@@ -1116,34 +1198,28 @@ public class PDFParser extends BaseWatchable {
         if (this.stream[this.loc] == '\n' || this.stream[this.loc] == ' ') {
             this.loc++;
         }
-
-        
         PDFObject imObj = hm.get("ImageMask");
-        if (imObj != null && imObj.getBooleanValue()) {    	
-        	// [PATCHED by michal.busta@gmail.com] - default value according to PDF spec. is [0, 1]
-        	// there is no need to swap array - PDF image should handle this values 
-            Double[] decode = {Double.valueOf(0), Double.valueOf(1)};
-            
+        if (imObj != null && imObj.getBooleanValue()) {
+            // [PATCHED by michal.busta@gmail.com] - default value according to PDF spec. is [0, 1]
+            // there is no need to swap array - PDF image should handle this values
+            Double[] decode = { Double.valueOf(0), Double.valueOf(1) };
             PDFObject decodeObj = hm.get("Decode");
             if (decodeObj != null) {
                 decode[0] = Double.valueOf(decodeObj.getAt(0).getDoubleValue());
                 decode[1] = Double.valueOf(decodeObj.getAt(1).getDoubleValue());
             }
-
             hm.put("Decode", new PDFObject(decode));
         }
-
         PDFObject obj = new PDFObject(null, PDFObject.DICTIONARY, hm);
         int dstart = this.loc;
-
         // now skip data until a whitespace followed by EI
-        while (!PDFFile.isWhiteSpace(this.stream[this.loc]) ||
-                this.stream[this.loc + 1] != 'E' ||
-                this.stream[this.loc + 2] != 'I') {
+        while (!PDFFile.isWhiteSpace(this.stream[this.loc]) || this.stream[this.loc + 1] != 'E' || this.stream[this.loc + 2] != 'I') {
             this.loc++;
         }
-
         // data runs from dstart to loc
+        if (PDFParser.DEBUG_IMAGES) {
+            System.out.println("InlineImage from " + dstart + " to " + this.loc);
+        }
         byte[] data = new byte[this.loc - dstart];
         System.arraycopy(this.stream, dstart, data, 0, this.loc - dstart);
         obj.setStream(ByteBuffer.wrap(data));
@@ -1152,48 +1228,47 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * build a shader from a dictionary.
-     */
+    * build a shader from a dictionary.
+    */
     private void doShader(PDFObject shaderObj) throws IOException {
         PDFShader shader = PDFShader.getShader(shaderObj, this.resources);
-
         this.cmds.addPush();
-
         Rectangle2D bbox = shader.getBBox();
         if (bbox != null) {
             this.cmds.addFillPaint(shader.getPaint());
             this.cmds.addPath(new GeneralPath(bbox), PDFShapeCmd.FILL);
-        }
-        else {
-        	//if no bounding box is set, use the default user space
+        } else {
+            // if no bounding box is set, use the default user space
             this.cmds.addFillPaint(shader.getPaint());
             this.cmds.addPath(new GeneralPath(this.cmds.getBBox()), PDFShapeCmd.FILL);
         }
-
         this.cmds.addPop();
     }
 
     /**
-     * get a PDFFont from the resources, given the resource name of the
-     * font.
-     *
-     * @param fontref the resource key for the font
-     */
+    * get a PDFFont from the resources, given the resource name of the
+    * font.
+    *
+    * @param fontref
+    * the resource key for the font
+    */
     private PDFFont getFontFrom(String fontref) throws IOException {
         PDFObject obj = findResource(fontref, "Font");
         return PDFFont.getFont(obj, this.resources);
     }
 
     /**
-     * add graphics state commands contained within a dictionary.
-     * @param name the resource name of the graphics state dictionary
-     */
+    * add graphics state commands contained within a dictionary.
+    *
+    * @param name
+    * the resource name of the graphics state dictionary
+    */
     private void setGSState(String name) throws IOException {
         // obj must be a string that is a key to the "ExtGState" dict
         PDFObject gsobj = findResource(name, "ExtGState");
         // get LW, LC, LJ, Font, SM, CA, ML, D, RI, FL, BM, ca
         // out of the reference, which is a dictionary
-		PDFObject d;
+        PDFObject d;
         if ((d = gsobj.getDictRef("LW")) != null) {
             this.cmds.addStrokeWidth(d.getFloatValue());
         }
@@ -1204,8 +1279,7 @@ public class PDFParser extends BaseWatchable {
             this.cmds.addLineJoin(d.getIntValue());
         }
         if ((d = gsobj.getDictRef("Font")) != null) {
-            this.state.textFormat.setFont(getFontFrom(d.getAt(0).getStringValue()),
-                    d.getAt(1).getFloatValue());
+            this.state.textFormat.setFont(getFontFrom(d.getAt(0).getStringValue()), d.getAt(1).getFloatValue());
         }
         if ((d = gsobj.getDictRef("ML")) != null) {
             this.cmds.addMiterLimit(d.getFloatValue());
@@ -1216,7 +1290,9 @@ public class PDFParser extends BaseWatchable {
             for (int i = 0; i < pdash.length; i++) {
                 dash[i] = pdash[i].getFloatValue();
             }
-            this.cmds.addDash(dash, d.getAt(1).getFloatValue());
+            if (!PDFParser.DISABLE_PATH_STROKE) {
+                this.cmds.addDash(dash, d.getAt(1).getFloatValue());
+            }
         }
         if ((d = gsobj.getDictRef("CA")) != null) {
             this.cmds.addStrokeAlpha(d.getFloatValue());
@@ -1224,50 +1300,54 @@ public class PDFParser extends BaseWatchable {
         if ((d = gsobj.getDictRef("ca")) != null) {
             this.cmds.addFillAlpha(d.getFloatValue());
         }
-    // others: BM=blend mode
+        // others: BM=blend mode
     }
 
     /**
-     * generate a PDFColorSpace description based on a PDFObject.  The
-     * object could be a standard name, or the name of a resource in
-     * the ColorSpace dictionary, or a color space name with a defining
-     * dictionary or stream.
-     */
+    * generate a PDFColorSpace description based on a PDFObject. The
+    * object could be a standard name, or the name of a resource in
+    * the ColorSpace dictionary, or a color space name with a defining
+    * dictionary or stream.
+    */
     private PDFColorSpace parseColorSpace(PDFObject csobj) throws IOException {
         if (csobj == null) {
             return this.state.fillCS;
         }
-
         return PDFColorSpace.getColorSpace(csobj, this.resources);
     }
 
     /**
-     * pop a single float value off the stack.
-     * @return the float value of the top of the stack
-     * @throws PDFParseException if the value on the top of the stack
-     * isn't a number
-     */
+    * pop a single float value off the stack.
+    *
+    * @return the float value of the top of the stack
+    * @throws PDFParseException
+    * if the value on the top of the stack
+    * isn't a number
+    */
     private float popFloat() throws PDFParseException {
-    	if(this.stack.isEmpty() == false) {
+        if (this.stack.isEmpty() == false) {
             Object obj = this.stack.pop();
             if (obj instanceof Double) {
                 return ((Double) obj).floatValue();
             } else {
                 throw new PDFParseException("Expected a number here.");
             }
-    	}
-    	return 0;
+        }
+        return 0;
     }
 
     /**
-     * pop an array of float values off the stack.  This is equivalent
-     * to filling an array from end to front by popping values off the
-     * stack.
-     * @param count the number of numbers to pop off the stack
-     * @return an array of length <tt>count</tt>
-     * @throws PDFParseException if any of the values popped off the
-     * stack are not numbers.
-     */
+    * pop an array of float values off the stack. This is equivalent
+    * to filling an array from end to front by popping values off the
+    * stack.
+    *
+    * @param count
+    * the number of numbers to pop off the stack
+    * @return an array of length <tt>count</tt>
+    * @throws PDFParseException
+    * if any of the values popped off the
+    * stack are not numbers.
+    */
     private float[] popFloat(int count) throws PDFParseException {
         float[] ary = new float[count];
         for (int i = count - 1; i >= 0; i--) {
@@ -1277,10 +1357,12 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * pop a single integer value off the stack.
-     * @return the integer value of the top of the stack
-     * @throws PDFParseException if the top of the stack isn't a number.
-     */
+    * pop a single integer value off the stack.
+    *
+    * @return the integer value of the top of the stack
+    * @throws PDFParseException
+    * if the top of the stack isn't a number.
+    */
     private int popInt() throws PDFParseException {
         Object obj = this.stack.pop();
         if (obj instanceof Double) {
@@ -1291,14 +1373,17 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * pop an array of integer values off the stack.  This is equivalent
-     * to filling an array from end to front by popping values off the
-     * stack.
-     * @param count the number of numbers to pop off the stack
-     * @return an array of length <tt>count</tt>
-     * @throws PDFParseException if any of the values popped off the
-     * stack are not numbers.
-     */
+    * pop an array of integer values off the stack. This is equivalent
+    * to filling an array from end to front by popping values off the
+    * stack.
+    *
+    * @param count
+    * the number of numbers to pop off the stack
+    * @return an array of length <tt>count</tt>
+    * @throws PDFParseException
+    * if any of the values popped off the
+    * stack are not numbers.
+    */
     private float[] popFloatArray() throws PDFParseException {
         Object obj = this.stack.pop();
         if (!(obj instanceof Object[])) {
@@ -1317,11 +1402,13 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * pop a String off the stack.
-     * @return the String from the top of the stack
-     * @throws PDFParseException if the top of the stack is not a NAME
-     * or STR.
-     */
+    * pop a String off the stack.
+    *
+    * @return the String from the top of the stack
+    * @throws PDFParseException
+    * if the top of the stack is not a NAME
+    * or STR.
+    */
     private String popString() throws PDFParseException {
         Object obj = this.stack.pop();
         if (!(obj instanceof String)) {
@@ -1332,11 +1419,13 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * pop a PDFObject off the stack.
-     * @return the PDFObject from the top of the stack
-     * @throws PDFParseException if the top of the stack does not contain
-     * a PDFObject.
-     */
+    * pop a PDFObject off the stack.
+    *
+    * @return the PDFObject from the top of the stack
+    * @throws PDFParseException
+    * if the top of the stack does not contain
+    * a PDFObject.
+    */
     private PDFObject popObject() throws PDFParseException {
         Object obj = this.stack.pop();
         if (!(obj instanceof PDFObject)) {
@@ -1346,11 +1435,13 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * pop an array off the stack
-     * @return the array of objects that is the top element of the stack
-     * @throws PDFParseException if the top element of the stack does not
-     * contain an array.
-     */
+    * pop an array off the stack
+    *
+    * @return the array of objects that is the top element of the stack
+    * @throws PDFParseException
+    * if the top element of the stack does not
+    * contain an array.
+    */
     private Object[] popArray() throws PDFParseException {
         Object obj = this.stack.pop();
         if (!(obj instanceof Object[])) {
@@ -1360,12 +1451,11 @@ public class PDFParser extends BaseWatchable {
     }
 
     /**
-     * A class to store state needed whiel rendering.  This includes the
-     * stroke and fill color spaces, as well as the text formatting
-     * parameters.
-     */
+    * A class to store state needed whiel rendering. This includes the
+    * stroke and fill color spaces, as well as the text formatting
+    * parameters.
+    */
     class ParserState implements Cloneable {
-
         /** the fill color space */
         PDFColorSpace fillCS;
         /** the stroke color space */
@@ -1374,19 +1464,16 @@ public class PDFParser extends BaseWatchable {
         PDFTextFormat textFormat;
 
         /**
-         * Clone the render state.
-         */
+        * Clone the render state.
+        */
         @Override
         public Object clone() {
             ParserState newState = new ParserState();
-
             // no need to clone color spaces, since they are immutable
             newState.fillCS = this.fillCS;
             newState.strokeCS = this.strokeCS;
-
             // we do need to clone the textFormat
             newState.textFormat = (PDFTextFormat) this.textFormat.clone();
-
             return newState;
         }
     }
