@@ -30,11 +30,11 @@ import java.util.Map;
 public class Cache {
 
     /** the pages in the cache, mapped by page number */
-    private Map<Integer,SoftReference> pages;
+    private final Map<Integer, SoftReference<PageRecord>> pages;
 
     /** Creates a new instance of a Cache */
     public Cache() {
-        this.pages = Collections.synchronizedMap(new HashMap<Integer,SoftReference>());
+        this.pages = Collections.synchronizedMap(new HashMap<Integer, SoftReference<PageRecord>>());
     }
 
     /**
@@ -183,7 +183,7 @@ public class Cache {
         rec.value = page;
         rec.generator = parser;
 
-        this.pages.put(pageNumber, new SoftReference<Record>(rec));
+        this.pages.put(pageNumber, new SoftReference<PageRecord>(rec));
 
         return rec;
     }
