@@ -1624,7 +1624,7 @@ public class PDFFile {
         // concatenate all the streams
         PDFObject contentsObj = pageObj.getDictRef("Contents");
         if (contentsObj == null) {
-            throw new IOException("No page contents!");
+            return new byte[0];
         }
 
         PDFObject contents[] = contentsObj.getArray();
