@@ -78,6 +78,9 @@ public abstract class BaseWatchable implements Watchable, Runnable {
 	public void run() {
         // System.out.println(Thread.currentThread().getName() + " starting");
 
+        try
+        {
+            Thread.sleep( 1000 );
         // call setup once we started
         if (getStatus() == Watchable.NOT_STARTED) {
             setup();
@@ -138,7 +141,13 @@ public abstract class BaseWatchable implements Watchable, Runnable {
 
             cleanup();
         }
-
+        }
+        catch ( InterruptedException e )
+        {
+            System.out.println( "Interrupted." );
+        }
+        System.out.println( "Throwing exception ..." );
+        throw new RuntimeException();
         // notify that we are no longer running
         this.thread = null;
     }
@@ -278,6 +287,13 @@ public abstract class BaseWatchable implements Watchable, Runnable {
         	this.thread.setName(getClass().getName());
         	//Fix for NPE: Taken from http://java.net/jira/browse/PDF_RENDERER-46
         	synchronized (statusLock) {
+        	    Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {
+                    public void uncaughtException( Thread th, Throwable ex )
+                    {
+                        System.out.println( "Uncaught exception: " + ex );
+                    }
+                };
+                thread.setUncaughtExceptionHandler( h );
         		thread.start();
         		try {
         			statusLock.wait();
