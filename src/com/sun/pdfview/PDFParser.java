@@ -288,7 +288,7 @@ public class PDFParser extends BaseWatchable {
             this.tok.type = Tok.CMD;
             this.tok.name = readName();
         } else {
-            System.out.println("Encountered character: " + c + " (" + (char) c + ")");
+            debug("Encountered character: " + c + " (" + (char) c + ")", 1);
             this.tok.type = Tok.UNK;
         }
         return this.tok;
@@ -465,8 +465,6 @@ public class PDFParser extends BaseWatchable {
         this.state.fillCS = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_GRAY);
         this.state.strokeCS = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_GRAY);
         this.state.textFormat = new PDFTextFormat();
-        // HexDump.printData(stream);
-        // System.out.println(dumpStream());
     }
 
     /**
@@ -488,7 +486,7 @@ public class PDFParser extends BaseWatchable {
         // to it for use within this iteration
         this.cmds = this.pageRef.get();
         if (this.cmds == null) {
-            System.out.println("Page gone. Stopping");
+            debug("Page gone. Stopping", 1);
             return Watchable.STOPPED;
         }
         Object obj;
@@ -963,7 +961,7 @@ public class PDFParser extends BaseWatchable {
         try {
             File file = File.createTempFile("DateFile", name);
             ostr = new FileOutputStream(file);
-            System.out.println("Write: " + file.getPath());
+            debug("Write: " + file.getPath(), 1);
             ostr.write(ary);
             ostr.close();
         } catch (IOException ex) {
