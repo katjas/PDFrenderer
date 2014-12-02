@@ -80,7 +80,7 @@ public class CCITTFaxDecode {
 
 	public static int getOptionFieldInt(PDFObject dict, String name, int defaultValue) throws IOException {
 
-		PDFObject dictParams =  dict.getDictRef("DecodeParms");
+        PDFObject dictParams = getDecodeParams(dict);
 
 		if (dictParams == null) {
 			return defaultValue;
@@ -94,7 +94,7 @@ public class CCITTFaxDecode {
 
 	public static boolean getOptionFieldBoolean(PDFObject dict, String name, boolean defaultValue) throws IOException {
 
-		PDFObject dictParams =  dict.getDictRef("DecodeParms");
+        PDFObject dictParams = getDecodeParams(dict);
 
 		if (dictParams == null) {
 			return defaultValue;
@@ -106,4 +106,11 @@ public class CCITTFaxDecode {
 		return value.getBooleanValue();
 	}
 
+    private static PDFObject getDecodeParams(PDFObject dict) throws IOException {
+        PDFObject decdParams = dict.getDictRef("DecodeParms");
+        if (decdParams != null && decdParams.getType() == PDFObject.ARRAY) {
+            return decdParams.getArray()[0];
+        }
+        return decdParams;
+    }
 }
