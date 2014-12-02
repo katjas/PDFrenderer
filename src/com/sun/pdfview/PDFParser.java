@@ -63,7 +63,7 @@ public class PDFParser extends BaseWatchable {
     public static final boolean SHOW_TEXT_ANCHOR = true;
     public static final boolean DEBUG_TEXT = false;
     public static final boolean DEBUG_IMAGES = false;
-    public static final boolean DEBUG_OPERATORS = true;
+    public static final boolean DEBUG_OPERATORS = false;
     public static final int DEBUG_STOP_AT_INDEX = 0;
     public static final boolean DISABLE_THUMBNAILS = true;
     public static final long DRAW_DELAY = 0;
@@ -290,9 +290,6 @@ public class PDFParser extends BaseWatchable {
         } else {
             System.out.println("Encountered character: " + c + " (" + (char) c + ")");
             this.tok.type = Tok.UNK;
-        }
-        if (-1 > debuglevel) {
-            debug("Read token: " + this.tok, -1);
         }
         return this.tok;
     }
