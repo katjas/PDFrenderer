@@ -62,6 +62,7 @@ public class JPXDecode {
 	 ************************************************************************/
     
 	private static BufferedImage loadImageData(ByteBuffer buf) throws PDFParseException {
+        ImageReader reader = null;
 		try {
 			byte[] input = new byte[buf.remaining()];
 			buf.get(input);
@@ -69,12 +70,16 @@ public class JPXDecode {
 			if (readers.hasNext() == false) {
 				throw new PDFParseException("JPXDecode failed. No reader available");
 			}
-			ImageReader reader = readers.next();
+			reader = readers.next();
 			reader.setInput(new MemoryCacheImageInputStream(new ByteArrayInputStream(input)));
 			BufferedImage bimg = reader.read(0);
 			return bimg;
 		} catch (IOException e) {
             throw new PDFParseException("JPXDecode failed", e);
+        } finally {
+            if (reader != null) {
+                reader.dispose();
+            }
 		}
 
 	}

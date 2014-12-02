@@ -1123,6 +1123,8 @@ public class PDFImage {
                         // We'll just treat it as an IIOException for convenience
                         // and hopefully a subsequent reader can handle it
                         throw new IIOException("Internal reader error?", e);
+                    } finally {
+                        jpegReader.dispose();
                     }
                 } catch (IIOException e) {
                     // its most likely complaining about an unsupported image
