@@ -365,7 +365,7 @@ public class PDFPage {
 
     public PDFCmd findLastCommand(Class<?> cls) {
         int index = this.commands.size();
-        while (index-- >= 0) {
+        while (index-- > 0) {
             PDFCmd cmd = this.commands.get(index);
             if (cmd.getClass().isAssignableFrom(cls)) {
                 return cmd;
