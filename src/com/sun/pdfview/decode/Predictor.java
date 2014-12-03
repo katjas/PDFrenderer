@@ -85,6 +85,7 @@ public abstract class Predictor {
                 return null;
             case 2:
             	predictor = new TIFFPredictor();
+                break;                
             case 10:
             case 11:
             case 12:
