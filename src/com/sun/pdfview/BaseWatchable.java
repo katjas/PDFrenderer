@@ -27,9 +27,9 @@ public abstract class BaseWatchable implements Watchable, Runnable {
     /** the current status, from the list in Watchable */
     private int status = Watchable.UNKNOWN;
     /** a lock for status-related operations */
-    private Object statusLock = new Object();
+    private final Object statusLock = new Object();
     /** a lock for parsing operations */
-    private Object parserLock = new Object();
+    private final Object parserLock = new Object();
     /** when to stop */
     private Gate gate;
     /** suppress local stack trace on setError. */
@@ -146,8 +146,6 @@ public abstract class BaseWatchable implements Watchable, Runnable {
         {
             System.out.println( "Interrupted." );
         }
-        System.out.println( "Throwing exception ..." );
-        throw new RuntimeException();
         // notify that we are no longer running
         this.thread = null;
     }
@@ -288,6 +286,7 @@ public abstract class BaseWatchable implements Watchable, Runnable {
         	//Fix for NPE: Taken from http://java.net/jira/browse/PDF_RENDERER-46
         	synchronized (statusLock) {
         	    Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {
+                    @Override
                     public void uncaughtException( Thread th, Throwable ex )
                     {
                         System.out.println( "Uncaught exception: " + ex );
