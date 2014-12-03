@@ -51,21 +51,21 @@ import com.sun.pdfview.pattern.PDFShader;
 public class PDFParser extends BaseWatchable {
     /** emit a file of DCT stream data. */
     public final static String DEBUG_DCTDECODE_DATA = "debugdctdecode";
-    public static final boolean DISABLE_TEXT = true;
+    public static final boolean DISABLE_TEXT = false;
     public static final boolean DISABLE_IMAGES = false;
     public static final boolean DISABLE_PATH_STROKE = false;
     public static final boolean DISABLE_PATH_FILL = false;
     public static final boolean DISABLE_PATH_STROKE_FILL = false;
-    public static final boolean DISABLE_CLIP = true;
-    public static final boolean DISABLE_FORMS = true;
-    public static final boolean DISABLE_SHADER = true;
+    public static final boolean DISABLE_CLIP = false;
+    public static final boolean DISABLE_FORMS = false;
+    public static final boolean DISABLE_SHADER = false;
     public static final boolean SHOW_TEXT_REGIONS = false;
-    public static final boolean SHOW_TEXT_ANCHOR = true;
+    public static final boolean SHOW_TEXT_ANCHOR = false;
     public static final boolean DEBUG_TEXT = false;
     public static final boolean DEBUG_IMAGES = false;
     public static final boolean DEBUG_OPERATORS = false;
     public static final int DEBUG_STOP_AT_INDEX = 0;
-    public static final boolean DISABLE_THUMBNAILS = true;
+    public static final boolean DISABLE_THUMBNAILS = false;
     public static final long DRAW_DELAY = 0;
     private int mDebugCommandIndex;
     // ---- parsing variables
