@@ -78,73 +78,68 @@ public abstract class BaseWatchable implements Watchable, Runnable {
 	public void run() {
         // System.out.println(Thread.currentThread().getName() + " starting");
 
-        try
-        {
-            Thread.sleep( 1000 );
-        // call setup once we started
-        if (getStatus() == Watchable.NOT_STARTED) {
-            setup();
-        }
+        try {
+            Thread.sleep(1);
+            // call setup once we started
+            if (getStatus() == Watchable.NOT_STARTED) {
+                setup();
+            }
 
-        setStatus(Watchable.PAUSED);
+            setStatus(Watchable.PAUSED);
 
-        synchronized (this.parserLock) {
-            while (!isFinished() && getStatus() != Watchable.STOPPED) {
-                if (isExecutable()) {
-                    // set the status to running
-                    setStatus(Watchable.RUNNING);
+            synchronized (this.parserLock) {
+                while (!isFinished() && getStatus() != Watchable.STOPPED) {
+                    if (isExecutable()) {
+                        // set the status to running
+                        setStatus(Watchable.RUNNING);
 
-                    try {
-                        // keep going until the status is no longer running,
-                        // our gate tells us to stop, or no-one is watching
-                    	int laststatus = Watchable.RUNNING;
-                        while ((getStatus() == Watchable.RUNNING) &&
-                                (this.gate == null || !this.gate.iterate())) {
-                            // update the status based on this iteration
-                        	int status = iterate();
-                        	if (status != laststatus) {
-                        		//update status only when necessary, this increases performance
-                        		setStatus(status);
-                        		laststatus = status;
-                        	}
-                        		
+                        try {
+                            // keep going until the status is no longer running,
+                            // our gate tells us to stop, or no-one is watching
+                            int laststatus = Watchable.RUNNING;
+                            while ((getStatus() == Watchable.RUNNING) && (this.gate == null || !this.gate.iterate())) {
+                                // update the status based on this iteration
+                                int status = iterate();
+                                if (status != laststatus) {
+                                    // update status only when necessary, this increases performance
+                                    setStatus(status);
+                                    laststatus = status;
+                                }
+
+                            }
+
+                            // make sure we are paused
+                            if (getStatus() == Watchable.RUNNING) {
+                                setStatus(Watchable.PAUSED);
+                            }
+                        } catch (Exception ex) {
+                            setError(ex);
                         }
-
-                        // make sure we are paused
-                        if (getStatus() == Watchable.RUNNING) {
-                            setStatus(Watchable.PAUSED);
-                        }
-                    } catch (Exception ex) {
-                        setError(ex);
-                    }
-                } else {
-                    // System.out.println(getName() + " waiting: status = " + getStatusString());
-                    // wait for our status to change
-                    synchronized (this.statusLock) {
-                        if (!isExecutable()) {
-                            try {
-                                this.statusLock.wait();
-                            } catch (InterruptedException ie) {
-                                // ignore
+                    } else {
+                        // System.out.println(getName() + " waiting: status = " + getStatusString());
+                        // wait for our status to change
+                        synchronized (this.statusLock) {
+                            if (!isExecutable()) {
+                                try {
+                                    this.statusLock.wait();
+                                } catch (InterruptedException ie) {
+                                    // ignore
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        // System.out.println(Thread.currentThread().getName() + " exiting: status = " + getStatusString());
+            // System.out.println(Thread.currentThread().getName() + " exiting: status = " + getStatusString());
 
-        // call cleanup when we are done
-        if (getStatus() == Watchable.COMPLETED ||
-                getStatus() == Watchable.ERROR) {
+            // call cleanup when we are done
+            if (getStatus() == Watchable.COMPLETED || getStatus() == Watchable.ERROR) {
 
-            cleanup();
-        }
-        }
-        catch ( InterruptedException e )
-        {
-            System.out.println( "Interrupted." );
+                cleanup();
+            }
+        } catch (InterruptedException e) {
+            System.out.println("Interrupted.");
         }
         // notify that we are no longer running
         this.thread = null;
