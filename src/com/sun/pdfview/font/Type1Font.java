@@ -104,7 +104,6 @@ public class Type1Font extends OutlineFont {
             PSParser psp2 = new PSParser(font, matrixloc + 11);
             // read [num num num num num num]
             float xf[] = psp2.readArray(6);
-            //	    System.out.println("FONT MATRIX: "+xf);
             this.at = new AffineTransform(xf);
         }
 
@@ -322,10 +321,6 @@ public class Type1Font extends OutlineFont {
         public PSParser(byte[] data, int start) {
             this.data = data;
             this.loc = start;
-//            System.out.println("PSParser.constructor: start: " + start +
-//                             ", Length: " + data.length);
-//            System.out.print (new String(data, loc, data.length - loc));
-//            System.out.println(" - end -\n");
         }
 
         /**
@@ -336,12 +331,9 @@ public class Type1Font extends OutlineFont {
          */
         public String readThing() {
             // skip whitespace
-//            System.out.println("PAParser: whitespace: \"");
             while (PDFFile.isWhiteSpace(this.data[this.loc])) {
-//                System.out.print (new String(data, loc, 1));
                 this.loc++;
             }
-//            System.out.print("\": thing: ");
             // read thing
             int start = this.loc;
             while (!PDFFile.isWhiteSpace(this.data[this.loc])) {
@@ -351,7 +343,6 @@ public class Type1Font extends OutlineFont {
                 }
             }
             String s = new String(this.data, start, this.loc - start);
-//            System.out.println(": Read: "+s);
             return s;
         }
 
@@ -494,7 +485,6 @@ public class Type1Font extends OutlineFont {
      * @param wid a FlPoint into which the advance width will be placed.
      */
     private void parse(byte[] cs, GeneralPath gp, FlPoint pt, FlPoint wid) {
-        //	System.out.println("--- cmd length is "+cs.length);
         int loc = 0;
         float x1, x2, x3, y1, y2, y3;
         boolean flexMode = false;
@@ -508,20 +498,15 @@ public class Type1Font extends OutlineFont {
                         (((cs[loc + 2]) & 0xff) << 8) +
                         (((cs[loc + 3]) & 0xff));
                 loc += 4;
-//		System.out.println("Pushed long "+stack[sloc-1]);
             } else if (v >= 251) {
                 this.stack[this.sloc++] = -((v - 251) << 8) - ((cs[loc]) & 0xff) - 108;
                 loc++;
-//		System.out.println("Pushed lo "+stack[sloc-1]);
             } else if (v >= 247) {
                 this.stack[this.sloc++] = ((v - 247) << 8) + ((cs[loc]) & 0xff) + 108;
                 loc++;
-//		System.out.println("Pushed hi "+stack[sloc-1]);
             } else if (v >= 32) {
                 this.stack[this.sloc++] = v - 139;
-//		System.out.println("Pushed "+stack[sloc-1]);
             } else {
-                //		System.out.println("CMD: "+v+" (stack is size "+sloc+")");
                 switch (v) {
                     case 0:   // x
                         throw new RuntimeException("Bad command (" + v + ")");
@@ -618,7 +603,6 @@ public class Type1Font extends OutlineFont {
                             this.callcount++;
                             if (this.callcount > 10) {
                                 System.out.println("Call stack too large");
-                            //			    throw new RuntimeException("Call stack too large");
                             } else {
                                 parse(this.subrs[n], gp, pt, wid);
                             }
@@ -630,8 +614,8 @@ public class Type1Font extends OutlineFont {
                     case 12:  // ext...
                         v = (cs[loc++]) & 0xff;
                         if (v == 6) {  // s x y a b seac
+                        char a = (char) pop();
                             char b = (char) pop();
-                            char a = (char) pop();
                             float y = pop();
                             float x = pop();
                             buildAccentChar(x, y, a, b, gp);
@@ -771,8 +755,8 @@ public class Type1Font extends OutlineFont {
 
     /**
      * build an accented character out of two pre-defined glyphs.
-     * @param x the x offset of the accent
-     * @param y the y offset of the accent
+     * @param x the x offset of the accent relativ to the sidebearing of the base char
+     * @param y the y offset of the accent relativ to the sidebearing of the base char
      * @param a the index of the accent glyph
      * @param b the index of the base glyph
      * @param gp the GeneralPath into which the combined glyph will be
@@ -782,12 +766,17 @@ public class Type1Font extends OutlineFont {
             GeneralPath gp) {
         // get the outline of the accent
         GeneralPath pathA = getOutline(a, getWidth(a, null));
-
+        // don't manipulate the original glyph
+        pathA = (GeneralPath) pathA.clone();
         try {
-            // undo the effect of the transform applied in read 
-            AffineTransform xformA = this.at.createInverse();
-            xformA.translate(x, y);
+            final AffineTransform xformA = at.createInverse();
             pathA.transform(xformA);
+            // Best x can't be calculated cause we don't know the left sidebearing of the base character.
+            // Leaving x=0 gives the best results.
+            // see Chapter 6 of http://partners.adobe.com/public/developer/en/font/5015.Type1_Supp.pdf
+            // and the definition of the seac-Command in http://partners.adobe.com/public/developer/en/font/T1_SPEC.PDF
+            final AffineTransform xformA2 = AffineTransform.getTranslateInstance(0, y);
+            pathA.transform(xformA2);
         } catch (NoninvertibleTransformException nte) {
             pathA.transform(AffineTransform.getTranslateInstance(x, y));
         }
