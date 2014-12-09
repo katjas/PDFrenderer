@@ -35,7 +35,7 @@ public abstract class Predictor {
     public static final int PNG = 1;
     
     /** the algorithm to use */
-    private int algorithm;
+    private final int algorithm;
     
     /** the number of colors per sample */
     private int colors = 1;
@@ -85,6 +85,7 @@ public abstract class Predictor {
                 return null;
             case 2:
             	predictor = new TIFFPredictor();
+            break;
             case 10:
             case 11:
             case 12:
