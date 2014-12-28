@@ -46,6 +46,21 @@ public class PDFDecrypterFactory {
     private static final int DEFAULT_KEY_LENGTH = 40;
 
     /**
+     * @param encryptDict the Encrypt dict as found in the document's trailer.
+     * @return true if the Filter exist in the current dictionary
+     */
+    public static boolean isFilterExist (PDFObject encryptDict){
+        if (encryptDict != null) {
+             try {
+				PDFObject filter = encryptDict.getDictRef("Filter");
+				return filter != null;
+			} catch (IOException e) {
+			}
+        }
+        return false;
+    }
+
+    /**
      * Create a decryptor for a given encryption dictionary. A check is
      * immediately performed that the supplied password decrypts content
      * described by the encryption specification.
