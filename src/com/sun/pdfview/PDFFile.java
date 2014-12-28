@@ -1118,11 +1118,15 @@ public class PDFFile {
                     this.encrypt.setObjectId(PDFObject.OBJ_NUM_TRAILER,
                             PDFObject.OBJ_NUM_TRAILER);
                 }
-                newDefaultDecrypter =
-                        PDFDecrypterFactory.createDecryptor(
-                                this.encrypt,
-                                trailerdict.getDictRef("ID"),
-                                password);
+                if (this.encrypt != null && ! PDFDecrypterFactory.isFilterExist(this.encrypt)) {
+                	this.encrypt = null; // the filter is not located at this trailer, we will try later again
+                }else{
+	                newDefaultDecrypter =
+	                        PDFDecrypterFactory.createDecryptor(
+	                                this.encrypt,
+	                                trailerdict.getDictRef("ID"),
+	                                password);
+                }
             }
 
 
@@ -1293,11 +1297,15 @@ public class PDFFile {
                     this.encrypt.setObjectId(PDFObject.OBJ_NUM_TRAILER,
                             PDFObject.OBJ_NUM_TRAILER);
                 }
-                newDefaultDecrypter =
-                        PDFDecrypterFactory.createDecryptor(
-                                this.encrypt,
-                                trailerdict.get("ID"),
-                                password);
+                if (this.encrypt != null && ! PDFDecrypterFactory.isFilterExist(this.encrypt)) {
+                	this.encrypt = null; // the filter is not located at this trailer, we will try later again
+                }else{
+	                newDefaultDecrypter =
+	                        PDFDecrypterFactory.createDecryptor(
+	                                this.encrypt,
+	                                trailerdict.get("ID"),
+	                                password);
+                }
             }
 
 
