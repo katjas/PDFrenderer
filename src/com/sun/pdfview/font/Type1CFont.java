@@ -807,6 +807,9 @@ public class Type1CFont extends OutlineFont {
                     if (this.stackptr == 5) {
                         buildAccentChar (this.stack[1], this.stack[2], (char) this.stack[3],
                                 (char) this.stack[4], gp);
+                    } else if (this.stackptr == 4) {
+                        buildAccentChar (this.stack[0], this.stack[1], (char) this.stack[2],
+                                (char) this.stack[3], gp);
                     }
                     if (pt.open) {
                         gp.closePath ();
