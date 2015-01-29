@@ -2,12 +2,12 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.swinglabs</groupId>
-  <artifactId>PDFrenderer</artifactId>
+  <groupId>com.aperto</groupId>
+  <artifactId>pdfrenderer</artifactId>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
   <name>PDF Renderer library</name>
-  <url>https://github.com/katjas/PDFrenderer</url>
+  <url>https://github.com/aperto/PDFrenderer</url>
   <build>
     <plugins>
       <plugin>
@@ -33,7 +33,7 @@
             <configuration>
               <resources>
                 <resource>
-                  <directory>stdclasses/classes</directory>
+                  <directory>stdclasses</directory>
                 </resource>
               </resources>
             </configuration>
@@ -46,7 +46,7 @@
   <repositories>
     <repository>
       <id>stdclasses</id>
-      <url>file://${project.basedir}/stdclasses/maven</url>
+      <url>file://${project.basedir}/stdclasses</url>
     </repository>
   </repositories>
 
