@@ -3,3 +3,6 @@ build/
 PDFrenderer.jar
 .settings/
 /target/
+.classpath
+.project
+
