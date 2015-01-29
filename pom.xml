@@ -1,0 +1,188 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <groupId>com.aperto</groupId>
+  <artifactId>pdfrenderer</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>PDF Renderer library</name>
+  <description>Active Aperto fork of the well known pdfrenderer</description>
+  
+  <url>https://github.com/aperto/PDFrenderer</url>
+  
+  <licenses>
+    <license>
+      <name>LGPL 2.1E</name>
+      <url>http://www.gnu.org/licenses/lgpl-2.1.html</url>
+    </license>
+  </licenses>
+  
+  <organization>
+    <name>Aperto AG</name>
+    <url>http://www.aperto.com</url>
+  </organization>
+
+  <scm>
+    <url>https://github.com/aperto/PDFrenderer</url>
+  </scm>
+
+  <issueManagement>
+    <url>https://github.com/aperto/PDFrenderer/issues</url>
+    <system>github</system>
+  </issueManagement>
+  
+  <developers>
+    <developer>
+      <id>costamojan</id>
+      <name>Daniel Kasmeroglu</name>
+      <email>Daniel.Kasmeroglu@kasisoft.net</email>
+    </developer>
+  </developers>
+  
+  <properties>
+  
+    <java.version>1.6</java.version>
+    <encoding.default>UTF-8</encoding.default>
+  
+    <!-- versioning: dependencies -->
+    <version-junit>4.11</version-junit>
+  
+    <!-- versioning: plugins -->
+    <plugin-version-build-helper>1.9.1</plugin-version-build-helper>
+    <plugin-version-maven-compiler>3.2</plugin-version-maven-compiler>
+    <plugin-version-maven-resources>2.7</plugin-version-maven-resources>
+  
+  </properties>
+  
+  <dependencies>
+    
+    <!--
+    !!!
+    Please note that the artifacts 'jbig2' and 'media' are basically artificial as they're not available in any open
+    source repository. Therefore the versioning is artificial, too and basically has no meaning. 
+    There is a 'jbig2' variety which seems to be API compatible but it needs to be investigated further as all class
+    files differ and we don't want to introduce any untested change.
+    For the 'media' artifact there's even no source available at least I couldn't find it. Basically only one class
+    'JPEGImageIO' from this artifact is used. It can be replaced by the java standard class 'ImageIO' in order to drop
+    this dependency but that would require some additional testing.  
+    -->
+    
+    <!-- 
+    <dependency>
+        <groupId>de.intarsys.opensource</groupId>
+        <artifactId>jbig2</artifactId>
+        <version>5.5.1</version>
+    </dependency>
+   -->
+    
+    <dependency>
+      <groupId>org.jpedal</groupId>
+      <artifactId>jbig2</artifactId>
+      <version>1.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>ch.randelshofer</groupId>
+      <artifactId>media</artifactId>
+      <version>1.0</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${version-junit}</version>
+      <scope>test</scope>
+    </dependency>
+    
+  </dependencies>
+  
+  <build>
+  
+    <finalName>${project.artifactId}-aperto-${project.version}</finalName>
+    
+    <pluginManagement>
+      <plugins>
+      
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${plugin-version-maven-compiler}</version>
+        </plugin>
+      
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>${plugin-version-build-helper}</version>
+        </plugin>
+      
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${plugin-version-maven-resources}</version>
+        </plugin>
+      
+      </plugins>
+    </pluginManagement>
+    
+    <plugins>
+    
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <encoding>${encoding.default}</encoding>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <compilerVersion>${java.version}</compilerVersion>
+          <showWarnings>true</showWarnings>
+        </configuration>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <configuration>
+          <encoding>${encoding.default}</encoding>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.10</version>
+        <executions>
+          <execution>
+            <id>unpack</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/classes</outputDirectory>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>ch.randelshofer</groupId>
+                  <artifactId>media</artifactId>
+                  <version>1.0</version>
+                  <type>jar</type>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
+    </plugins>
+    
+  </build>
+
+  <repositories>
+    <repository>
+       <id>libs</id>
+       <url>file://${project.basedir}/libs</url>
+     </repository>
+  </repositories> 
+    
+</project>
