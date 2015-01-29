@@ -26,7 +26,6 @@
         <executions>
           <execution>
             <id>add-randelhofer-classes</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>add-resource</goal>
             </goals>
@@ -43,13 +42,6 @@
     </plugins>
   </build>
 
-  <repositories>
-    <repository>
-      <id>stdclasses</id>
-      <url>file://${project.basedir}/stdclasses</url>
-    </repository>
-  </repositories>
-
   <dependencies>
     <!-- 
     <dependency>
@@ -62,6 +54,12 @@
         <groupId>de.intarsys.opensource</groupId>
         <artifactId>jbig2</artifactId>
         <version>5.5.1</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   
