@@ -167,7 +167,7 @@ public class BuiltinFont extends Type1Font {
         // load the base fonts properties files, if it isn't already loaded
         if (props == null) {
             props = new Properties();
-            props.load(BuiltinFont.class.getResourceAsStream("res/BaseFonts.properties"));
+            props.load(BuiltinFont.class.getResourceAsStream("/com/sun/pdfview/font/res/BaseFonts.properties"));
         }
 
         // make sure we're a known font
@@ -187,7 +187,7 @@ public class BuiltinFont extends Type1Font {
 
         // read the data from the file
         byte[] data = new byte[length];
-        InputStream fontStream = NativeFont.class.getResourceAsStream("res/" + file);
+        InputStream fontStream = NativeFont.class.getResourceAsStream("/com/sun/pdfview/font/res/" + file);
         int cur = 0;
         while (cur < length) {
             cur += fontStream.read(data, cur, length - cur);
