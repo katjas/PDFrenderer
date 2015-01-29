@@ -2,27 +2,126 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  
   <groupId>com.aperto</groupId>
   <artifactId>pdfrenderer</artifactId>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
   <name>PDF Renderer library</name>
+  <description>Active Aperto fork of the well known pdfrenderer</description>
+  
   <url>https://github.com/aperto/PDFrenderer</url>
+  
+  <licenses>
+    <license>
+      <name>LGPL 2.1E</name>
+      <url>http://www.gnu.org/licenses/lgpl-2.1.html</url>
+    </license>
+  </licenses>
+  
+  <organization>
+    <name>Aperto AG</name>
+    <url>http://www.aperto.com</url>
+  </organization>
+
+  <scm>
+    <url>https://github.com/aperto/PDFrenderer</url>
+  </scm>
+
+  <issueManagement>
+    <url>https://github.com/aperto/PDFrenderer/issues</url>
+    <system>github</system>
+  </issueManagement>
+  
+  <developers>
+    <developer>
+      <id>costamojan</id>
+      <name>Daniel Kasmeroglu</name>
+      <email>Daniel.Kasmeroglu@kasisoft.net</email>
+    </developer>
+  </developers>
+  
+  <properties>
+  
+    <java.version>1.6</java.version>
+    <encoding.default>UTF-8</encoding.default>
+  
+    <!-- versioning: dependencies -->
+    <version-jbig2>5.5.1</version-jbig2>
+    <version-junit>4.11</version-junit>
+  
+    <!-- versioning: plugins -->
+    <plugin-version-build-helper>1.9.1</plugin-version-build-helper>
+    <plugin-version-maven-compiler>3.2</plugin-version-maven-compiler>
+    <plugin-version-maven-resources>2.7</plugin-version-maven-resources>
+  
+  </properties>
+  
+  <dependencies>
+    
+    <dependency>
+        <groupId>de.intarsys.opensource</groupId>
+        <artifactId>jbig2</artifactId>
+        <version>${version-jbig2}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${version-junit}</version>
+      <scope>test</scope>
+    </dependency>
+    
+  </dependencies>
+  
   <build>
+  
+    <finalName>${project.artifactId}-aperto-${project.version}</finalName>
+    
+    <pluginManagement>
+      <plugins>
+      
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${plugin-version-maven-compiler}</version>
+        </plugin>
+      
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>${plugin-version-build-helper}</version>
+        </plugin>
+      
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${plugin-version-maven-resources}</version>
+        </plugin>
+      
+      </plugins>
+    </pluginManagement>
+    
     <plugins>
+    
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <encoding>${encoding.default}</encoding>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <compilerVersion>${java.version}</compilerVersion>
+          <showWarnings>true</showWarnings>
         </configuration>
       </plugin>
+      
       <plugin>
+        <!--
+        Eclipse developers: CHECKOUT THE README.MD FOR FURTHER INFORMATION 
+        -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.7</version>
         <executions>
           <execution>
             <id>add-randelhofer-classes</id>
@@ -39,28 +138,17 @@
           </execution>
         </executions>
       </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <configuration>
+          <encoding>${encoding.default}</encoding>
+        </configuration>
+      </plugin>
+      
     </plugins>
+    
   </build>
 
-  <dependencies>
-    <!-- 
-    <dependency>
-      <groupId>org.jpedal</groupId>
-      <artifactId>jbig2</artifactId>
-      <version>1.0</version>
-    </dependency>
-     -->
-    <dependency>
-        <groupId>de.intarsys.opensource</groupId>
-        <artifactId>jbig2</artifactId>
-        <version>5.5.1</version>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.11</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-  
 </project>
