@@ -47,7 +47,6 @@
     <encoding.default>UTF-8</encoding.default>
   
     <!-- versioning: dependencies -->
-    <version-jbig2>5.5.1</version-jbig2>
     <version-junit>4.11</version-junit>
   
     <!-- versioning: plugins -->
@@ -59,10 +58,35 @@
   
   <dependencies>
     
+    <!--
+    !!!
+    Please note that the artifacts 'jbig2' and 'media' are basically artificial as they're not available in any open
+    source repository. Therefore the versioning is artificial, too and basically has no meaning. 
+    There is a 'jbig2' variety which seems to be API compatible but it needs to be investigated further as all class
+    files differ and we don't want to introduce any untested change.
+    For the 'media' artifact there's even no source available at least I couldn't find it. Basically only one class
+    'JPEGImageIO' from this artifact is used. It can be replaced by the java standard class 'ImageIO' in order to drop
+    this dependency but that would require some additional testing.  
+    -->
+    
+    <!-- 
     <dependency>
         <groupId>de.intarsys.opensource</groupId>
         <artifactId>jbig2</artifactId>
-        <version>${version-jbig2}</version>
+        <version>5.5.1</version>
+    </dependency>
+   -->
+    
+    <dependency>
+      <groupId>org.jpedal</groupId>
+      <artifactId>jbig2</artifactId>
+      <version>1.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>ch.randelshofer</groupId>
+      <artifactId>media</artifactId>
+      <version>1.0</version>
     </dependency>
     
     <dependency>
@@ -117,29 +141,6 @@
       </plugin>
       
       <plugin>
-        <!--
-        Eclipse developers: CHECKOUT THE README.MD FOR FURTHER INFORMATION 
-        -->
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>add-randelhofer-classes</id>
-            <goals>
-              <goal>add-resource</goal>
-            </goals>
-            <configuration>
-              <resources>
-                <resource>
-                  <directory>stdclasses</directory>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
         <configuration>
@@ -151,4 +152,11 @@
     
   </build>
 
+  <repositories>
+    <repository>
+       <id>libs</id>
+       <url>file://${project.basedir}/libs</url>
+     </repository>
+  </repositories> 
+    
 </project>

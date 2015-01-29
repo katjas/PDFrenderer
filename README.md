@@ -37,23 +37,3 @@ Done:
 * Employ local TTF files if available instead of using the built-ins as substitutes. Scanning of available TTFs will take some time on the first request for an unavailable TTF. This behaviour can be disabled by setting the system property PDFRenderer.avoidExternalTtf to true. The PDFRenderer.fontSearchPath system property can be used to alter the search path, though Windows and Mac OS X defaults should hopefully be sensible. 
 * Added TIFF Type 2 Predictor for decoding
 * use built in font as workaround for MMType1 fonts instead of throwing an exception
-
-
-Eclipse Developers:
--------------------
-
-Importing the project requires the following steps:
-
-* Go into _Properties_ -> _Java Build Path_
-* Remove the entry __pdfrenderer/stdclasses__ from the tab _Source_
-* Add a _Class Folder_ __pdfrenderer/stdclasses__ on the tab _Libraries_
-
-Unfortunately I couldn't find any artifact providing the necessary sources (at least not in a reasonable amount of time), 
-so the class files need to remain within this project for now.
-The above mentioned steps are necessary due to some issues within m2e. The default assumption from m2e is that the 
-resource folder will exclude everything as the classpath will be constructed accordingly when the actual build/execution
-happens. Unfortunately this also excludes the *.class files which are necessary at compile time. That's the reason why
-it has to be added on the _Libraries_ tab.
- 
-
-

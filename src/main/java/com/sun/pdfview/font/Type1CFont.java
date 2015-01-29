@@ -808,6 +808,8 @@ public class Type1CFont extends OutlineFont {
                         buildAccentChar (this.stack[1], this.stack[2], (char) this.stack[3],
                                 (char) this.stack[4], gp);
                     } else if (this.stackptr == 4) {
+                        // see page 58 on specification 5177.Type2.pdf which indicates that
+                        // thes parameters are valid for Type1C as the width is optional
                         buildAccentChar (this.stack[0], this.stack[1], (char) this.stack[2],
                                 (char) this.stack[3], gp);
                     }
