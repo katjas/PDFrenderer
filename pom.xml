@@ -189,12 +189,12 @@
     <repository>
       <id>nexus.public</id>
       <name>Nexus Repository</name>
-      <url>https://maven.aperto.de/nexus/content/groups/public</url>
+      <url>https://maven.aperto.de/nexus/content/groups/public.group/</url>
     </repository>
     <snapshotRepository>
       <id>nexus.public</id>
       <name>Nexus Repository</name>
-      <url>https://maven.aperto.de/nexus/content/groups/public</url>
+      <url>https://maven.aperto.de/nexus/content/groups/public.group/</url>
       <uniqueVersion>false</uniqueVersion>
     </snapshotRepository>
   </distributionManagement>
