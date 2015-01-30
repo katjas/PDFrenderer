@@ -184,5 +184,19 @@
        <url>file://${project.basedir}/libs</url>
      </repository>
   </repositories> 
+
+  <distributionManagement>
+    <repository>
+      <id>nexus.public</id>
+      <name>Nexus Repository</name>
+      <url>https://maven.aperto.de/nexus/content/groups/public</url>
+    </repository>
+    <snapshotRepository>
+      <id>nexus.public</id>
+      <name>Nexus Repository</name>
+      <url>https://maven.aperto.de/nexus/content/groups/public</url>
+      <uniqueVersion>false</uniqueVersion>
+    </snapshotRepository>
+  </distributionManagement>
     
 </project>
