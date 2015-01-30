@@ -188,6 +188,10 @@
   <distributionManagement>
     <repository>
       <id>aperto.nexus.releases</id>
+      <!--
+      We should consider this repository when we're convinced that we solved all relevant issues.
+      <url>https://maven.aperto.de/nexus/content/repositories/thirdparty/</url>
+      -->
       <url>https://maven.aperto.de/nexus/content/repositories/vda.releases/</url>
     </repository>
     <snapshotRepository>
