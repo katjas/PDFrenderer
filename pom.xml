@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   
   <groupId>com.aperto</groupId>
-  <artifactId>pdfrenderer</artifactId>
+  <artifactId>pdfrenderer-aperto</artifactId>
   <packaging>jar</packaging>
   <version>1.0</version>
   <name>PDF Renderer library</name>
@@ -102,8 +102,6 @@
   
   <build>
   
-    <finalName>${project.artifactId}-aperto-${project.version}</finalName>
-    
     <pluginManagement>
       <plugins>
       
