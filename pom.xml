@@ -14,7 +14,7 @@
   
   <licenses>
     <license>
-      <name>LGPL 2.1E</name>
+      <name>LGPL 2.1</name>
       <url>http://www.gnu.org/licenses/lgpl-2.1.html</url>
     </license>
   </licenses>
@@ -26,6 +26,8 @@
 
   <scm>
     <url>https://github.com/aperto/PDFrenderer</url>
+    <connection>scm:git:git@github.com:aperto/PDFrenderer.git</connection>
+    <developerConnection>scm:git:git@github.com:aperto/PDFrenderer.git</developerConnection>
   </scm>
 
   <issueManagement>
