@@ -78,12 +78,6 @@
     </dependency>
     
     <dependency>
-      <groupId>ch.randelshofer</groupId>
-      <artifactId>media</artifactId>
-      <version>1.0</version>
-    </dependency>
-    
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${version-junit}</version>
@@ -139,43 +133,31 @@
           <encoding>${encoding.default}</encoding>
         </configuration>
       </plugin>
-
+      
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.10</version>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>unpack</id>
-            <phase>process-sources</phase>
+            <id>add-libs</id>
+            <phase>generate-resources</phase>
             <goals>
-              <goal>unpack</goal>
+              <goal>add-resource</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/classes</outputDirectory>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>ch.randelshofer</groupId>
-                  <artifactId>media</artifactId>
-                  <version>1.0</version>
-                  <type>jar</type>
-                </artifactItem>
-              </artifactItems>
+              <resources>
+                <resource>
+                  <directory>src/main/libs</directory>
+                </resource>
+              </resources>
             </configuration>
           </execution>
         </executions>
       </plugin>
-      
+
     </plugins>
     
   </build>
-
-  <repositories>
-    <repository>
-       <id>libs</id>
-       <url>file://${project.basedir}/libs</url>
-     </repository>
-  </repositories> 
 
   <distributionManagement>
     <repository>
