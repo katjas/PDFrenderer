@@ -3,14 +3,14 @@
                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   
-  <groupId>com.aperto</groupId>
-  <artifactId>pdfrenderer-aperto</artifactId>
+  <groupId>de.gebit.pdfrenderer</groupId>
+  <artifactId>pdfrenderer-gebit</artifactId>
   <packaging>jar</packaging>
   <version>1.1</version>
   <name>PDF Renderer library</name>
-  <description>Active Aperto fork of the well known pdfrenderer</description>
+  <description>Fork of the well known pdfrenderer. Actual fork is from https://github.com/aperto/PDFrenderer</description>
   
-  <url>https://github.com/aperto/PDFrenderer</url>
+  <url>https://github.com/GEBIT/PDFrenderer</url>
   
   <licenses>
     <license>
@@ -20,18 +20,18 @@
   </licenses>
   
   <organization>
-    <name>Aperto AG</name>
-    <url>http://www.aperto.com</url>
+    <name>GEBIT Solution</name>
+    <url>http://www.gebit.de</url>
   </organization>
 
   <scm>
-    <url>https://github.com/aperto/PDFrenderer</url>
-    <connection>scm:git:git@github.com:aperto/PDFrenderer.git</connection>
-    <developerConnection>scm:git:git@github.com:aperto/PDFrenderer.git</developerConnection>
+    <url>https://github.com/GEBIT/PDFrenderer</url>
+    <connection>scm:git:git@github.com:GEBIT/PDFrenderer.git</connection>
+    <developerConnection>scm:git:git@github.com:GEBIT/PDFrenderer.git</developerConnection>
   </scm>
 
   <issueManagement>
-    <url>https://github.com/aperto/PDFrenderer/issues</url>
+    <url>https://github.com/GEBIT/PDFrenderer/issues</url>
     <system>github</system>
   </issueManagement>
   
@@ -40,6 +40,11 @@
       <id>costamojan</id>
       <name>Daniel Kasmeroglu</name>
       <email>Daniel.Kasmeroglu@kasisoft.net</email>
+    </developer>
+    <developer>
+      <id>cpfeiffer</id>
+      <name>Carsten Pfeiffer</name>
+      <email>carsten.pfeiffer@gebit.de</email>
     </developer>
   </developers>
   
@@ -55,6 +60,7 @@
     <plugin-version-build-helper>1.9.1</plugin-version-build-helper>
     <plugin-version-maven-compiler>3.2</plugin-version-maven-compiler>
     <plugin-version-maven-resources>2.7</plugin-version-maven-resources>
+    <plugin-version-maven-jar>2.5</plugin-version-maven-jar>
   
   </properties>
   
@@ -107,6 +113,17 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
           <version>${plugin-version-maven-resources}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${plugin-version-maven-jar}</version>
+          <configuration>
+            <archive>
+              <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+            </archive>
+          </configuration>
         </plugin>
       
       </plugins>
@@ -161,14 +178,16 @@
 
   <distributionManagement>
     <repository>
-      <id>aperto.nexus.releases</id>
-      <url>https://maven.aperto.de/nexus/content/repositories/thirdparty/</url>
+      <id>thirdparty</id>
+      <url>https://gebit-nexus/content/repositories/thirdparty</url>
     </repository>
+<!--
     <snapshotRepository>
-      <id>aperto.nexus.snapshots</id>
-      <url>https://maven.aperto.de/nexus/content/repositories/vda.snapshots/</url>
+      <id>thirdparty-snapshots</id>
+      <url>https://gebit-nexus/content/repositories/thirdparty-snapshots</url>
       <uniqueVersion>false</uniqueVersion>
     </snapshotRepository>
+-->
   </distributionManagement>
     
 </project>
