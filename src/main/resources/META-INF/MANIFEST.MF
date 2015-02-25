@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: pdf-renderer
+Bundle-SymbolicName: com.sun.pdfview
+Bundle-Version: 1.1.gebit20150224
+Export-Package: com.sun.pdfview,com.sun.pdfview.action,com.sun.pdfview
+ .colorspace,com.sun.pdfview.decode,com.sun.pdfview.decrypt,com.sun.pd
+ fview.font,com.sun.pdfview.font.res,com.sun.pdfview.font.ttf,com.sun.
+ pdfview.font.ttf.resource,com.sun.pdfview.function,com.sun.pdfview.gf
+ x,com.sun.pdfview.pattern
