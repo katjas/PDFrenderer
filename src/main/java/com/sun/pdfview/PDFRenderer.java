@@ -309,8 +309,24 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         //but it is also slower :(
 		this.g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
 				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        if (!this.g.drawImage(bi, at, null)) {
-            System.out.println("Image not completed!");
+        // banded rendering may lead to lower memory consumption for e.g. scanned PDFs with large images
+        int bandSize = Configuration.getInstance().getThresholdForBandedImageRendering();
+        if (bandSize > 0 && bi.getHeight() > bandSize) {
+           // draw in bands
+           int tempMax = bi.getHeight();
+           for (int offset=0; offset<tempMax; offset += bandSize) {
+               int h = Math.min(tempMax - offset, bandSize);
+               AffineTransform translated = AffineTransform.getTranslateInstance(0, -(double)offset/tempMax);
+               translated.concatenate(at);
+
+               if (!g.drawImage(bi.getSubimage(0,offset,bi.getWidth(),h), translated, null)) {
+                   System.out.println("Image part not completed!");
+               }
+           }
+        } else {
+               if (!g.drawImage(bi, at, null)) {
+                   System.out.println("Image not completed!");
+               }
         }
         if (isBlured) bi.flush();
 
@@ -395,8 +411,22 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         //but it is also slower :(
 		this.g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
 				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        if (!this.g.drawImage(bi, at, null)) {
-            System.out.println("Image not completed!");
+        // banded rendering may lead to lower memory consumption for e.g. scanned PDFs with large images
+        int bandSize = Configuration.getInstance().getThresholdForBandedImageRendering();
+        if (bandSize > 0 && bi.getHeight() > bandSize) {
+            // draw in bands
+            int tempMax = bi.getHeight();
+            int tempBandSize = 1000;
+            for (int offset=0; offset<tempMax; offset += tempBandSize) {
+                int h = Math.min(tempMax - offset, tempBandSize);
+
+                AffineTransform tempTranslated = AffineTransform.getTranslateInstance(0, -(double)offset/tempMax);
+                tempTranslated.concatenate(at);
+
+                if (!g.drawImage(bi.getSubimage(0,offset,bi.getWidth(),h), tempTranslated, null)) {
+                    System.out.println("Image part not completed!");
+                }
+            }
         }
         if (isBlured) bi.flush();
 

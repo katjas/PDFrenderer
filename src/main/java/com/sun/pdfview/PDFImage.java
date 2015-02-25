@@ -447,7 +447,9 @@ public class PDFImage {
 		ColorSpace rgbCS = ColorSpace.getInstance(ColorSpace.CS_sRGB);
 		if (isGreyscale(cs) && bpc <= 8 && getDecode() == null
 				&& jpegData == null) {
-			bi = convertGreyscaleToArgb(data, bi);
+			if (Configuration.getInstance().getConvertGreyscaleImagesToArgb()) {
+				bi = convertGreyscaleToArgb(data, bi);
+			}
 		} else if (!isImageMask() && cs instanceof ICC_ColorSpace
 				&& !cs.equals(rgbCS)) {
 			ColorConvertOp op = new ColorConvertOp(cs, rgbCS, null);
