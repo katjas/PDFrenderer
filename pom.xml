@@ -61,6 +61,7 @@
     <plugin-version-maven-compiler>3.2</plugin-version-maven-compiler>
     <plugin-version-maven-resources>2.7</plugin-version-maven-resources>
     <plugin-version-maven-jar>2.5</plugin-version-maven-jar>
+    <plugin-version-maven-source>2.4</plugin-version-maven-source>
   
   </properties>
   
@@ -125,7 +126,13 @@
             </archive>
           </configuration>
         </plugin>
-      
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>${plugin-version-maven-source}</version>
+        </plugin>
+
       </plugins>
     </pluginManagement>
     
@@ -168,6 +175,19 @@
                 </resource>
               </resources>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
