@@ -1069,6 +1069,23 @@ public class PDFFile {
                 // skip a line
                 readLine();
 
+                if (refstart == 1){// Check and try to fix incorrect Object Number Start
+                	int startPos = this.buf.position();
+                	try {
+    				byte[] refline = new byte[20];
+    				this.buf.get(refline);
+    				if (refline[17] == 'f'){//free
+	    				PDFXref objIndex = new PDFXref(refline);
+	    				if (objIndex.getID() == 0
+	    					&& objIndex.getGeneration() == 65535){ // The highest generation number possible
+	    					refstart--;
+	    				}
+    				}
+    			} catch (Exception e) {// in case of error ignore 
+    			}
+                	this.buf.position(startPos);
+                }
+
                 // extend the objIdx table, if necessary
                 if (refstart + reflen >= this.objIdx.length) {
                     PDFXref nobjIdx[] = new PDFXref[refstart + reflen];
