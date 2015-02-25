@@ -36,7 +36,8 @@ public class TIFFPredictor extends Predictor {
     /**
      * Undo data based on the png algorithm
      */
-    public ByteBuffer unpredict(ByteBuffer imageData)
+    @Override
+	public ByteBuffer unpredict(ByteBuffer imageData)
         throws IOException
     {
         ByteBuffer out = ByteBuffer.allocate(imageData.limit());
