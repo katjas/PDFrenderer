@@ -7,6 +7,24 @@ The principal objective of the fork is to improve the original PDF renderer. The
 
 It uses an [improved version of JPedal's JBig2 decoder API](https://github.com/Borisvl/JBIG2-Image-Decoder).
 
+Maven
+------
+
+```xml
+		<dependency>
+		    <groupId>com.github.russ-p</groupId>
+		    <artifactId>PDFrenderer</artifactId>
+		    <version>...</version>
+		</dependency>
+		
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+```
+
 To do:
 ------
 * some colours are displayed incorrect, there seem to be open issues regarding colour space handling

@@ -35,6 +35,12 @@
 							  <resource>
 								  <directory>${project.basedir}/stdclasses</directory>
 							  </resource>
+							  <resource>
+								  <directory>${project.basedir}/src</directory>
+								  <excludes>
+								  <exclude>**/*.java</exclude>
+								  </excludes>
+							  </resource>
 							</resources>
                        </configuration>
 				  </execution>
