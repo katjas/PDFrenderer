@@ -18,13 +18,13 @@
 
 package com.sun.pdfview.decrypt;
 
-import com.sun.pdfview.PDFObject;
-import com.sun.pdfview.PDFParseException;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import com.sun.pdfview.PDFObject;
+import com.sun.pdfview.PDFParseException;
 
 /**
  * Produces a {@link PDFDecrypter} for documents given a (possibly non-existent)
@@ -316,4 +316,20 @@ public class PDFDecrypterFactory {
                 encryptionAlgorithm, documentId, keyLength,
                 revision, o, u, pObj.getIntValue(), encryptMetadata, password);
     }
+
+    /**
+     * @param encryptDict the Encrypt dict as found in the document's trailer.
+     * @return true if the Filter exist in the current dictionary
+     */
+    public static boolean isFilterExist(PDFObject encryptDict) {
+        if (encryptDict != null) {
+            try {
+                PDFObject filter = encryptDict.getDictRef("Filter");
+                return filter != null;
+            } catch (IOException e) {
+            }
+        }
+        return false;
+    }
+
 }
