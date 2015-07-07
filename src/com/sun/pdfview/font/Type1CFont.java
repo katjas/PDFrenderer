@@ -290,9 +290,9 @@ public class Type1CFont extends OutlineFont {
      */
     static class Range {
 
-        private int start;
+        private final int start;
 
-        private int len;
+        private final int len;
 
         public Range (int start, int len) {
             this.start = start;
@@ -807,7 +807,11 @@ public class Type1CFont extends OutlineFont {
                     if (this.stackptr == 5) {
                         buildAccentChar (this.stack[1], this.stack[2], (char) this.stack[3],
                                 (char) this.stack[4], gp);
-                    }
+                } else if (this.stackptr == 4) {
+                    // see page 58 on specification 5177.Type2.pdf which indicates that
+                    // these parameters are valid for Type1C as the width is optional
+                    buildAccentChar(this.stack[0], this.stack[1], (char) this.stack[2], (char) this.stack[3], gp);
+                }
                     if (pt.open) {
                         gp.closePath ();
                     }
