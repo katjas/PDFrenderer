@@ -1666,8 +1666,9 @@ public class PDFFile {
     private PDFPage createPage(int pagenum, PDFObject pageObj)
             throws IOException {
         int rotation = 0;
-        Rectangle2D mediabox = null; // second choice, if no crop
-        Rectangle2D cropbox = null;  // first choice
+        Rectangle2D mediabox = null; // third choice, if no crop
+        Rectangle2D cropbox = null; // second choice
+        Rectangle2D trimbox = null; // first choice
 
         PDFObject mediaboxObj = getInheritedValue(pageObj, "MediaBox");
         if (mediaboxObj != null) {
@@ -1677,6 +1678,11 @@ public class PDFFile {
         PDFObject cropboxObj = getInheritedValue(pageObj, "CropBox");
         if (cropboxObj != null) {
             cropbox = parseNormalisedRectangle(cropboxObj);
+        }
+
+        PDFObject trimboxObj = getInheritedValue(pageObj, "TrimBox");
+        if (trimboxObj != null) {
+            trimbox = parseNormalisedRectangle(trimboxObj);
         }
 
         PDFObject rotateObj = getInheritedValue(pageObj, "Rotate");
@@ -1704,7 +1710,7 @@ public class PDFFile {
 			}            
         }
         
-        Rectangle2D bbox = ((cropbox == null) ? mediabox : cropbox);
+        Rectangle2D bbox = (trimbox == null ? ((cropbox == null) ? mediabox : cropbox) : trimbox);
         PDFPage page = new PDFPage(pagenum, bbox, rotation, this.cache);
         page.setAnnots(annotationList);
         return page;
