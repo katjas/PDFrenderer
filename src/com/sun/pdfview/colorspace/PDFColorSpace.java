@@ -163,9 +163,13 @@ public class PDFColorSpace {
         } else if (name.equals("Lab")) {
             value = new PDFColorSpace(new LabColor(ary[1]));
         } else if (name.equals("ICCBased")) {
-            ByteArrayInputStream bais = new ByteArrayInputStream(ary[1].getStream());
-            ICC_Profile profile = ICC_Profile.getInstance(bais);
-            value = new PDFColorSpace(new ICC_ColorSpace(profile));
+            try {
+                ByteArrayInputStream bais = new ByteArrayInputStream(ary[1].getStream());
+                ICC_Profile profile = ICC_Profile.getInstance(bais);
+                value = new PDFColorSpace(new ICC_ColorSpace(profile));
+            } catch (IllegalArgumentException e) {
+                return getColorSpace(COLORSPACE_RGB);
+            }
         } else if (name.equals("Separation") || name.equals("DeviceN")) {
             PDFColorSpace alternate = getColorSpace(ary[2], resources);
             PDFFunction function = PDFFunction.getFunction(ary[3]);

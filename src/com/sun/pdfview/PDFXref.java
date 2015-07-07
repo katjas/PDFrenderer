@@ -45,7 +45,7 @@ public class PDFXref {
 
     private int id;
     private int generation;
-    private boolean compressed;
+    private final boolean compressed;
     
     // this field is only used in PDFFile.objIdx
     private SoftReference<PDFObject> reference = null;
@@ -77,8 +77,8 @@ public class PDFXref {
             this.id = -1;
             this.generation = -1;
         } else {
-            this.id = Integer.parseInt(new String(line, 0, 10));
-            this.generation = Integer.parseInt(new String(line, 11, 5));
+            this.id = Integer.parseInt(new String(line, 0, 10).trim());
+            this.generation = Integer.parseInt(new String(line, 11, 5).trim());
         }
         this.compressed = false;
     }
