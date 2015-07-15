@@ -65,7 +65,7 @@ public class PDFParser extends BaseWatchable {
     public static final boolean DEBUG_TEXT = false;
     public static final boolean DEBUG_IMAGES = false;
     public static final boolean DEBUG_OPERATORS = false;
-    public static final boolean DEBUG_PATH = true;
+    public static final boolean DEBUG_PATH = false;
     public static final int DEBUG_STOP_AT_INDEX = 0;
     public static final boolean DISABLE_THUMBNAILS = false;
     public static final long DRAW_DELAY = 0;
