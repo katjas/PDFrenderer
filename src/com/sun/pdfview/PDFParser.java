@@ -19,6 +19,7 @@
 package com.sun.pdfview;
 import static java.awt.geom.Path2D.WIND_EVEN_ODD;
 
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
@@ -30,6 +31,7 @@ import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Stack;
 
@@ -63,6 +65,7 @@ public class PDFParser extends BaseWatchable {
     public static final boolean DEBUG_TEXT = false;
     public static final boolean DEBUG_IMAGES = false;
     public static final boolean DEBUG_OPERATORS = false;
+    public static final boolean DEBUG_PATH = true;
     public static final int DEBUG_STOP_AT_INDEX = 0;
     public static final boolean DISABLE_THUMBNAILS = false;
     public static final long DRAW_DELAY = 0;
@@ -200,6 +203,15 @@ public class PDFParser extends BaseWatchable {
                 return "some kind of brace (" + this.type + ")";
             }
         }
+
+        /**
+         * reset the token to it's original state
+         */
+        public void reset() {
+            name = null;
+            value = 0.0;
+            type = UNK;
+        }
     }
 
     /**
@@ -212,15 +224,17 @@ public class PDFParser extends BaseWatchable {
 
     /**
     * get the next token.
-    * TODO: this creates a new token each time. Is this strictly
-    * necessary?
     */
     private Tok nextToken() {
         if (this.resend) {
             this.resend = false;
             return this.tok;
         }
-        this.tok = new Tok();
+        if (this.tok != null) {
+            this.tok.reset();
+        } else {
+            tok = new Tok();
+        }
         // skip whitespace
         while (this.loc < this.stream.length && PDFFile.isWhiteSpace(this.stream[this.loc])) {
             this.loc++;
@@ -535,84 +549,119 @@ public class PDFParser extends BaseWatchable {
                 // set graphics state to values in a named dictionary
                 setGSState(popString());
             } else if (cmd.equals("m")) {
+                if (path.getCurrentPoint() != null) {
+                    // begin a new sub path
+                    path.closePath();
+                    logPath(path, "closed");
+                }
                 // path move to
                 float y = popFloat();
                 float x = popFloat();
                 this.path.moveTo(x, y);
+                logPath(path, "2 moved to " + x + ", " + y);
             } else if (cmd.equals("l")) {
                 // path line to
                 float y = popFloat();
                 float x = popFloat();
                 this.path.lineTo(x, y);
+                logPath(path, "1 line to " + x + ", " + y);
             } else if (cmd.equals("c")) {
                 // path curve to
                 float a[] = popFloat(6);
                 this.path.curveTo(a[0], a[1], a[2], a[3], a[4], a[5]);
+                logPath(path, "1 curve to " + Arrays.toString(a));
             } else if (cmd.equals("v")) {
                 // path curve; first control point= start
                 float a[] = popFloat(4);
                 Point2D cp = this.path.getCurrentPoint();
                 this.path.curveTo((float) cp.getX(), (float) cp.getY(), a[0], a[1], a[2], a[3]);
+                logPath(path, "2 curve to " + Arrays.toString(a) + ", " + cp.getX() + "," + cp.getY());
             } else if (cmd.equals("y")) {
                 // path curve; last control point= end
                 float a[] = popFloat(4);
                 this.path.curveTo(a[0], a[1], a[2], a[3], a[2], a[3]);
+                logPath(path, "3 curve to " + Arrays.toString(a));
             } else if (cmd.equals("h")) {
                 // path close
                 this.path.closePath();
+                logPath(path, "closed");
             } else if (cmd.equals("re")) {
                 // path add rectangle
                 float a[] = popFloat(4);
                 this.path.moveTo(a[0], a[1]);
+                logPath(path, "1 moved to " + a[0] + "," + a[1]);
                 this.path.lineTo(a[0] + a[2], a[1]);
+                logPath(path, "2 line to " + (a[0] + a[2]) + "," + a[1]);
                 this.path.lineTo(a[0] + a[2], a[1] + a[3]);
+                logPath(path, "3 line to " + (a[0] + a[2]) + "," + (a[1] + a[3]));
                 this.path.lineTo(a[0], a[1] + a[3]);
+                logPath(path, "4 line to " + a[0] + "," + (a[1] + a[3]));
                 this.path.closePath();
+                logPath(path, "closed");
             } else if (cmd.equals("S")) {
+                this.path.closePath();
+                logPath(path, "closed");
                 // stroke the path
                 if (!PDFParser.DISABLE_PATH_STROKE || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
                     this.cmds.addPath(this.path, PDFShapeCmd.STROKE | this.clip);
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
+                logPath(path, "new path");
             } else if (cmd.equals("s")) {
                 // close and stroke the path
                 this.path.closePath();
+                logPath(path, "closed");
                 if (!PDFParser.DISABLE_PATH_STROKE || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
                     this.cmds.addPath(this.path, PDFShapeCmd.STROKE | this.clip);
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
+                logPath(path, "new path");
             } else if (cmd.equals("f") || cmd.equals("F")) {
+//                this.path.closePath();
+//                logPath(path, "closed");
                 // fill the path (close/not close identical)
                 if (!PDFParser.DISABLE_PATH_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
                     this.cmds.addPath(this.path, PDFShapeCmd.FILL | this.clip);
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
+                logPath(path, "new path");
             } else if (cmd.equals("f*")) {
                 // fill the path using even/odd rule
                 this.path.setWindingRule(WIND_EVEN_ODD);
+                logPath(path, "set winding rule" + WIND_EVEN_ODD);
+//                this.path.closePath();
+//                logPath(path, "closed");
                 if (!PDFParser.DISABLE_PATH_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
                     this.cmds.addPath(this.path, PDFShapeCmd.FILL | this.clip);
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
+                logPath(path, "new path");
             } else if (cmd.equals("B")) {
+//                this.path.closePath();
+//                logPath(path, "closed");
                 // fill and stroke the path
                 if (!PDFParser.DISABLE_PATH_STROKE_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
                     this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip);
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
+                logPath(path, "new path");
             } else if (cmd.equals("B*")) {
                 // fill path using even/odd rule and stroke it
                 this.path.setWindingRule(WIND_EVEN_ODD);
+                logPath(path, "set winding rule" + WIND_EVEN_ODD);
+//                this.path.closePath();
+//                logPath(path, "closed");
                 if (!PDFParser.DISABLE_PATH_STROKE_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
                     this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip);
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
+                logPath(path, "new path");
             } else if (cmd.equals("b")) {
                 // close the path, then fill and stroke it
                 this.path.closePath();
@@ -621,16 +670,22 @@ public class PDFParser extends BaseWatchable {
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
+                logPath(path, "new path");
             } else if (cmd.equals("b*")) {
                 // close path, fill using even/odd rule, then stroke it
                 this.path.closePath();
+                logPath(path, "close");
                 this.path.setWindingRule(WIND_EVEN_ODD);
+                logPath(path, "set winding rule " + WIND_EVEN_ODD);
                 if (!PDFParser.DISABLE_PATH_STROKE_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
                     this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip);
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
+                logPath(path, "new path");
             } else if (cmd.equals("n")) {
+//                this.path.closePath();
+//                logPath(path, "closed");
                 // clip with the path and discard it
                 if (!PDFParser.DISABLE_CLIP) {
                     if (this.clip != 0) {
@@ -639,12 +694,14 @@ public class PDFParser extends BaseWatchable {
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
+                logPath(path, "new path");
             } else if (cmd.equals("W")) {
                 // mark this path for clipping!
                 this.clip = PDFShapeCmd.CLIP;
             } else if (cmd.equals("W*")) {
                 // mark this path using even/odd rule for clipping
                 this.path.setWindingRule(WIND_EVEN_ODD);
+                logPath(path, "set winding rule " + WIND_EVEN_ODD);
                 this.clip = PDFShapeCmd.CLIP;
             } else if (cmd.equals("sh")) {
                 // shade a region that is defined by the shader itself.
@@ -851,6 +908,21 @@ public class PDFParser extends BaseWatchable {
         return Watchable.RUNNING;
     }
 
+    private void logPath(GeneralPath path, String operation) {
+        if (DEBUG_PATH) {
+            if (operation != null) {
+                System.out.println("Operation: " + operation + "; ");
+            }
+            System.out.println("Current path: ");
+            Rectangle b = path.getBounds();
+            if (b != null)
+                System.out.println("        Bounds [x=" + b.x + ",y=" + b.y + ",width=" + b.width + ",height=" + b.height + "]");
+            Point2D p = path.getCurrentPoint();
+            if (p != null)
+                System.out.println("        Point  [x=" + p.getX() + ",y=" + p.getY() + "]");
+        }
+    }
+
     private void onNextObject(Tok obj) throws DebugStopException {
         String progress;
         if (true) {
@@ -916,6 +988,7 @@ public class PDFParser extends BaseWatchable {
         this.state = null;
         this.path = null;
         this.cmds = null;
+        this.tok = null;
     }
 
     boolean errorwritten = false;
