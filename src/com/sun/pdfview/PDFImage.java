@@ -23,6 +23,8 @@ import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.color.ICC_ColorSpace;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.ColorModel;
@@ -38,6 +40,7 @@ import java.awt.image.Raster;
 import java.awt.image.RasterFormatException;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -73,7 +76,7 @@ public class PDFImage {
 		if (obj == null) {
 			return;
 		}
-		HashMap dict = obj.getDictionary();
+		HashMap<String, PDFObject> dict = obj.getDictionary();
 		p("   dict = " + dict);
 		for (Object key : dict.keySet()) {
 			p("key = " + key + " value = " + dict.get(key));
@@ -459,12 +462,21 @@ public class PDFImage {
 		}
 
 		// add in the alpha data supplied by the SMask, if any
-		PDFImage sMaskImage = getSMask();
+        PDFImage sMaskImage = getSMask();
 		if (sMaskImage != null) {
-			BufferedImage si = sMaskImage.getImage();
-			BufferedImage outImage = new BufferedImage(getWidth(), getHeight(),
+            BufferedImage si = null;
+            if(sMaskImage.getHeight()!= this.height && sMaskImage.getWidth()!=this.width) {
+                // in case the two images do not have the same size, scale the sMask image
+                // this fixed a problem in which only part of the image was displayed 
+                si = scaleSMaskImage(sMaskImage);
+            }else {
+                si = sMaskImage.getImage();
+            }
+            debugImage(si, "smask" + this.imageObj.getObjNum());
+            
+            BufferedImage outImage = new BufferedImage(this.width, this.height,
 					BufferedImage.TYPE_INT_ARGB);
-
+            debugImage(si, "outImage" + this.imageObj.getObjNum());
 			int[] srcArray = new int[this.width];
 			int[] maskArray = new int[this.width];
 
@@ -485,10 +497,34 @@ public class PDFImage {
 			bi = outImage;
 		}
 
+        debugImage(bi, "result" + this.imageObj.getObjNum());
 		return (bi);
 	}
 
-	private boolean isGreyscale(ColorSpace aCs) {
+	/**
+	 * Scale the softmask image to the size of the actual image
+	 * @param sMaskImage
+	 * @return
+	 */
+	private BufferedImage scaleSMaskImage(PDFImage sMaskImage) {
+	    BufferedImage before = sMaskImage.getImage();
+	    int w = before.getWidth();
+	    int h = before.getHeight();
+	    
+        if(PDFParser.DEBUG_IMAGES) {
+            System.out.println("Scaling image from " +w+"/"+h+" to "+this.width+"/"+this.height);
+        }
+	    BufferedImage after = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+	    AffineTransform at = new AffineTransform();
+	    
+	    at.scale(((double)this.width/w), ((double)this.height/h));
+	    
+	    AffineTransformOp scaleOp = 
+	       new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
+	    return scaleOp.filter(before, after);
+    }
+
+    private boolean isGreyscale(ColorSpace aCs) {
 		return aCs == PDFColorSpace
 				.getColorSpace(PDFColorSpace.COLORSPACE_GRAY).getColorSpace();
 	}
@@ -1272,5 +1308,20 @@ public class PDFImage {
             return super.isCompatibleRaster(raster);
         }
 
+    }
+
+    private static void debugImage(BufferedImage image, String name) {
+        if (PDFParser.DEBUG_IMAGES) {
+            if(image == null) {
+                return;
+            }
+            try {
+                // retrieve image
+                File outputfile = new File("D:/tmp/PDFimages/" + name + ".png");
+                ImageIO.write(image, "png", outputfile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
