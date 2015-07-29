@@ -103,7 +103,7 @@ public class PDFObject {
      * the PDFFile from which this object came, used for
      * dereferences
      */
-    private PDFFile owner;
+    private final PDFFile owner;
     /**
      * a cache of translated data.  This data can be
      * garbage collected at any time, after which it will
@@ -175,10 +175,10 @@ public class PDFObject {
             this.type = BOOLEAN;
         } else if (obj instanceof PDFParser.Tok) {
             PDFParser.Tok tok = (PDFParser.Tok) obj;
-            if (tok.name.equals("true")) {
+            if (tok!=null && tok.name!=null && tok.name.equals("true")) {
                 this.value = Boolean.TRUE;
                 this.type = BOOLEAN;
-            } else if (tok.name.equals("false")) {
+            } else if (tok!=null && tok.name!=null && tok.name.equals("false")) {
                 this.value = Boolean.FALSE;
                 this.type = BOOLEAN;
             } else {
