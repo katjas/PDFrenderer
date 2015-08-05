@@ -48,6 +48,7 @@ public class PDFShapeCmd extends PDFCmd {
     // private Rectangle2D bounds;
     /** the stroke style for the anti-antialias stroke */
     BasicStroke againstroke = new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
+    private boolean autoAdjustStroke = false;
 
     /**
     * create a new PDFShapeCmd and check it against the previous one
@@ -59,11 +60,10 @@ public class PDFShapeCmd extends PDFCmd {
     * the style: an OR of STROKE, FILL, or CLIP. As a
     * convenience, BOTH = STROKE | FILL.
     */
-    public PDFShapeCmd(GeneralPath gp, int style) {
-        // this.gp = new GeneralPath(gp);
+    public PDFShapeCmd(GeneralPath gp, int style, boolean autoAdjustStroke) {
         this.gp = gp;
         this.style = style;
-        // this.bounds = gp.getBounds2D();
+        this.autoAdjustStroke = autoAdjustStroke;
     }
 
     /**
@@ -84,7 +84,7 @@ public class PDFShapeCmd extends PDFCmd {
             }
         }
         if ((this.style & STROKE) != 0) {
-            Rectangle2D strokeRect = state.stroke(this.gp);
+            Rectangle2D strokeRect = state.stroke(this.gp, autoAdjustStroke);
             if (rect == null) {
                 rect = strokeRect;
             } else {

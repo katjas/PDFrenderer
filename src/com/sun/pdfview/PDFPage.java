@@ -500,13 +500,14 @@ public class PDFPage {
     * @param w
     * the width of the stroke
     */
-    public void addStrokeWidth(float w) {
+    public PDFChangeStrokeCmd addStrokeWidth(float w) {
         PDFChangeStrokeCmd sc = new PDFChangeStrokeCmd();
         // if (w == 0) {
         // w = 0.1f;
         // }
         sc.setWidth(w);
         addCommand(sc);
+        return sc;
     }
 
     /**
@@ -587,10 +588,11 @@ public class PDFPage {
     * the path
     * @param style
     * the style: PDFShapeCmd.STROKE, PDFShapeCmd.FILL,
+    * @param autoAdjustStroke
     * PDFShapeCmd.BOTH, PDFShapeCmd.CLIP, or some combination.
     */
-    public void addPath(GeneralPath path, int style) {
-        addCommand(new PDFShapeCmd(path, style));
+    public void addPath(GeneralPath path, int style, boolean autoAdjustStroke) {
+        addCommand(new PDFShapeCmd(path, style, autoAdjustStroke));
     }
 
     public void addShadeCommand(PDFPaint p, Rectangle2D box) {
@@ -824,7 +826,7 @@ class PDFShadeCommand extends PDFCmd {
         }
         state.setFillAlpha(1);
         state.setFillPaint(p);
-        return (new PDFShapeCmd(new GeneralPath(s), PDFShapeCmd.FILL)).execute(state);
+        return (new PDFShapeCmd(new GeneralPath(s), PDFShapeCmd.FILL, false)).execute(state);
     }
 }
 

@@ -264,7 +264,7 @@ public class PDFTextFormat implements Cloneable {
     * @param text
     * the text to add
     */
-    public void doText(PDFPage cmds, String text) {
+    public void doText(PDFPage cmds, String text, boolean autoAdjustStroke) {
         Point2D.Float zero = new Point2D.Float();
         AffineTransform scale = new AffineTransform(this.fsize * this.th, 0, /* 0 */
         0, this.fsize, /* 0 */
@@ -297,7 +297,7 @@ public class PDFTextFormat implements Cloneable {
                     System.out.println("BOX " + lastColor);
                 }
                 cmds.addFillPaint(PDFPaint.getColorPaint(new Color(160, 160, 255)));
-                cmds.addPath(path, PDFShapeCmd.FILL);
+                cmds.addPath(path, PDFShapeCmd.FILL, autoAdjustStroke);
                 if (lastColor != null) {
                     cmds.addCommand(lastColor);
                 }
@@ -328,7 +328,7 @@ public class PDFTextFormat implements Cloneable {
                 }
                 PDFCmd lastColor = cmds.findLastCommand(PDFFillPaintCmd.class);
                 cmds.addFillPaint(PDFPaint.getColorPaint(new Color(255, 0, 0)));
-                cmds.addPath(path, PDFShapeCmd.FILL);
+                cmds.addPath(path, PDFShapeCmd.FILL, autoAdjustStroke);
                 if (lastColor != null) {
                     cmds.addCommand(lastColor);
                 }
@@ -348,10 +348,10 @@ public class PDFTextFormat implements Cloneable {
     * represent text to be added, and the Doubles represent kerning
     * amounts.
     */
-    public void doText(PDFPage cmds, Object ary[]) throws PDFParseException {
+    public void doText(PDFPage cmds, Object ary[], boolean autoAdjustStroke) throws PDFParseException {
         for (int i = 0; i < ary.length; i++) {
             if (ary[i] instanceof String) {
-                doText(cmds, (String) ary[i]);
+                doText(cmds, (String) ary[i], autoAdjustStroke);
             } else if (ary[i] instanceof Double) {
                 float val = ((Double) ary[i]).floatValue() / 1000f;
                 this.cur.translate(-val * this.fsize * this.th, 0);

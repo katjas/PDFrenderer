@@ -81,7 +81,7 @@ public class PDFGlyph {
     public Point2D addCommands(PDFPage cmds, AffineTransform transform, int mode) {
         if (this.shape != null) {
             GeneralPath outline = (GeneralPath) this.shape.createTransformedShape(transform);
-            cmds.addCommand(new PDFShapeCmd(outline, mode));
+            cmds.addCommand(new PDFShapeCmd(outline, mode, false));
         } else if (this.page != null) {
             cmds.addCommands(this.page, transform);
         }

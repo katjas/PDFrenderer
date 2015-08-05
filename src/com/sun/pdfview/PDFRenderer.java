@@ -72,12 +72,12 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
     /** the total region of this image that has been written to */
     private Rectangle2D globalDirtyRegion;
     /** the image observers that will be updated when this image changes */
-    private List<ImageObserver> observers;
+    private final List<ImageObserver> observers;
     /** the last shape we drew (to check for overlaps) */
     private GeneralPath lastShape;
     private AffineTransform lastTransform;
     /** the info about the image, if we need to recreate it */
-    private ImageInfo imageinfo;
+    private final ImageInfo imageinfo;
     /** the next time the image should be notified about updates */
     private long then = 0;
     /** the sum of all the individual dirty regions since the last update */
@@ -210,7 +210,9 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
      * drawn will be added.  May also be null, in which case no dirty
      * region will be recorded.
      */
-    public Rectangle2D stroke(GeneralPath s) {
+    public Rectangle2D stroke(GeneralPath s, boolean autoAdjustStroke) {
+        // TODO: consider autoAdjustStroke here instead of during parsing
+        //      PDF specification p. 130 / > 10.6.5 
         this.g.setComposite(this.state.strokeAlpha);
         s = new GeneralPath(autoAdjustStrokeWidth(this.g, this.state.stroke).createStrokedShape(s));
         return this.state.strokePaint.fill(this, this.g, s);

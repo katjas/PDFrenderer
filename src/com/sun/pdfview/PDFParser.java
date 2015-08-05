@@ -97,9 +97,17 @@ public class PDFParser extends BaseWatchable {
     byte[] stream;
     HashMap<String, PDFObject> resources;
 
-    private static class DebugStopException extends Exception {
-    }
+    boolean errorwritten = false;
+    private boolean autoAdjustStroke = false;
+    private boolean strokeOverprint;
+    private int strokeOverprintMode;
+    private boolean fillOverprint;
+    private int fillOverprintMode;
 
+    @SuppressWarnings("serial")
+    private static class DebugStopException extends Exception {
+        // nothing to do
+    }
     public static int debuglevel = 4000;
 
     public static void debug(String msg, int level) {
@@ -212,14 +220,6 @@ public class PDFParser extends BaseWatchable {
             value = 0.0;
             type = UNK;
         }
-    }
-
-    /**
-    * put the current token back so that it is returned again by
-    * nextToken().
-    */
-    private void throwback() {
-        this.resend = true;
     }
 
     /**
@@ -484,6 +484,7 @@ public class PDFParser extends BaseWatchable {
     * if the page we are rendering into is no longer available
     * </ul>
     */
+    @SuppressWarnings("unused")
     @Override
     public int iterate() throws Exception {
         // make sure the page is still available, and create the reference
@@ -507,7 +508,7 @@ public class PDFParser extends BaseWatchable {
             // it's a command. figure out what to do.
             // (if not, the token will be "pushed" onto the stack)
             String cmd = ((Tok) obj).name;
-            debug("Command: " + cmd + " (stack size is " + this.stack.size() + ")", 0);
+            debug("Command: " + cmd + " (stack size is " + this.stack.size() + ")", 10);
             if (cmd.equals("q")) {
                 // push the parser state
                 this.parserStates.push((ParserState) this.state.clone());
@@ -547,7 +548,9 @@ public class PDFParser extends BaseWatchable {
                 // TODO: do something with flatness tolerance
             } else if (cmd.equals("gs")) {
                 // set graphics state to values in a named dictionary
-                setGSState(popString());
+                String popString = popString();
+                debug("Set GS state "+popString, 10);
+                setGSState(popString);
             } else if (cmd.equals("m")) {
                 if (path.getCurrentPoint() != null) {
                     // begin a new sub path
@@ -599,11 +602,13 @@ public class PDFParser extends BaseWatchable {
                 this.path.closePath();
                 logPath(path, "closed");
             } else if (cmd.equals("S")) {
-                this.path.closePath();
-                logPath(path, "closed");
                 // stroke the path
                 if (!PDFParser.DISABLE_PATH_STROKE || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
-                    this.cmds.addPath(this.path, PDFShapeCmd.STROKE | this.clip);
+                    if(autoAdjustStroke || strokeOverprint || fillOverprint) {
+                        path.closePath();
+                        logPath(path, "closed");
+                    }
+                    this.cmds.addPath(this.path, PDFShapeCmd.STROKE | this.clip, this.autoAdjustStroke);
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
@@ -613,17 +618,17 @@ public class PDFParser extends BaseWatchable {
                 this.path.closePath();
                 logPath(path, "closed");
                 if (!PDFParser.DISABLE_PATH_STROKE || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
-                    this.cmds.addPath(this.path, PDFShapeCmd.STROKE | this.clip);
+                    this.cmds.addPath(this.path, PDFShapeCmd.STROKE | this.clip, this.autoAdjustStroke);
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
                 logPath(path, "new path");
             } else if (cmd.equals("f") || cmd.equals("F")) {
-//                this.path.closePath();
-//                logPath(path, "closed");
+                this.path.closePath();
+                logPath(path, "closed");
                 // fill the path (close/not close identical)
                 if (!PDFParser.DISABLE_PATH_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
-                    this.cmds.addPath(this.path, PDFShapeCmd.FILL | this.clip);
+                    this.cmds.addPath(this.path, PDFShapeCmd.FILL | this.clip, this.autoAdjustStroke);
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
@@ -632,20 +637,16 @@ public class PDFParser extends BaseWatchable {
                 // fill the path using even/odd rule
                 this.path.setWindingRule(WIND_EVEN_ODD);
                 logPath(path, "set winding rule" + WIND_EVEN_ODD);
-//                this.path.closePath();
-//                logPath(path, "closed");
                 if (!PDFParser.DISABLE_PATH_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
-                    this.cmds.addPath(this.path, PDFShapeCmd.FILL | this.clip);
+                    this.cmds.addPath(this.path, PDFShapeCmd.FILL | this.clip, this.autoAdjustStroke);
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
                 logPath(path, "new path");
             } else if (cmd.equals("B")) {
-//                this.path.closePath();
-//                logPath(path, "closed");
                 // fill and stroke the path
                 if (!PDFParser.DISABLE_PATH_STROKE_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
-                    this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip);
+                    this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip, this.autoAdjustStroke);
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
@@ -654,10 +655,8 @@ public class PDFParser extends BaseWatchable {
                 // fill path using even/odd rule and stroke it
                 this.path.setWindingRule(WIND_EVEN_ODD);
                 logPath(path, "set winding rule" + WIND_EVEN_ODD);
-//                this.path.closePath();
-//                logPath(path, "closed");
                 if (!PDFParser.DISABLE_PATH_STROKE_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
-                    this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip);
+                    this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip, this.autoAdjustStroke);
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
@@ -665,8 +664,9 @@ public class PDFParser extends BaseWatchable {
             } else if (cmd.equals("b")) {
                 // close the path, then fill and stroke it
                 this.path.closePath();
+                logPath(path, "close");
                 if (!PDFParser.DISABLE_PATH_STROKE_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
-                    this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip);
+                    this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip, this.autoAdjustStroke);
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
@@ -678,18 +678,20 @@ public class PDFParser extends BaseWatchable {
                 this.path.setWindingRule(WIND_EVEN_ODD);
                 logPath(path, "set winding rule " + WIND_EVEN_ODD);
                 if (!PDFParser.DISABLE_PATH_STROKE_FILL || (!PDFParser.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
-                    this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip);
+                    this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip, this.autoAdjustStroke);
                 }
                 this.clip = 0;
                 this.path = new GeneralPath();
                 logPath(path, "new path");
             } else if (cmd.equals("n")) {
-//                this.path.closePath();
-//                logPath(path, "closed");
+                if (path.getCurrentPoint() != null) {
+                    this.path.closePath();
+                    logPath(path, "closed");
+                }
                 // clip with the path and discard it
                 if (!PDFParser.DISABLE_CLIP) {
                     if (this.clip != 0) {
-                        this.cmds.addPath(this.path, this.clip);
+                        this.cmds.addPath(this.path, this.clip, this.autoAdjustStroke);
                     }
                 }
                 this.clip = 0;
@@ -725,6 +727,7 @@ public class PDFParser extends BaseWatchable {
                 int n = this.state.strokeCS.getNumComponents();
                 this.cmds.addStrokePaint(this.state.strokeCS.getPaint(popFloat(n)));
             } else if (cmd.equals("SCN")) {
+                // set the stroke colour
                 if (this.state.strokeCS instanceof PatternSpace) {
                     this.cmds.addFillPaint(doPattern((PatternSpace) this.state.strokeCS));
                 } else {
@@ -759,18 +762,37 @@ public class PDFParser extends BaseWatchable {
                 this.state.fillCS = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_RGB);
                 this.cmds.addFillPaint(this.state.fillCS.getPaint(popFloat(3)));
             } else if (cmd.equals("K")) {
-                // set the stroke color to a CMYK value
-                this.state.strokeCS = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_CMYK);
-                this.cmds.addStrokePaint(this.state.strokeCS.getPaint(popFloat(4)));
+//                if(strokeOverprint && strokeOverprintMode == 1) {
+//                    if (this.state.strokeCS instanceof PatternSpace) {
+//                        this.cmds.addFillPaint(doPattern((PatternSpace) this.state.strokeCS));
+//                    } else {
+//                        int n = this.state.strokeCS.getNumComponents();
+//                        this.cmds.addStrokePaint(this.state.strokeCS.getPaint(popFloat(n)));
+//                    }
+//                }else {
+                    // set the stroke color to a CMYK value                
+                    this.state.strokeCS = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_CMYK);
+                    this.cmds.addStrokePaint(this.state.strokeCS.getPaint(popFloat(4)));
+//                }
             } else if (cmd.equals("k")) {
-                // set the fill color to a CMYK value
-                this.state.fillCS = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_CMYK);
-                this.cmds.addFillPaint(this.state.fillCS.getPaint(popFloat(4)));
+//                if(fillOverprint && fillOverprintMode == 1) {
+//                    // if OP = true and OPM = 1 apply the same as in "scn"
+//                    if (this.state.fillCS instanceof PatternSpace) {
+//                        this.cmds.addFillPaint(doPattern((PatternSpace) this.state.fillCS));
+//                    } else {
+//                        // set the fill color to a CMYK value
+//                        int n = this.state.fillCS.getNumComponents();
+//                        this.cmds.addFillPaint(this.state.fillCS.getPaint(popFloat(n)));
+//                    }
+//                }else {
+                    this.state.fillCS = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_CMYK);
+                    this.cmds.addFillPaint(this.state.fillCS.getPaint(popFloat(4)));
+//                }
             } else if (cmd.equals("Do")) {
                 // make a do call on the referenced object
                 String name = popString();
                 if (PDFParser.DEBUG_IMAGES) {
-                    System.out.println("XObject reference to " + name);
+                    debug("XObject reference to " + name, 2000);
                 }
                 PDFObject xobj = findResource(name, "XObject");
                 doXObject(xobj);
@@ -821,11 +843,11 @@ public class PDFParser extends BaseWatchable {
                 this.state.textFormat.carriageReturn();
             } else if (cmd.equals("Tj")) {
                 // show text
-                this.state.textFormat.doText(this.cmds, popString());
+                this.state.textFormat.doText(this.cmds, popString(), this.autoAdjustStroke);
             } else if (cmd.equals("\'")) {
                 // next line and show text: T* string Tj
                 this.state.textFormat.carriageReturn();
-                this.state.textFormat.doText(this.cmds, popString());
+                this.state.textFormat.doText(this.cmds, popString(), this.autoAdjustStroke);
             } else if (cmd.equals("\"")) {
                 // draw string on new line with char & word spacing:
                 // aw Tw ac Tc string '
@@ -834,10 +856,10 @@ public class PDFParser extends BaseWatchable {
                 float aw = popFloat();
                 this.state.textFormat.setWordSpacing(aw);
                 this.state.textFormat.setCharSpacing(ac);
-                this.state.textFormat.doText(this.cmds, string);
+                this.state.textFormat.doText(this.cmds, string, this.autoAdjustStroke);
             } else if (cmd.equals("TJ")) {
                 // show kerned string
-                this.state.textFormat.doText(this.cmds, popArray());
+                this.state.textFormat.doText(this.cmds, popArray(), this.autoAdjustStroke);
             } else if (cmd.equals("BI")) {
                 // parse inline image
                 parseInlineImage();
@@ -909,7 +931,7 @@ public class PDFParser extends BaseWatchable {
     }
 
     private void logPath(GeneralPath path, String operation) {
-        if (DEBUG_PATH) {
+        if (DEBUG_PATH){
             if (operation != null) {
                 System.out.println("Operation: " + operation + "; ");
             }
@@ -923,6 +945,7 @@ public class PDFParser extends BaseWatchable {
         }
     }
 
+    @SuppressWarnings("unused")
     private void onNextObject(Tok obj) throws DebugStopException {
         String progress;
         if (true) {
@@ -990,8 +1013,6 @@ public class PDFParser extends BaseWatchable {
         this.cmds = null;
         this.tok = null;
     }
-
-    boolean errorwritten = false;
 
     public void dumpStreamToError() {
         if (this.errorwritten) {
@@ -1296,11 +1317,11 @@ public class PDFParser extends BaseWatchable {
         Rectangle2D bbox = shader.getBBox();
         if (bbox != null) {
             this.cmds.addFillPaint(shader.getPaint());
-            this.cmds.addPath(new GeneralPath(bbox), PDFShapeCmd.FILL);
+            this.cmds.addPath(new GeneralPath(bbox), PDFShapeCmd.FILL, this.autoAdjustStroke);
         } else {
             // if no bounding box is set, use the default user space
             this.cmds.addFillPaint(shader.getPaint());
-            this.cmds.addPath(new GeneralPath(this.cmds.getBBox()), PDFShapeCmd.FILL);
+            this.cmds.addPath(new GeneralPath(this.cmds.getBBox()), PDFShapeCmd.FILL, this.autoAdjustStroke);
         }
         this.cmds.addPop();
     }
@@ -1323,26 +1344,33 @@ public class PDFParser extends BaseWatchable {
     * @param name
     * the resource name of the graphics state dictionary
     */
-    private void setGSState(String name) throws IOException {
+    private void setGSState(String name) throws IOException {        
         // obj must be a string that is a key to the "ExtGState" dict
         PDFObject gsobj = findResource(name, "ExtGState");
+        // TODO: lots of graphic states are not yet considered, see chapter 8.4.5 of the PDF specification.  
         // get LW, LC, LJ, Font, SM, CA, ML, D, RI, FL, BM, ca
         // out of the reference, which is a dictionary
         PDFObject d;
+        boolean handled = false;
         if ((d = gsobj.getDictRef("LW")) != null) {
             this.cmds.addStrokeWidth(d.getFloatValue());
+            handled = true;
         }
         if ((d = gsobj.getDictRef("LC")) != null) {
             this.cmds.addEndCap(d.getIntValue());
+            handled = true;
         }
         if ((d = gsobj.getDictRef("LJ")) != null) {
             this.cmds.addLineJoin(d.getIntValue());
+            handled = true;
         }
         if ((d = gsobj.getDictRef("Font")) != null) {
             this.state.textFormat.setFont(getFontFrom(d.getAt(0).getStringValue()), d.getAt(1).getFloatValue());
+            handled = true;
         }
         if ((d = gsobj.getDictRef("ML")) != null) {
             this.cmds.addMiterLimit(d.getFloatValue());
+            handled = true;
         }
         if ((d = gsobj.getDictRef("D")) != null) {
             PDFObject pdash[] = d.getAt(0).getArray();
@@ -1353,14 +1381,40 @@ public class PDFParser extends BaseWatchable {
             if (!PDFParser.DISABLE_PATH_STROKE) {
                 this.cmds.addDash(dash, d.getAt(1).getFloatValue());
             }
+            handled = true;
         }
         if ((d = gsobj.getDictRef("CA")) != null) {
             this.cmds.addStrokeAlpha(d.getFloatValue());
+            handled = true;
         }
         if ((d = gsobj.getDictRef("ca")) != null) {
             this.cmds.addFillAlpha(d.getFloatValue());
+            handled = true;
         }
-        // others: BM=blend mode
+        if((d = gsobj.getDictRef("SA")) != null) {
+            // automatic stroke adjustment
+            this.autoAdjustStroke  = d.getBooleanValue();
+            handled = true;
+        }
+        if((d = gsobj.getDictRef("OP")) != null) {
+            this.strokeOverprint = d.getBooleanValue();
+            PDFObject x = gsobj.getDictRef("OPM");
+            if(x!= null) {
+                this.strokeOverprintMode = x.getIntValue();
+            }
+            handled = true;
+        }
+        if((d = gsobj.getDictRef("op")) != null) {
+            this.fillOverprint = d.getBooleanValue();
+            PDFObject x = gsobj.getDictRef("OPM");
+            if(x!= null) {
+                this.fillOverprintMode = x.getIntValue();
+            }
+            handled = true;
+        }
+        if(!handled) {
+            debug("graphic state command unknown!", 9);
+        }
     }
 
     /**
@@ -1486,6 +1540,7 @@ public class PDFParser extends BaseWatchable {
     * if the top of the stack does not contain
     * a PDFObject.
     */
+    @SuppressWarnings("unused")
     private PDFObject popObject() throws PDFParseException {
         Object obj = this.stack.pop();
         if (!(obj instanceof PDFObject)) {
