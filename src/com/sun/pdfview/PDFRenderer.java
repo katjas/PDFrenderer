@@ -132,7 +132,6 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         this.imageinfo = new ImageInfo(imgbounds.width, imgbounds.height,
                 clip, bgColor);
         g.translate(imgbounds.x, imgbounds.y);
-//	System.out.println("Translating by "+imgbounds.x+","+imgbounds.y);
 
         // initialize the list of observers
         this.observers = new ArrayList<ImageObserver>();
@@ -306,9 +305,27 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         //but it is also slower :(
 		this.g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
 				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        if (!this.g.drawImage(bi, at, null)) {
-            System.out.println("Image not completed!");
+		// TODO XOND: 05.08.2015 to be tested  
+        // banded rendering may lead to lower memory consumption for e.g. scanned PDFs with large images
+        int bandSize = Configuration.getInstance().getThresholdForBandedImageRendering();
+        if (bandSize > 0 && bi.getHeight() > bandSize) {
+           // draw in bands
+           int tempMax = bi.getHeight();
+           for (int offset=0; offset<tempMax; offset += bandSize) {
+               int h = Math.min(tempMax - offset, bandSize);
+               AffineTransform translated = AffineTransform.getTranslateInstance(0, -(double)offset/tempMax);
+               translated.concatenate(at);
+
+               if (!g.drawImage(bi.getSubimage(0,offset,bi.getWidth(),h), translated, null)) {
+                   PDFDebugger.debug("Image part not completed!", 10);
+               }
+           }
+        } else {
+               if (!g.drawImage(bi, at, null)) {
+                   PDFDebugger.debug("Image not completed!", 10);
+               }
         }
+		
         if (isBlured) bi.flush();
 
         // get the total transform that was executed
@@ -392,9 +409,27 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         //but it is also slower :(
 		this.g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
 				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        if (!this.g.drawImage(bi, at, null)) {
-            System.out.println("Image not completed!");
+		// TODO XOND: 05.08.2015 to be tested  
+        // banded rendering may lead to lower memory consumption for e.g. scanned PDFs with large images
+        int bandSize = Configuration.getInstance().getThresholdForBandedImageRendering();
+        if (bandSize > 0 && bi.getHeight() > bandSize) {
+           // draw in bands
+           int tempMax = bi.getHeight();
+           for (int offset=0; offset<tempMax; offset += bandSize) {
+               int h = Math.min(tempMax - offset, bandSize);
+               AffineTransform translated = AffineTransform.getTranslateInstance(0, -(double)offset/tempMax);
+               translated.concatenate(at);
+
+               if (!g.drawImage(bi.getSubimage(0,offset,bi.getWidth(),h), translated, null)) {
+                   PDFDebugger.debug("Image part not completed!", 10);
+               }
+           }
+        } else {
+               if (!g.drawImage(bi, at, null)) {
+                   PDFDebugger.debug("Image not completed!", 10);
+               }
         }
+
         if (isBlured) bi.flush();
 
         // get the total transform that was executed
@@ -559,7 +594,6 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         if (rendererFinished()) {
             // if we're finished, just send a finished notification, don't
             // add to the list of observers
-            // System.out.println("Late notify");
             observer.imageUpdate(i, ImageObserver.ALLBITS, 0, 0,
                     this.imageinfo.width, this.imageinfo.height);
             return;
@@ -661,7 +695,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         if (this.imageRef != null) {
             bi = this.imageRef.get();
             if (bi == null) {
-                System.out.println("Image went away.  Stopping");
+                PDFDebugger.debug("Image went away.  Stopping");
                 return Watchable.STOPPED;
             }
 

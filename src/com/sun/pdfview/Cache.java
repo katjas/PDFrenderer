@@ -194,15 +194,15 @@ public class Cache {
      * @return the record, or null if it's not in the cache
      */
     PageRecord getPageRecord(Integer pageNumber) {
-        // System.out.println("Request for page " + pageNumber);
-        SoftReference ref = this.pages.get(pageNumber);
+        PDFDebugger.debug("Request for page " + pageNumber, 1000);
+        SoftReference<PageRecord> ref = this.pages.get(pageNumber);
         if (ref != null) {
             String val = (ref.get() == null) ? " not in " : " in ";
-            // System.out.println("Page " + pageNumber + val + "cache");
-            return (PageRecord) ref.get();
+            PDFDebugger.debug("Page " + pageNumber + val + "cache", 1000);
+            return ref.get();
         }
 
-        // System.out.println("Page " + pageNumber + " not in cache");
+        PDFDebugger.debug("Page " + pageNumber + " not in cache", 1000);
         // not in cache
         return null;
     }
@@ -211,9 +211,9 @@ public class Cache {
      * Remove a page's record from the cache
      */
     PageRecord removePageRecord(Integer pageNumber) {
-        SoftReference ref = this.pages.remove(pageNumber);
+        SoftReference<PageRecord> ref = this.pages.remove(pageNumber);
         if (ref != null) {
-            return (PageRecord) ref.get();
+            return ref.get();
         }
 
         // not in cache
@@ -253,19 +253,19 @@ public class Cache {
         // first find the relevant page record
         Integer pageNumber = Integer.valueOf(page.getPageNumber());
 
-        // System.out.println("Request for image on page " + pageNumber);
+        PDFDebugger.debug("Request for image on page " + pageNumber, 1000);
 
         PageRecord pageRec = getPageRecord(pageNumber);
         if (pageRec != null) {
-            SoftReference ref = pageRec.images.get(info);
+            SoftReference<Record> ref = pageRec.images.get(info);
             if (ref != null) {
                 String val = (ref.get() == null) ? " not in " : " in ";
-                // System.out.println("Image on page " + pageNumber + val + " cache");
-                return (Record) ref.get();
+                PDFDebugger.debug("Image on page " + pageNumber + val + " cache", 1000);
+                return ref.get();
             }
         }
 
-        // System.out.println("Image on page " + pageNumber + " not in cache");
+        PDFDebugger.debug("Image on page " + pageNumber + " not in cache", 1000);
         // not found
         return null;
     }
@@ -278,9 +278,9 @@ public class Cache {
         Integer pageNumber = Integer.valueOf(page.getPageNumber());
         PageRecord pageRec = getPageRecord(pageNumber);
         if (pageRec != null) {
-            SoftReference ref = pageRec.images.remove(info);
+            SoftReference<Record> ref = pageRec.images.remove(info);
             if (ref != null) {
-                return (Record) ref.get();
+                return ref.get();
             }
 
         }

@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import com.sun.pdfview.PDFDebugger;
+
 /**
  * Represents the TTF "cmap" table
  *
@@ -38,7 +40,7 @@ public class CmapTable extends TrueTypeTable {
     /**
      * Holds the CMap subtables, sorted properly
      */
-    private SortedMap<CmapSubtable,CMap> subtables;
+    private final SortedMap<CmapSubtable,CMap> subtables;
     
     /** Creates a new instance of CmapTable */
     protected CmapTable() {
@@ -111,10 +113,10 @@ public class CmapTable extends TrueTypeTable {
                     addCMap(platformID, platformSpecificID, cMap);
                 }
             } catch (Exception ex) {
-                System.out.println("Error reading map.  PlatformID=" +
+                PDFDebugger.debug("Error reading map.  PlatformID=" +
                                     platformID + ", PlatformSpecificID=" + 
                                     platformSpecificID);
-                System.out.println("Reason: " + ex);
+                PDFDebugger.debug("Reason: " + ex);
             }
         }
     }

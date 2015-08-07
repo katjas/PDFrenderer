@@ -76,8 +76,6 @@ public abstract class BaseWatchable implements Watchable, Runnable {
 
     @Override
 	public void run() {
-        // System.out.println(Thread.currentThread().getName() + " starting");
-
         try {
             Thread.sleep(1);
             // call setup once we started
@@ -116,7 +114,6 @@ public abstract class BaseWatchable implements Watchable, Runnable {
                             setError(ex);
                         }
                     } else {
-                        // System.out.println(getName() + " waiting: status = " + getStatusString());
                         // wait for our status to change
                         synchronized (this.statusLock) {
                             if (!isExecutable()) {
@@ -130,16 +127,13 @@ public abstract class BaseWatchable implements Watchable, Runnable {
                     }
                 }
             }
-
-            // System.out.println(Thread.currentThread().getName() + " exiting: status = " + getStatusString());
-
             // call cleanup when we are done
             if (getStatus() == Watchable.COMPLETED || getStatus() == Watchable.ERROR) {
 
                 cleanup();
             }
         } catch (InterruptedException e) {
-            System.out.println("Interrupted.");
+            PDFDebugger.debug("Interrupted.");
         }
         // notify that we are no longer running
         this.thread = null;
@@ -284,7 +278,7 @@ public abstract class BaseWatchable implements Watchable, Runnable {
                     @Override
                     public void uncaughtException( Thread th, Throwable ex )
                     {
-                        System.out.println( "Uncaught exception: " + ex );
+                        PDFDebugger.debug( "Uncaught exception: " + ex );
                     }
                 };
                 thread.setUncaughtExceptionHandler( h );
@@ -304,8 +298,6 @@ public abstract class BaseWatchable implements Watchable, Runnable {
     protected void setStatus(int status) {
         synchronized (this.statusLock) {
             this.status = status;
-
-            // System.out.println(getName() + " status set to " + getStatusString());
 
             this.statusLock.notifyAll();
         }

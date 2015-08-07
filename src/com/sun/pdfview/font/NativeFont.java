@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.sun.pdfview.PDFDebugger;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 import com.sun.pdfview.font.ttf.CMap;
@@ -63,7 +64,7 @@ public class NativeFont extends OutlineFont {
     private Font f;
 
     /** the font render context */
-    private FontRenderContext basecontext =
+    private final FontRenderContext basecontext =
                               new FontRenderContext (new AffineTransform (),
             true, true);
 
@@ -241,17 +242,9 @@ public class NativeFont extends OutlineFont {
      */
     protected void setFont (byte[] fontdata)
             throws FontFormatException, IOException {
-
-        // System.out.println("Loading " + getBaseFont());
-        // FileOutputStream fos = new FileOutputStream("/tmp/" + getBaseFont() + ".ttf");
-        // fos.write(fontdata);
-        // fos.close();
-
         try {
             // read the true type information
             TrueTypeFont ttf = TrueTypeFont.parseFont (fontdata);
-
-            // System.out.println(ttf.toString());
 
             // get the cmap, post, and hmtx tables for later use
             this.cmapTable = (CmapTable) ttf.getTable ("cmap");
@@ -273,8 +266,7 @@ public class NativeFont extends OutlineFont {
             try {
                 nameTable = (NameTable) ttf.getTable ("name");
             } catch (Exception ex) {
-                System.out.println ("Error reading name table for font " +
-                        getBaseFont () + ".  Repairing!");
+                PDFDebugger.debug("Error reading name table for font " + getBaseFont () + ".  Repairing!");
             }
 
             boolean nameFixed = fixNameTable (ttf, nameTable);
@@ -287,16 +279,10 @@ public class NativeFont extends OutlineFont {
 
             // use the parsed font instead of the original
             if (nameFixed || cmapFixed) {
-                // System.out.println("Using fixed font!");
-                // System.out.println(ttf.toString());
                 fontdata = ttf.writeFont ();
-
-                // FileOutputStream fos2 = new FileOutputStream("/tmp/" + getBaseFont() + ".fix");
-                // fos2.write(fontdata);
-                // fos2.close();
             }
         } catch (Exception ex) {
-            System.out.println ("Error parsing font : " + getBaseFont ());
+            PDFDebugger.debug("Error parsing font : " + getBaseFont ());
             ex.printStackTrace ();
         }
 

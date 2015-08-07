@@ -51,9 +51,9 @@ public class YCCKColorSpace extends ColorSpace
     /**
      * Convert from CIEXYZ to RGB.  NOT IMPLEMENTED
      */
+    @Override
     public float[] fromCIEXYZ(float[] colorvalue)
     {
-        System.out.println("frc");
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
@@ -63,9 +63,9 @@ public class YCCKColorSpace extends ColorSpace
      * @param rgbvalue the red, green, and blue values (0-1)
      * @return the YCCK values (0-1)
      */
+    @Override
     public float[] fromRGB(float[] rgbvalue)
     {
-        System.out.println("frg");
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
@@ -99,6 +99,7 @@ public class YCCKColorSpace extends ColorSpace
     /**
      * Convert from YCCK to CIEXYZ.  NOT IMPLEMENTED
      */
+    @Override
     public float[] toCIEXYZ(float[] colorvalue)
     {
         return cmykColorSpace.toCIEXYZ(toCmyk(colorvalue));
@@ -110,6 +111,7 @@ public class YCCKColorSpace extends ColorSpace
      * @param colorvalue the YCCK values (0-1)
      * @return the RGB values (0-1)
      */
+    @Override
     public float[] toRGB(float[] colorvalue)
     {
         return cmykColorSpace.toRGB(toCmyk(colorvalue));

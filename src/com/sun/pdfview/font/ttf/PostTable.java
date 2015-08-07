@@ -22,6 +22,8 @@ package com.sun.pdfview.font.ttf;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import com.sun.pdfview.PDFDebugger;
+
 /**
  * Model the TrueType Post table
  *
@@ -136,7 +138,7 @@ public class PostTable extends TrueTypeTable {
                 break;
             default:
                 this.nameMap = new PostMap();
-                System.out.println("Unknown post map type: " + 
+                PDFDebugger.debug("Unknown post map type: " + 
                                    Integer.toHexString(this.format));
                 break;
         }

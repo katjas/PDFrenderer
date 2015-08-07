@@ -23,6 +23,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.NoninvertibleTransformException;
 import java.io.IOException;
 
+import com.sun.pdfview.PDFDebugger;
 import com.sun.pdfview.PDFObject;
 
 /**
@@ -107,21 +108,20 @@ public class Type1CFont extends OutlineFont {
                 parts[partsloc++] = (char) d;
             }
             if (d < 16) {
-                System.out.print ("0" + Integer.toHexString (d));
+                PDFDebugger.debug("0" + Integer.toHexString (d), 200);
             } else {
-                System.out.print (Integer.toHexString (d));
+                PDFDebugger.debug(Integer.toHexString (d), 200);
             }
             if ((i & 15) == 15) {
-                System.out.println ("      " + new String (parts));
+                PDFDebugger.debug("      " + new String (parts), 200);
                 partsloc = 0;
             } else if ((i & 7) == 7) {
-                System.out.print ("  ");
+                PDFDebugger.debug("  ", 200);
                 parts[partsloc++] = ' ';
             } else if ((i & 1) == 1) {
-                System.out.print (" ");
+                PDFDebugger.debug(" ", 200);
             }
         }
-        System.out.println ();
     }
 
     /**
@@ -248,7 +248,6 @@ public class Type1CFont extends OutlineFont {
      * @return the size of the dictionary, in bytes.
      */
     public int getIndexSize (int loc) {
-        //	System.out.println("Getting size of index at "+loc);
         int hold = this.pos;
         this.pos = loc;
         int count = readInt (2);
@@ -378,7 +377,6 @@ public class Type1CFont extends OutlineFont {
      * within the dictionary.
      */
     private void readDict (Range r) {
-        //	System.out.println("reading dictionary from "+r.getStart()+" to "+r.getEnd());
         this.pos = r.getStart ();
         while (this.pos < r.getEnd ()) {
             int cmd = readCommand (false);
@@ -421,13 +419,6 @@ public class Type1CFont extends OutlineFont {
         while (true) {
             int t = readNext (charstring);
             if (t == CMD) {
-                /*
-                System.out.print("CMD= "+num+", args=");
-                for (int i=0; i<stackptr; i++) {
-                System.out.print(" "+stack[i]);
-                }
-                System.out.println();
-                 */
                 return this.num;
             } else {
                 this.stack[this.stackptr++] = (t == NUM) ? (float) this.num : this.fnum;
@@ -441,11 +432,10 @@ public class Type1CFont extends OutlineFont {
      */
     private void readEncodingData (int base) {
         if (base == 0) {  // this is the StandardEncoding
-            //	    System.out.println("**** STANDARD ENCODING!");
             System.arraycopy (FontSupport.standardEncoding, 0, this.encoding, 0,
                     FontSupport.standardEncoding.length);
         } else if (base == 1) {  // this is the expert encoding
-            System.out.println ("**** EXPERT ENCODING!");
+            PDFDebugger.debug("**** EXPERT ENCODING not yet implemented!");
             // TODO: copy ExpertEncoding
         } else {
             this.pos = base;
@@ -467,7 +457,7 @@ public class Type1CFont extends OutlineFont {
                     }
                 }
             } else {
-                System.out.println ("Bad encoding type: " + encodingtype);
+                PDFDebugger.debug("Bad encoding type: " + encodingtype);
             }
             // TODO: now check for supplemental encoding data
         }
@@ -533,7 +523,7 @@ public class Type1CFont extends OutlineFont {
         for (int i = 0; i < nextra; i++) {
             Range r = getIndexEntry (base, i);
             this.names[i] = new String (this.data, r.getStart (), r.getLen ());
-            //	    System.out.println("Read name: "+i+" from "+r.getStart()+" to "+r.getEnd()+": "+safe(names[i]));
+            PDFDebugger.debug("Read name: "+i+" from "+r.getStart()+" to "+r.getEnd()+": "+safe(names[i]), 1000);
         }
     }
 
@@ -566,19 +556,15 @@ public class Type1CFont extends OutlineFont {
         Range r = getIndexEntry (fnames, 0);
         this.fontname = new String (this.data, r.getStart (), r.getLen ());
         // read first dict
-        //	System.out.println("TOPDICT[0]:");
         readDict (getIndexEntry (topdicts, 0));
         // read the private dictionary
-        //	System.out.println("PRIVATE DICT:");
         readDict (new Range (this.privatebase, this.privatesize));
         // calculate the number of glyphs
         this.pos = this.charstringbase;
         this.nglyphs = readInt (2);
         // now get the glyph names
-        //	System.out.println("GLYPHNAMES:");
         readGlyphNames (this.charsetbase);
         // now figure out the encoding
-        //	System.out.println("ENCODING:");
         readEncodingData (this.encodingbase);
     }
 
@@ -1142,7 +1128,7 @@ public class Type1CFont extends OutlineFont {
                     this.stackptr = 0;
                     break;
                 default:
-                    System.out.println ("ERROR! TYPE1C CHARSTRING CMD IS " + cmd);
+                    PDFDebugger.debug("ERROR! TYPE1C CHARSTRING CMD IS " + cmd);
                     break;
             }
         }

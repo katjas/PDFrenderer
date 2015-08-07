@@ -22,6 +22,8 @@ package com.sun.pdfview.font.ttf;
 
 import java.nio.ByteBuffer;
 
+import com.sun.pdfview.PDFDebugger;
+
 /**
  *
  * @author  jkaplan
@@ -31,12 +33,12 @@ public abstract class CMap {
     /**
      * The format of this map
      */
-    private short format;
+    private final short format;
 
     /**
      * The language of this map, or 0 for language-independent
      */
-    private short language;
+    private final short language;
 
     /** Creates a new instance of CMap 
      * Don't use this directly, use <code>CMap.createMap()</code>
@@ -93,7 +95,7 @@ public abstract class CMap {
 //                outMap = new CMapFormat_12(language);
 //                break;
             default:
-                System.out.println ("Unsupport CMap format: " + format);
+                PDFDebugger.debug("Unsupport CMap format: " + format);
                 return null;
         }
 
@@ -110,8 +112,7 @@ public abstract class CMap {
         short format = data.getShort ();
         short lengthShort = data.getShort ();
         int length = 0xFFFF & lengthShort;
-//        System.out.println (
-//                "CMAP, length: " + length + ", short: " + lengthShort);
+        PDFDebugger.debug("CMAP, length: " + length + ", short: " + lengthShort, 100);
 
         // make sure our slice of the data only contains up to the length
         // of this table

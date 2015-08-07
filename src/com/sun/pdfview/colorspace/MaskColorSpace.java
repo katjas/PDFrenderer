@@ -31,7 +31,7 @@ import com.sun.pdfview.PDFPaint;
  */
 public class MaskColorSpace extends ColorSpace {
     /** The paint to paint in.  Note this cannot be a pattern or gradient. */
-    private PDFPaint paint;
+    private final PDFPaint paint;
     
     /** Creates a new instance of PaintColorSpace */
     public MaskColorSpace(PDFPaint paint) {
@@ -85,7 +85,6 @@ public class MaskColorSpace extends ColorSpace {
 	} else if (colorvalue[0]==0) {
 	    return this.prev0;
 	} else {
-//	    System.out.println("MaskColorSpace converting: "+colorvalue[0]);
 	    return this.cie.fromRGB(toRGB(colorvalue));
 	}
     }

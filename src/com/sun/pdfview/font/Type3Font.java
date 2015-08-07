@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.sun.pdfview.PDFDebugger;
 import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFPage;
@@ -166,7 +167,7 @@ public class Type3Font extends PDFFont {
             return new PDFGlyph(src, name, page, advance);
         } catch (IOException ioe) {
             // help!
-            System.out.println("IOException in Type3 font: " + ioe);
+            PDFDebugger.debug("IOException in Type3 font: " + ioe);
             ioe.printStackTrace();
             return null;
         }

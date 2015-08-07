@@ -108,8 +108,6 @@ public class TTFFont extends OutlineFont {
         } else {
             font = null;
         }
-//        System.out.println ("TTFFont: ttfObj: " + ttfObj + ", fontName: " + fontName);
-
     }
 
     public Collection<String> getNames()

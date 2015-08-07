@@ -40,10 +40,8 @@ import java.awt.image.Raster;
 import java.awt.image.RasterFormatException;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -71,22 +69,6 @@ public class PDFImage {
 
 	private static int[][] GREY_TO_ARGB = new int[8][];
 	
-	public static void dump(PDFObject obj) throws IOException {
-		p("dumping PDF object: " + obj);
-		if (obj == null) {
-			return;
-		}
-		HashMap<String, PDFObject> dict = obj.getDictionary();
-		p("   dict = " + dict);
-		for (Object key : dict.keySet()) {
-			p("key = " + key + " value = " + dict.get(key));
-		}
-	}
-
-	public static void p(String string) {
-		System.out.println(string);
-	}
-
 	/**
 	 * color key mask. Array of start/end pairs of ranges of color components to
 	 * mask out. If a component falls within any of the ranges it is clear.
@@ -229,8 +211,8 @@ public class PDFImage {
 								resources, true);
 						image.setSMask(sMaskImage);
 					} catch (IOException ex) {
-						p("ERROR: there was a problem parsing the mask for this object");
-						dump(obj);
+					    PDFDebugger.debug("ERROR: there was a problem parsing the mask for this object");
+					    PDFDebugger.dump(obj);
 						ex.printStackTrace(System.out);
 					}
 				} else if (sMaskObj.getType() == PDFObject.ARRAY) {
@@ -239,8 +221,8 @@ public class PDFImage {
 					try {
 						image.setColorKeyMask(sMaskObj);
 					} catch (IOException ex) {
-						p("ERROR: there was a problem parsing the color mask for this object");
-						dump(obj);
+					    PDFDebugger.debug("ERROR: there was a problem parsing the color mask for this object");
+					    PDFDebugger.dump(obj);
 						ex.printStackTrace(System.out);
 					}
 				}
@@ -276,7 +258,7 @@ public class PDFImage {
 			}
 			return bi;
 		} catch (IOException ioe) {
-			System.out.println("Error reading image");
+		    System.out.println("Error reading image");
 			ioe.printStackTrace();
 			return null;
 		}
@@ -448,11 +430,16 @@ public class PDFImage {
 		// hack to avoid *very* slow conversion
 		ColorSpace cs = cm.getColorSpace();
 		ColorSpace rgbCS = ColorSpace.getInstance(ColorSpace.CS_sRGB);
-		if (isGreyscale(cs) && bpc <= 8 && getDecode() == null
-				&& jpegData == null) {
+		if (isGreyscale(cs) 
+		        && bpc <= 8 
+		        && getDecode() == null 
+		        && jpegData == null 
+		        && Configuration.getInstance().isConvertGreyscaleImagesToArgb()) {
 			bi = convertGreyscaleToArgb(data, bi);
-		} else if (!isImageMask() && cs instanceof ICC_ColorSpace
-				&& !cs.equals(rgbCS)) {
+		} else if (!isImageMask() 
+		        && cs instanceof ICC_ColorSpace
+				&& !cs.equals(rgbCS)
+				&& !Configuration.getInstance().isAvoidColorConvertOp()) {
 			ColorConvertOp op = new ColorConvertOp(cs, rgbCS, null);
 
 			BufferedImage converted = new BufferedImage(getWidth(),
@@ -472,11 +459,11 @@ public class PDFImage {
             }else {
                 si = sMaskImage.getImage();
             }
-            debugImage(si, "smask" + this.imageObj.getObjNum());
+            PDFDebugger.debugImage(si, "smask" + this.imageObj.getObjNum());
             
             BufferedImage outImage = new BufferedImage(this.width, this.height,
 					BufferedImage.TYPE_INT_ARGB);
-            debugImage(si, "outImage" + this.imageObj.getObjNum());
+            PDFDebugger.debugImage(si, "outImage" + this.imageObj.getObjNum());
 			int[] srcArray = new int[this.width];
 			int[] maskArray = new int[this.width];
 
@@ -497,7 +484,7 @@ public class PDFImage {
 			bi = outImage;
 		}
 
-        debugImage(bi, "result" + this.imageObj.getObjNum());
+		PDFDebugger.debugImage(bi, "result" + this.imageObj.getObjNum());
 		return (bi);
 	}
 
@@ -511,8 +498,8 @@ public class PDFImage {
 	    int w = before.getWidth();
 	    int h = before.getHeight();
 	    
-        if(PDFParser.DEBUG_IMAGES) {
-            System.out.println("Scaling image from " +w+"/"+h+" to "+this.width+"/"+this.height);
+        if(PDFDebugger.DEBUG_IMAGES) {
+            PDFDebugger.debug("Scaling image from " +w+"/"+h+" to "+this.width+"/"+this.height);
         }
 	    BufferedImage after = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 	    AffineTransform at = new AffineTransform();
@@ -1308,20 +1295,5 @@ public class PDFImage {
             return super.isCompatibleRaster(raster);
         }
 
-    }
-
-    private static void debugImage(BufferedImage image, String name) {
-        if (PDFParser.DEBUG_IMAGES) {
-            if(image == null) {
-                return;
-            }
-            try {
-                // retrieve image
-                File outputfile = new File("D:/tmp/PDFimages/" + name + ".png");
-                ImageIO.write(image, "png", outputfile);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

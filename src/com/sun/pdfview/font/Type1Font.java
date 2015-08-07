@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.sun.pdfview.PDFDebugger;
 import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFObject;
 
@@ -98,7 +99,7 @@ public class Type1Font extends OutlineFont {
         this.password = 4330;
         int matrixloc = findSlashName(font, "FontMatrix");
         if (matrixloc < 0) {
-            System.out.println("No FontMatrix!");
+            PDFDebugger.debug("No FontMatrix!");
             this.at = new AffineTransform(0.001f, 0, 0, 0.001f, 0, 0);
         } else {
             PSParser psp2 = new PSParser(font, matrixloc + 11);
@@ -573,7 +574,7 @@ public class Type1Font extends OutlineFont {
                         }
                         if (n == 0) {
                         	if (flexPt != 14) {
-                        		System.out.println("There must be 14 flex entries!");
+                        	    PDFDebugger.debug("There must be 14 flex entries!");
                         	}
                         	else {
                         		gp.curveTo(flexArray[2], flexArray[3], flexArray[4], 
@@ -590,7 +591,7 @@ public class Type1Font extends OutlineFont {
                         }
                         if (n == 2) {
                         	if (flexMode == false) {
-                        		System.out.println("Flex mode assumed");
+                        	    PDFDebugger.debug("Flex mode assumed");
                         	} 
                         	else {
                         		this.sloc = 0;
@@ -598,11 +599,11 @@ public class Type1Font extends OutlineFont {
                         	}
                         }
                         if (this.subrs[n] == null) {
-                            System.out.println("No subroutine #" + n);
+                            PDFDebugger.debug("No subroutine #" + n);
                         } else {
                             this.callcount++;
                             if (this.callcount > 10) {
-                                System.out.println("Call stack too large");
+                                PDFDebugger.debug("Call stack too large");
                             } else {
                                 parse(this.subrs[n], gp, pt, wid);
                             }
@@ -644,8 +645,6 @@ public class Type1Font extends OutlineFont {
                         } else if (v == 16) {  // n callothersubr
                             int cn = (int) pop();
                             int countargs = (int) pop();
-
-                            //    System.out.println("Called othersubr with index "+cn);
 
                             switch (cn) {
                                 case 0:

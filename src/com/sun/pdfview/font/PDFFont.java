@@ -167,7 +167,6 @@ public abstract class PDFFont {
                 font = new Type1CFont(baseFont, obj, descriptor);
             } else {
                 // no font info. Fake it based on the FontDescriptor
-                //		System.out.println("Fakeout native font");
                 font = new BuiltinFont(baseFont, obj, descriptor);
             }
         } else if (subType.equals("TrueType")) {

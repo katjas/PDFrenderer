@@ -584,11 +584,9 @@ public class PDFFile {
                 hm.put(name.getStringValue(), value);
             }
         }
-        //	System.out.println("End of dictionary at location "+raf.getFilePointer());
         if (!nextItemIs(">>")) {
             throw new PDFParseException("End of dictionary wasn't '>>'");
         }
-        //	System.out.println("Dictionary closed at location "+raf.getFilePointer());
         return new PDFObject(this, PDFObject.DICTIONARY, hm);
     }
 
@@ -953,7 +951,7 @@ public class PDFFile {
         // see if it's a dictionary.  If so, this could be a stream.
         PDFObject endkey = readObject(objNum, objGen, decrypter);
         if (endkey.getType() != PDFObject.KEYWORD && endkey.getType() != PDFObject.STREAM) {
-            System.out.println("WARNING: Expected 'stream' or 'endobj' but was " + endkey.getType() + " " + String.valueOf(endkey.getStringValue()));
+            PDFDebugger.debug("WARNING: Expected 'stream' or 'endobj' but was " + endkey.getType() + " " + String.valueOf(endkey.getStringValue()));
         }
         if (obj.getType() == PDFObject.DICTIONARY && endkey.getStringValue() != null && endkey.getStringValue().equals("stream")) {
             // skip until we see \n
@@ -968,7 +966,7 @@ public class PDFFile {
         // at this point, obj is the object, keyword should be "endobj"
         String endcheck = endkey.getStringValue();
         if (endcheck == null || !endcheck.equals("endobj")) {
-            System.out.println("WARNING: object at " + debugpos + " didn't end with 'endobj'");
+            PDFDebugger.debug("WARNING: object at " + debugpos + " didn't end with 'endobj'");
         }
         obj.setObjectId(objNum, objGen);
         return obj;
@@ -1003,8 +1001,7 @@ public class PDFFile {
         int ending = this.buf.position();
 
         if (!nextItemIs("endstream")) {
-            System.out.println("read " + length + " chars from " + start + " to " +
-                    ending);
+            PDFDebugger.debug("read " + length + " chars from " + start + " to " + ending);
             throw new PDFParseException("Stream ended inappropriately");
         }
 

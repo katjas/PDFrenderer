@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import com.sun.pdfview.PDFDebugger;
+
 /**
  *
  * @author  jkaplan
@@ -298,14 +300,14 @@ public class TrueTypeFont {
         for (int i = 0; i < numTables; i++) {
             int tag = data.getInt ();
             String tagString = TrueTypeTable.tagToString (tag);
-//            System.out.println ("TTFFont.parseDirectories: " + tagString);
+            PDFDebugger.debug("TTFFont.parseDirectories: " + tagString, 100);
             int checksum = data.getInt ();
             int offset = data.getInt ();
             int length = data.getInt ();
 
             // read the data
-//            System.out.println ("TTFFont.parseDirectories: checksum: " +
-//                    checksum + ", offset: " + offset + ", length: " + length);
+            PDFDebugger.debug("TTFFont.parseDirectories: checksum: " +
+                    checksum + ", offset: " + offset + ", length: " + length, 100);
             data.mark ();
             data.position (offset);
 
@@ -317,9 +319,7 @@ public class TrueTypeFont {
             if (calcChecksum == checksum) {
                 ttf.addTable (tagString, tableData);
             } else {
-                /* System.out.println("Mismatched checksums on table " + 
-                tagString + ": " + calcChecksum + " != " +
-                checksum);*/
+                PDFDebugger.debug("Mismatched checksums on table " + tagString + ": " + calcChecksum + " != " + checksum, 200);
 
                 ttf.addTable (tagString, tableData);
 

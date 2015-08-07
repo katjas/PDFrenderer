@@ -696,7 +696,7 @@ public class PDFObject {
 
             if (obj == null || obj.value == null) {
                 if (owner == null) {
-                    System.out.println("Bad seed (owner==null)!  Object=" + this);
+                    PDFDebugger.debug("Bad seed (owner==null)!  Object=" + this);
                 }
 
                 obj = owner.dereference((PDFXref)value, getDecrypter());

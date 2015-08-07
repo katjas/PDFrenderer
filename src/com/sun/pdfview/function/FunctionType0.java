@@ -22,6 +22,7 @@ package com.sun.pdfview.function;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.sun.pdfview.PDFDebugger;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 
@@ -411,7 +412,7 @@ public class FunctionType0 extends PDFFunction {
      * @param od the output dimension
      */
     private float multicubicInterpolate(float[] encoded, int od) {
-        System.out.println("Cubic interpolation not supported!");
+        PDFDebugger.debug("Cubic interpolation not supported!");
         return multilinearInterpolate(encoded, od);
     }
     

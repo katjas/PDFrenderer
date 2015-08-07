@@ -470,7 +470,7 @@ public class PDFPage {
     * observers will be notified.
     */
     public synchronized void finish() {
-        // System.out.println("Page finished!");
+        PDFDebugger.debug("Page finished!", 1000);
         this.finished = true;
         notifyAll();
         // notify any outstanding images

@@ -3,6 +3,7 @@ package com.sun.pdfview.decode;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.sun.pdfview.PDFDebugger;
 import com.sun.pdfview.PDFObject;
 
 public class CCITTFaxDecode {
@@ -56,7 +57,7 @@ public class CCITTFaxDecode {
 				decoder.decodeT6(destination, source, 0, rows);
 			}
 		}catch (Exception e) {
-			System.out.println("Error decoding CCITTFax image k: "+ k);
+		    PDFDebugger.debug("Error decoding CCITTFax image k: "+ k);
 			// some PDf producer don't correctly assign a k value for the deocde,
 			// as  result we can try one more time using the T6.
 			//first, reset buffer
@@ -65,7 +66,7 @@ public class CCITTFaxDecode {
 				decoder.decodeT6(destination, source, 0, rows);
 			}catch (Exception e1) {
 				// do nothing
-				System.out.println("Error decoding CCITTFax image");
+			    PDFDebugger.debug("Error decoding CCITTFax image");
 			}
 		}
 		if (!getOptionFieldBoolean(dict, "BlackIs1", false)) {
