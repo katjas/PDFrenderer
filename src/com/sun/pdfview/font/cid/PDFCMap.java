@@ -18,10 +18,10 @@
  */
 package com.sun.pdfview.font.cid;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
+import com.sun.pdfview.PDFDebugger;
 import com.sun.pdfview.PDFObject;
 
 /**
@@ -63,7 +63,9 @@ public abstract class PDFCMap {
         }
         
         if (!cache.containsKey(mapName)) {
-            throw new IOException("Unknown CMap: " + mapName);
+            //throw new IOException("Unknown CMap: " + mapName);
+        	PDFDebugger.debug("Unknown CMap: '" + mapName + "' procced with 'Identity-H'");
+	       	return cache.get("Identity-H");
         }
             
         return cache.get(mapName);
