@@ -59,7 +59,7 @@ public class PDFDisplay extends JComponent{
 	public void paintComponent(Graphics g) {
 		int pageindex = 1;
 		PDFFile pdfFile = new PDFFile(ByteBuffer.wrap(this.bytes));		
-		PDFPpage = pdfFile.getPage(pageIndex);
+		PDFPage page = pdfFile.getPage(pageIndex);
 		Paper paper = new Paper();
 		int formatOrientation = page.getAspectRatio() > 1 ? PageFormat.LANDSCAPE
 							: PageFormat.PORTRAIT;
