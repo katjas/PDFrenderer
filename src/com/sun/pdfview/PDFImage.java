@@ -68,7 +68,7 @@ import com.sun.pdfview.function.FunctionType0;
 public class PDFImage {
 
 	private static int[][] GREY_TO_ARGB = new int[8][];
-	
+
 	/**
 	 * color key mask. Array of start/end pairs of ranges of color components to
 	 * mask out. If a component falls within any of the ranges it is clear.
@@ -110,8 +110,8 @@ public class PDFImage {
 	 *            internally this is needed for handling transparency in smask
 	 *            images.
 	 */
-	public static PDFImage createImage(PDFObject obj, Map<String, PDFObject> resources,
-			boolean useAsSMask) throws IOException {
+	public static PDFImage createImage(PDFObject obj, Map<String, PDFObject> resources, boolean useAsSMask)
+			throws IOException {
 		// create the image
 		PDFImage image = new PDFImage(obj);
 
@@ -144,16 +144,15 @@ public class PDFImage {
 			// [PATCHED by XOND] - switched colors in case the image is used as
 			// SMask for another image, otherwise transparency isn't
 			// handled correctly.
-			Color[] colors = useAsSMask ? new Color[] { Color.WHITE,
-					Color.BLACK } : new Color[] { Color.BLACK, Color.WHITE };
+			Color[] colors = useAsSMask ? new Color[] { Color.WHITE, Color.BLACK }
+					: new Color[] { Color.BLACK, Color.WHITE };
 			PDFObject imageMaskDecode = obj.getDictRef("Decode");
 			if (imageMaskDecode != null) {
 				PDFObject[] decodeArray = imageMaskDecode.getArray();
 				float decode0 = decodeArray[0].getFloatValue();
 				if (decode0 == 1.0f) {
-					colors = useAsSMask ? new Color[] { Color.BLACK,
-							Color.WHITE } : new Color[] { Color.WHITE,
-							Color.BLACK };
+					colors = useAsSMask ? new Color[] { Color.BLACK, Color.WHITE }
+							: new Color[] { Color.WHITE, Color.BLACK };
 				}
 
 				/*
@@ -168,8 +167,7 @@ public class PDFImage {
 			// get the bits per component (required)
 			PDFObject bpcObj = obj.getDictRef("BitsPerComponent");
 			if (bpcObj == null) {
-				throw new PDFParseException(
-						"Unable to get bits per component: " + obj);
+				throw new PDFParseException("Unable to get bits per component: " + obj);
 			}
 			image.setBitsPerComponent(bpcObj.getIntValue());
 
@@ -207,12 +205,11 @@ public class PDFImage {
 			if (sMaskObj != null) {
 				if (sMaskObj.getType() == PDFObject.STREAM) {
 					try {
-						PDFImage sMaskImage = PDFImage.createImage(sMaskObj,
-								resources, true);
+						PDFImage sMaskImage = PDFImage.createImage(sMaskObj, resources, true);
 						image.setSMask(sMaskImage);
 					} catch (IOException ex) {
-					    PDFDebugger.debug("ERROR: there was a problem parsing the mask for this object");
-					    PDFDebugger.dump(obj);
+						PDFDebugger.debug("ERROR: there was a problem parsing the mask for this object");
+						PDFDebugger.dump(obj);
 						ex.printStackTrace(System.out);
 					}
 				} else if (sMaskObj.getType() == PDFObject.ARRAY) {
@@ -221,8 +218,8 @@ public class PDFImage {
 					try {
 						image.setColorKeyMask(sMaskObj);
 					} catch (IOException ex) {
-					    PDFDebugger.debug("ERROR: there was a problem parsing the color mask for this object");
-					    PDFDebugger.dump(obj);
+						PDFDebugger.debug("ERROR: there was a problem parsing the color mask for this object");
+						PDFDebugger.dump(obj);
 						ex.printStackTrace(System.out);
 					}
 				}
@@ -243,22 +240,22 @@ public class PDFImage {
 
 			if (bi == null) {
 				byte[] data = imageObj.getStream();
-                ByteBuffer jpegBytes = null;
-                final boolean jpegDecode = PDFDecoder.isLastFilter(imageObj, PDFDecoder.DCT_FILTERS);
-                if (jpegDecode) {
-                    // if we're lucky, the stream will have just the DCT
-                    // filter applied to it, and we'll have a reference to
-                    // an underlying mapped file, so we'll manage to avoid
-                    // a copy of the encoded JPEG bytes
-                    jpegBytes = imageObj.getStreamBuffer(PDFDecoder.DCT_FILTERS);
-                } 
+				ByteBuffer jpegBytes = null;
+				final boolean jpegDecode = PDFDecoder.isLastFilter(imageObj, PDFDecoder.DCT_FILTERS);
+				if (jpegDecode) {
+					// if we're lucky, the stream will have just the DCT
+					// filter applied to it, and we'll have a reference to
+					// an underlying mapped file, so we'll manage to avoid
+					// a copy of the encoded JPEG bytes
+					jpegBytes = imageObj.getStreamBuffer(PDFDecoder.DCT_FILTERS);
+				}
 				// parse the stream data into an actual image
 				bi = parseData(data, jpegBytes);
 				this.imageObj.setCache(bi);
 			}
 			return bi;
 		} catch (IOException ioe) {
-		    System.out.println("Error reading image");
+			System.out.println("Error reading image");
 			ioe.printStackTrace();
 			return null;
 		}
@@ -274,139 +271,141 @@ public class PDFImage {
 	 * <p>
 	 * NOTE: the color convolving is extremely slow on large images. It would be
 	 * good to see if it could be moved out into the rendering phases, where we
-	 * might be able to scale the image down first.
-	 * </p
-     *  @param data the data when already completely filtered and uncompressed
-     *  @param jpegData a byte buffer if data still requiring the DCDTecode filter
-     *  is being used
+	 * might be able to scale the image down first. </p
+	 * 
+	 * @param data
+	 *            the data when already completely filtered and uncompressed
+	 * @param jpegData
+	 *            a byte buffer if data still requiring the DCDTecode filter is
+	 *            being used
 	 */
-	protected BufferedImage parseData(byte[] data, ByteBuffer jpegData) throws IOException  {
-        // pick a color model, based on the number of components and
-        // bits per component
-        ColorModel cm = createColorModel();
+	protected BufferedImage parseData(byte[] data, ByteBuffer jpegData) throws IOException {
+		// pick a color model, based on the number of components and
+		// bits per component
+		ColorModel cm = createColorModel();
 
-        BufferedImage bi = null;
-        if (jpegData != null) {
+		BufferedImage bi = null;
+		if (jpegData != null) {
 
+			// Use imageio to decode the JPEG into
+			// a BufferedImage. Perhaps JAI will be installed
+			// so that decodes will be faster and better supported
 
-            // Use imageio to decode the JPEG into
-            // a BufferedImage. Perhaps JAI will be installed
-            // so that decodes will be faster and better supported
+			// TODO - strictly speaking, the application of the YUV->RGB
+			// transformation when reading JPEGs does not adhere to the spec.
+			// We're just going to let java read this in - as it is, the
+			// standard
+			// jpeg reader looks for the specific Adobe marker header so that
+			// it may apply the transform, so that's good. If that marker
+			// isn't present, then it also applies a number of other heuristics
+			// to determine whether the transform should be applied.
+			// (http://java.sun.com/javase/6/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html)
+			// In practice, it probably almost always does the right thing here,
+			// though note that the present or default value of the
+			// ColorTransform
+			// dictionary entry is not being observed, so there is scope for
+			// error. Hopefully the JAI reader does the same.
 
-            // TODO - strictly speaking, the application of the YUV->RGB
-            // transformation when reading JPEGs does not adhere to the spec.
-            // We're just going to let java read this in - as it is, the standard
-            // jpeg reader looks for the specific Adobe marker header so that
-            // it may apply the transform, so that's good. If that marker
-            // isn't present, then it also applies a number of other heuristics
-            // to determine whether the transform should be applied.
-            // (http://java.sun.com/javase/6/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html)
-            // In practice, it probably almost always does the right thing here,
-            // though note that the present or default value of the ColorTransform
-            // dictionary entry is not being observed, so there is scope for
-            // error. Hopefully the JAI reader does the same.
+			// We might need to attempt this with multiple readers, so let's
+			// remember where the jpeg data starts
+			jpegData.mark();
 
-            // We might need to attempt this with multiple readers, so let's
-            // remember where the jpeg data starts
-            jpegData.mark();
+			JpegDecoder decoder = new JpegDecoder(jpegData, cm);
 
-            JpegDecoder decoder = new JpegDecoder(jpegData, cm);
+			IOException decodeEx = null;
+			try {
+				bi = decoder.decode();
+			} catch (IOException e) {
+				decodeEx = e;
+				// The native readers weren't able to process the image.
+				// One common situation is that the image is YCCK/CMYK encoded,
+				// which isn't supported by the default jpeg readers.
+				// We've got a work-around we can attempt, though:
+				decoder.ycckcmykDecodeMode(true);
+				try {
+					bi = decoder.decode();
+				} catch (IOException e2) {
+					// It probably wasn't the YCCK/CMYK issue!
+					// try the "old" implementation
+					bi = parseData(data, null);
+					return bi;
+				}
+			}
 
-            IOException decodeEx = null;
-            try {
-                bi = decoder.decode();
-            } catch (IOException e) {
-                decodeEx = e;
-                // The native readers weren't able to process the image.
-                // One common situation is that the image is YCCK encoded,
-                // which isn't supported by the default jpeg readers.
-                // We've got a work-around we can attempt, though:
-                decoder.setYcckDecodeMode(true);
-                try {
-                    bi = decoder.decode();
-                } catch (IOException e2) {
-                    // It probably wasn't the YCCK issue! 
-                	// try the "old" implementation
-                    bi = parseData(data, null);
-                    return bi;
-                }
-            }
+			// the decoder may have requested installation of a new color model
+			cm = decoder.getColorModel();
 
-            // the decoder may have requested installation of a new color model
-            cm = decoder.getColorModel();
+			// make these immediately unreachable, as the referenced
+			// jpeg data might be quite large
+			jpegData = null;
+			decoder = null;
 
-            // make these immediately unreachable, as the referenced
-            // jpeg data might be quite large
-            jpegData = null;
-            decoder = null;
+			if (bi == null) {
+				// This isn't pretty, but it's what's been happening
+				// previously, so we'll preserve it for the time
+				// being. At least we'll offer a hint now!
+				assert decodeEx != null;
+				throw new IOException(decodeEx.getMessage() + ". Maybe installing JAI for expanded image format "
+						+ "support would help?", decodeEx);
+			}
+		} else {
+			// create the data buffer
+			DataBuffer db = new DataBufferByte(data, data.length);
 
-            if (bi == null) {
-                // This isn't pretty, but it's what's been happening
-                // previously, so we'll preserve it for the time
-                // being. At least we'll offer a hint now!
-                assert decodeEx != null;
-                throw new IOException(decodeEx.getMessage() +
-                        ". Maybe installing JAI for expanded image format " +
-                        "support would help?", decodeEx);
-            }
-        } else {
-    		// create the data buffer
-    		DataBuffer db = new DataBufferByte(data, data.length);
+			// pick a color model, based on the number of components and
+			// bits per component
+			cm = getColorModel();
 
-    		// pick a color model, based on the number of components and
-    		// bits per component
-    		cm = getColorModel();
+			// create a compatible raster
+			SampleModel sm = cm.createCompatibleSampleModel(getWidth(), getHeight());
+			WritableRaster raster;
+			try {
+				raster = Raster.createWritableRaster(sm, db, new Point(0, 0));
+			} catch (RasterFormatException e) {
+				int tempExpectedSize = getWidth() * getHeight() * getColorSpace().getNumComponents()
+						* Math.max(8, getBitsPerComponent()) / 8;
 
-    		// create a compatible raster
-    		SampleModel sm = cm
-    				.createCompatibleSampleModel(getWidth(), getHeight());
-    		WritableRaster raster;
-    		try {
-    			raster = Raster.createWritableRaster(sm, db, new Point(0, 0));
-    		} catch (RasterFormatException e) {
-    			int tempExpectedSize = getWidth() * getHeight()
-    					* getColorSpace().getNumComponents()
-    					* Math.max(8, getBitsPerComponent()) / 8;
+				if (tempExpectedSize < 3) {
+					tempExpectedSize = 3;
+				}
+				if (tempExpectedSize > data.length) {
+					byte[] tempLargerData = new byte[tempExpectedSize];
+					System.arraycopy(data, 0, tempLargerData, 0, data.length);
+					db = new DataBufferByte(tempLargerData, tempExpectedSize);
+					raster = Raster.createWritableRaster(sm, db, new Point(0, 0));
+				} else {
+					throw e;
+				}
+			}
 
-    			if (tempExpectedSize < 3) {
-    				tempExpectedSize = 3;
-    			}
-    			if (tempExpectedSize > data.length) {
-    				byte[] tempLargerData = new byte[tempExpectedSize];
-    				System.arraycopy(data, 0, tempLargerData, 0, data.length);
-    				db = new DataBufferByte(tempLargerData, tempExpectedSize);
-    				raster = Raster.createWritableRaster(sm, db, new Point(0, 0));
-    			} else {
-    				throw e;
-    			}
-    		}
+			/*
+			 * Workaround for a bug on the Mac -- a class cast exception in
+			 * drawImage() due to the wrong data buffer type (?)
+			 */
+			bi = null;
+			if (cm instanceof IndexColorModel) {
+				IndexColorModel icm = (IndexColorModel) cm;
 
-    		/*
-    		 * Workaround for a bug on the Mac -- a class cast exception in
-    		 * drawImage() due to the wrong data buffer type (?)
-    		 */
-    		bi = null;
-    		if (cm instanceof IndexColorModel) {
-    			IndexColorModel icm = (IndexColorModel) cm;
+				// choose the image type based on the size
+				int type = BufferedImage.TYPE_BYTE_BINARY;
+				if (getBitsPerComponent() == 8) {
+					type = BufferedImage.TYPE_BYTE_INDEXED;
+				}
 
-    			// choose the image type based on the size
-    			int type = BufferedImage.TYPE_BYTE_BINARY;
-    			if (getBitsPerComponent() == 8) {
-    				type = BufferedImage.TYPE_BYTE_INDEXED;
-    			}
+				// create the image with an explicit indexed color model.
+				bi = new BufferedImage(getWidth(), getHeight(), type, icm);
 
-    			// create the image with an explicit indexed color model.
-    			bi = new BufferedImage(getWidth(), getHeight(), type, icm);
+				// set the data explicitly as well
+				bi.setData(raster);
+			} else if (cm.getPixelSize() == 1 && cm.getNumComponents() == 1) {
+				// If the image is black and white only, convert it into
+				// BYTE_GRAY
+				// format
+				// This is a lot faster compared to just drawing the original
+				// image
 
-    			// set the data explicitly as well
-    			bi.setData(raster);
-    		} else if (cm.getPixelSize() == 1 && cm.getNumComponents() == 1) {
-    			// If the image is black and white only, convert it into BYTE_GRAY
-    			// format
-    			// This is a lot faster compared to just drawing the original image
-
-    			// Are pixels decoded?
-    			int[] cc = new int[] { 0, 1 };
+				// Are pixels decoded?
+				int[] cc = new int[] { 0, 1 };
 				PDFObject o = imageObj.getDictRef("Decode");
 				if (o != null && o.getAt(0) != null) {
 					cc[0] = o.getAt(0).getIntValue();
@@ -415,55 +414,49 @@ public class PDFImage {
 
 				final byte[] ncc = new byte[] { (byte) -cc[0], (byte) -cc[1] };
 
-    			bi = biColorToGrayscale(raster, ncc);
-    			// Return when there is no SMask
-    			if (getSMask() == null)
-    				return bi;
-    		} else {
-    			// Raster is already in a format which is supported by Java2D,
-    			// such as RGB or Gray.
-    			bi = new BufferedImage(cm, raster, true, null);
-    		}
-    	}
-		
+				bi = biColorToGrayscale(raster, ncc);
+				// Return when there is no SMask
+				if (getSMask() == null)
+					return bi;
+			} else {
+				// Raster is already in a format which is supported by Java2D,
+				// such as RGB or Gray.
+				bi = new BufferedImage(cm, raster, true, null);
+			}
+		}
 
 		// hack to avoid *very* slow conversion
 		ColorSpace cs = cm.getColorSpace();
 		ColorSpace rgbCS = ColorSpace.getInstance(ColorSpace.CS_sRGB);
-		if (isGreyscale(cs) 
-		        && bpc <= 8 
-		        && getDecode() == null 
-		        && jpegData == null 
-		        && Configuration.getInstance().isConvertGreyscaleImagesToArgb()) {
+		if (isGreyscale(cs) && bpc <= 8 && getDecode() == null && jpegData == null
+				&& Configuration.getInstance().isConvertGreyscaleImagesToArgb()) {
 			bi = convertGreyscaleToArgb(data, bi);
-		} else if (!isImageMask() 
-		        && cs instanceof ICC_ColorSpace
-				&& !cs.equals(rgbCS)
+		} else if (!isImageMask() && cs instanceof ICC_ColorSpace && !cs.equals(rgbCS)
 				&& !Configuration.getInstance().isAvoidColorConvertOp()) {
 			ColorConvertOp op = new ColorConvertOp(cs, rgbCS, null);
 
-			BufferedImage converted = new BufferedImage(getWidth(),
-					getHeight(), BufferedImage.TYPE_INT_ARGB);
+			BufferedImage converted = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 
 			bi = op.filter(bi, converted);
 		}
 
 		// add in the alpha data supplied by the SMask, if any
-        PDFImage sMaskImage = getSMask();
+		PDFImage sMaskImage = getSMask();
 		if (sMaskImage != null) {
-            BufferedImage si = null;
-            if(sMaskImage.getHeight()!= this.height && sMaskImage.getWidth()!=this.width) {
-                // in case the two images do not have the same size, scale the sMask image
-                // this fixed a problem in which only part of the image was displayed 
-                si = scaleSMaskImage(sMaskImage);
-            }else {
-                si = sMaskImage.getImage();
-            }
-            PDFDebugger.debugImage(si, "smask" + this.imageObj.getObjNum());
-            
-            BufferedImage outImage = new BufferedImage(this.width, this.height,
-					BufferedImage.TYPE_INT_ARGB);
-            PDFDebugger.debugImage(si, "outImage" + this.imageObj.getObjNum());
+			BufferedImage si = null;
+			if (sMaskImage.getHeight() != this.height && sMaskImage.getWidth() != this.width) {
+				// in case the two images do not have the same size, scale the
+				// sMask image
+				// this fixed a problem in which only part of the image was
+				// displayed
+				si = scaleSMaskImage(sMaskImage);
+			} else {
+				si = sMaskImage.getImage();
+			}
+			PDFDebugger.debugImage(si, "smask" + this.imageObj.getObjNum());
+
+			BufferedImage outImage = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB);
+			PDFDebugger.debugImage(si, "outImage" + this.imageObj.getObjNum());
 			int[] srcArray = new int[this.width];
 			int[] maskArray = new int[this.width];
 
@@ -474,8 +467,7 @@ public class PDFImage {
 				for (int j = 0; j < this.width; j++) {
 					int ac = 0xff000000;
 
-					maskArray[j] = ((maskArray[j] & 0xff) << 24)
-							| (srcArray[j] & ~ac);
+					maskArray[j] = ((maskArray[j] & 0xff) << 24) | (srcArray[j] & ~ac);
 				}
 
 				outImage.setRGB(0, i, this.width, 1, maskArray, 0, this.width);
@@ -490,30 +482,29 @@ public class PDFImage {
 
 	/**
 	 * Scale the softmask image to the size of the actual image
+	 * 
 	 * @param sMaskImage
 	 * @return
 	 */
 	private BufferedImage scaleSMaskImage(PDFImage sMaskImage) {
-	    BufferedImage before = sMaskImage.getImage();
-	    int w = before.getWidth();
-	    int h = before.getHeight();
-	    
-        if(PDFDebugger.DEBUG_IMAGES) {
-            PDFDebugger.debug("Scaling image from " +w+"/"+h+" to "+this.width+"/"+this.height);
-        }
-	    BufferedImage after = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-	    AffineTransform at = new AffineTransform();
-	    
-	    at.scale(((double)this.width/w), ((double)this.height/h));
-	    
-	    AffineTransformOp scaleOp = 
-	       new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-	    return scaleOp.filter(before, after);
-    }
+		BufferedImage before = sMaskImage.getImage();
+		int w = before.getWidth();
+		int h = before.getHeight();
 
-    private boolean isGreyscale(ColorSpace aCs) {
-		return aCs == PDFColorSpace
-				.getColorSpace(PDFColorSpace.COLORSPACE_GRAY).getColorSpace();
+		if (PDFDebugger.DEBUG_IMAGES) {
+			PDFDebugger.debug("Scaling image from " + w + "/" + h + " to " + this.width + "/" + this.height);
+		}
+		BufferedImage after = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		AffineTransform at = new AffineTransform();
+
+		at.scale(((double) this.width / w), ((double) this.height / h));
+
+		AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
+		return scaleOp.filter(before, after);
+	}
+
+	private boolean isGreyscale(ColorSpace aCs) {
+		return aCs == PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_GRAY).getColorSpace();
 	}
 
 	private BufferedImage convertGreyscaleToArgb(byte[] data, BufferedImage bi) {
@@ -580,10 +571,10 @@ public class PDFImage {
 		}
 
 		final ColorModel ccm = ColorModel.getRGBdefault();
-		return new BufferedImage(ccm, Raster.createPackedRaster(
-				new DataBufferInt(convertedPixels, convertedPixels.length),
-				getWidth(), getHeight(), getWidth(),
-				((PackedColorModel) ccm).getMasks(), null), false, null);
+		return new BufferedImage(ccm,
+				Raster.createPackedRaster(new DataBufferInt(convertedPixels, convertedPixels.length), getWidth(),
+						getHeight(), getWidth(), ((PackedColorModel) ccm).getMasks(), null),
+				false, null);
 	}
 
 	private static int[] getGreyToArgbMap(int numBits) {
@@ -596,15 +587,16 @@ public class PDFImage {
 	}
 
 	/**
-	* Create a map from all bit-patterns of a certain depth greyscale to the
-	* corresponding sRGB values via the ICC colorr converter.
-	* @param numBits the number of greyscale bits
-	* @return a 2^bits array of standard 32-bit ARGB fits for each greyscale value
-	*  at that bitdepth
-	*/
+	 * Create a map from all bit-patterns of a certain depth greyscale to the
+	 * corresponding sRGB values via the ICC colorr converter.
+	 * 
+	 * @param numBits
+	 *            the number of greyscale bits
+	 * @return a 2^bits array of standard 32-bit ARGB fits for each greyscale
+	 *         value at that bitdepth
+	 */
 	private static int[] createGreyToArgbMap(int numBits) {
-		final ColorSpace greyCs = PDFColorSpace.getColorSpace(
-				PDFColorSpace.COLORSPACE_GRAY).getColorSpace();
+		final ColorSpace greyCs = PDFColorSpace.getColorSpace(PDFColorSpace.COLORSPACE_GRAY).getColorSpace();
 
 		byte[] greyVals = new byte[1 << numBits];
 		for (int i = 0; i < greyVals.length; ++i) {
@@ -613,30 +605,25 @@ public class PDFImage {
 
 		final int[] argbVals = new int[greyVals.length];
 		final int mask = (1 << numBits) - 1;
-		final WritableRaster inRaster = Raster.createPackedRaster(
-				new DataBufferByte(greyVals, greyVals.length), greyVals.length,
-				1, greyVals.length, new int[] { mask }, null);
+		final WritableRaster inRaster = Raster.createPackedRaster(new DataBufferByte(greyVals, greyVals.length),
+				greyVals.length, 1, greyVals.length, new int[] { mask }, null);
 
-		final BufferedImage greyImage = new BufferedImage(
-				new PdfComponentColorModel(greyCs, new int[] { numBits }),
+		final BufferedImage greyImage = new BufferedImage(new PdfComponentColorModel(greyCs, new int[] { numBits }),
 				inRaster, false, null);
 
 		final ColorModel ccm = ColorModel.getRGBdefault();
-		final WritableRaster outRaster = Raster.createPackedRaster(
-				new DataBufferInt(argbVals, argbVals.length), argbVals.length,
-				1, argbVals.length, ((PackedColorModel) ccm).getMasks(), null);
-		final BufferedImage srgbImage = new BufferedImage(ccm, outRaster,
-				false, null);
+		final WritableRaster outRaster = Raster.createPackedRaster(new DataBufferInt(argbVals, argbVals.length),
+				argbVals.length, 1, argbVals.length, ((PackedColorModel) ccm).getMasks(), null);
+		final BufferedImage srgbImage = new BufferedImage(ccm, outRaster, false, null);
 
-		final ColorConvertOp op = new ColorConvertOp(greyCs,
-				ColorSpace.getInstance(ColorSpace.CS_sRGB), null);
+		final ColorConvertOp op = new ColorConvertOp(greyCs, ColorSpace.getInstance(ColorSpace.CS_sRGB), null);
 
 		op.filter(greyImage, srgbImage);
 
 		GREY_TO_ARGB[numBits - 1] = argbVals;
 		return argbVals;
 	}
-	
+
 	/**
 	 * Creates a new image of type {@link TYPE_BYTE_GRAY} which represents the
 	 * given raster
@@ -647,17 +634,13 @@ public class PDFImage {
 	 *            Array with two entries that describe the corresponding gray
 	 *            values
 	 */
-	private BufferedImage biColorToGrayscale(final WritableRaster raster,
-			final byte[] ncc) {
+	private BufferedImage biColorToGrayscale(final WritableRaster raster, final byte[] ncc) {
 
-		final byte[] bufferO = ((DataBufferByte) raster.getDataBuffer())
-				.getData();
+		final byte[] bufferO = ((DataBufferByte) raster.getDataBuffer()).getData();
 
-		BufferedImage converted = new BufferedImage(getWidth(), getHeight(),
-				BufferedImage.TYPE_BYTE_GRAY);
+		BufferedImage converted = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_BYTE_GRAY);
 
-		byte[] buffer = ((DataBufferByte) converted.getRaster().getDataBuffer())
-				.getData();
+		byte[] buffer = ((DataBufferByte) converted.getRaster().getDataBuffer()).getData();
 		int i = 0;
 		final int height = converted.getHeight();
 		final int width = converted.getWidth();
@@ -854,8 +837,7 @@ public class PDFImage {
 				num = correctCount;
 			}
 			if (this.colorKeyMask == null || this.colorKeyMask.length == 0) {
-				return new IndexColorModel(getBitsPerComponent(), num,
-						components, 0, false);
+				return new IndexColorModel(getBitsPerComponent(), num, components, 0, false);
 			} else {
 				byte[] aComps = new byte[num * 4];
 				int idx = 0;
@@ -870,8 +852,7 @@ public class PDFImage {
 						aComps[(j * 4) + 3] = 0; // make transparent
 					}
 				}
-				return new IndexColorModel(getBitsPerComponent(), num, aComps,
-						0, true);
+				return new IndexColorModel(getBitsPerComponent(), num, aComps, 0, true);
 			}
 		} else if (cs instanceof AlternateColorSpace) {
 			// ColorSpace altCS = new AltColorSpace(((AlternateColorSpace)
@@ -904,8 +885,7 @@ public class PDFImage {
 	/**
 	 * Normalize an array of values to match the decode array
 	 */
-	private float[] normalize(byte[] pixels, float[] normComponents,
-			int normOffset) {
+	private float[] normalize(byte[] pixels, float[] normComponents, int normOffset) {
 		if (normComponents == null) {
 			normComponents = new float[normOffset + pixels.length];
 		}
@@ -918,8 +898,7 @@ public class PDFImage {
 			float ymin = decodeArray[i * 2];
 			float ymax = decodeArray[(i * 2) + 1];
 
-			normComponents[normOffset + i] = FunctionType0.interpolate(val, 0,
-					pow, ymin, ymax);
+			normComponents[normOffset + i] = FunctionType0.interpolate(val, 0, pow, ymin, ymax);
 		}
 
 		return normComponents;
@@ -932,8 +911,7 @@ public class PDFImage {
 	class DecodeComponentColorModel extends ComponentColorModel {
 
 		public DecodeComponentColorModel(ColorSpace cs, int[] bpc) {
-			super(cs, bpc, false, false, Transparency.OPAQUE,
-					DataBuffer.TYPE_BYTE);
+			super(cs, bpc, false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
 
 			if (bpc != null) {
 				this.pixel_bits = bpc.length * bpc[0];
@@ -945,8 +923,7 @@ public class PDFImage {
 			// workaround -- create a MultiPixelPackedSample models for
 			// single-sample, less than 8bpp color models
 			if (getNumComponents() == 1 && getPixelSize() < 8) {
-				return new MultiPixelPackedSampleModel(getTransferType(),
-						width, height, getPixelSize());
+				return new MultiPixelPackedSampleModel(getTransferType(), width, height, getPixelSize());
 			}
 
 			return super.createCompatibleSampleModel(width, height);
@@ -968,332 +945,350 @@ public class PDFImage {
 		}
 
 		@Override
-		public float[] getNormalizedComponents(Object pixel,
-				float[] normComponents, int normOffset) {
+		public float[] getNormalizedComponents(Object pixel, float[] normComponents, int normOffset) {
 			if (getDecode() == null) {
-				return super.getNormalizedComponents(pixel, normComponents,
-						normOffset);
+				return super.getNormalizedComponents(pixel, normComponents, normOffset);
 			}
 
 			return normalize((byte[]) pixel, normComponents, normOffset);
 		}
 	}
-	
-    /**
-     * get a Java ColorModel consistent with the current color space,
-     * number of bits per component and decode array
-     *
-     * @param bpc the number of bits per component
-     */
-    private ColorModel createColorModel() {
-        PDFColorSpace cs = getColorSpace();
 
-        if (cs instanceof IndexedColor) {
-            IndexedColor ics = (IndexedColor) cs;
+	/**
+	 * get a Java ColorModel consistent with the current color space, number of
+	 * bits per component and decode array
+	 *
+	 * @param bpc
+	 *            the number of bits per component
+	 */
+	private ColorModel createColorModel() {
+		PDFColorSpace cs = getColorSpace();
 
-            byte[] components = ics.getColorComponents();
-            int num = ics.getCount();
+		if (cs instanceof IndexedColor) {
+			IndexedColor ics = (IndexedColor) cs;
 
-            // process the decode array
-            if (decode != null) {
-                byte[] normComps = new byte[components.length];
+			byte[] components = ics.getColorComponents();
+			int num = ics.getCount();
 
-                // move the components array around
-                for (int i = 0; i < num; i++) {
-                    byte[] orig = new byte[1];
-                    orig[0] = (byte) i;
+			// process the decode array
+			if (decode != null) {
+				byte[] normComps = new byte[components.length];
 
-                    float[] res = normalize(orig, null, 0);
-                    int idx = (int) res[0];
+				// move the components array around
+				for (int i = 0; i < num; i++) {
+					byte[] orig = new byte[1];
+					orig[0] = (byte) i;
 
-                    normComps[i * 3] = components[idx * 3];
-                    normComps[(i * 3) + 1] = components[(idx * 3) + 1];
-                    normComps[(i * 3) + 2] = components[(idx * 3) + 2];
-                }
+					float[] res = normalize(orig, null, 0);
+					int idx = (int) res[0];
 
-                components = normComps;
-            }
+					normComps[i * 3] = components[idx * 3];
+					normComps[(i * 3) + 1] = components[(idx * 3) + 1];
+					normComps[(i * 3) + 2] = components[(idx * 3) + 2];
+				}
 
-            // make sure the size of the components array is 2 ^ numBits
-            // since if it's not, Java will complain
-            int correctCount = 1 << getBitsPerComponent();
-            if (correctCount < num) {
-                byte[] fewerComps = new byte[correctCount * 3];
+				components = normComps;
+			}
 
-                System.arraycopy(components, 0, fewerComps, 0, correctCount * 3);
+			// make sure the size of the components array is 2 ^ numBits
+			// since if it's not, Java will complain
+			int correctCount = 1 << getBitsPerComponent();
+			if (correctCount < num) {
+				byte[] fewerComps = new byte[correctCount * 3];
 
-                components = fewerComps;
-                num = correctCount;
-            }
-            if (colorKeyMask == null || colorKeyMask.length == 0) {
-                return new IndexColorModel(getBitsPerComponent(), num, components,
-                        0, false);
-            } else {
-                byte[] aComps = new byte[num * 4];
-                int idx = 0;
-                for (int i = 0; i < num; i++) {
-                    aComps[idx++] = components[(i * 3)];
-                    aComps[idx++] = components[(i * 3) + 1];
-                    aComps[idx++] = components[(i * 3) + 2];
-                    aComps[idx++] = (byte) 0xFF;
-                }
-                for (int i = 0; i < colorKeyMask.length; i += 2) {
-                    for (int j = colorKeyMask[i]; j <= colorKeyMask[i + 1]; j++) {
-                        aComps[(j * 4) + 3] = 0;    // make transparent
-                    }
-                }
-                return new IndexColorModel(getBitsPerComponent(), num, aComps,
-                        0, true);
-            }
-        } else {
-            int[] bits = new int[cs.getNumComponents()];
-            for (int i = 0; i < bits.length; i++) {
-                bits[i] = getBitsPerComponent();
-            }
+				System.arraycopy(components, 0, fewerComps, 0, correctCount * 3);
 
-            return decode != null ?
-                    new DecodeComponentColorModel(cs.getColorSpace(), bits) :
-                    new PdfComponentColorModel(cs.getColorSpace(), bits);
-        }
-    }
-    
-    /**
-     * Decodes jpeg data, possibly attempting a manual YCCK decode
-     * if requested. Users should use {@link #getColorModel()} to
-     * see which color model should now be used after a successful
-     * decode.
-     */
-    private class JpegDecoder
-    {
-        /** The jpeg bytes */
-        private final ByteBuffer jpegData;
-        /** The color model employed */
-        private ColorModel cm;
-        /** Whether the YCCK decode work-around should be used */
-        private boolean ycckDecodeMode = false;
+				components = fewerComps;
+				num = correctCount;
+			}
+			if (colorKeyMask == null || colorKeyMask.length == 0) {
+				return new IndexColorModel(getBitsPerComponent(), num, components, 0, false);
+			} else {
+				byte[] aComps = new byte[num * 4];
+				int idx = 0;
+				for (int i = 0; i < num; i++) {
+					aComps[idx++] = components[(i * 3)];
+					aComps[idx++] = components[(i * 3) + 1];
+					aComps[idx++] = components[(i * 3) + 2];
+					aComps[idx++] = (byte) 0xFF;
+				}
+				for (int i = 0; i < colorKeyMask.length; i += 2) {
+					for (int j = colorKeyMask[i]; j <= colorKeyMask[i + 1]; j++) {
+						aComps[(j * 4) + 3] = 0; // make transparent
+					}
+				}
+				return new IndexColorModel(getBitsPerComponent(), num, aComps, 0, true);
+			}
+		} else {
+			int[] bits = new int[cs.getNumComponents()];
+			for (int i = 0; i < bits.length; i++) {
+				bits[i] = getBitsPerComponent();
+			}
 
-        /**
-         * Class constructor
-         * @param jpegData the JPEG data
-         * @param cm the color model as presented in the PDF
-         */
-        private JpegDecoder(ByteBuffer jpegData, ColorModel cm) {
-            this.jpegData = jpegData;
-            this.cm = cm;
-        }
+			return decode != null ? new DecodeComponentColorModel(cs.getColorSpace(), bits)
+					: new PdfComponentColorModel(cs.getColorSpace(), bits);
+		}
+	}
 
-        /**
-         * Identify whether the decoder should operate in YCCK
-         * decode mode, whereby the YCCK Chroma is specifically
-         * looked for and the color model is changed to support
-         * converting raw YCCK color values, working around
-         * a lack of YCCK/CMYK report in the standard Java
-         * jpeg readers. Non-YCCK images will not be decoded
-         * while in this mode.
-         * @param ycckDecodeMode
-         */
-        public void setYcckDecodeMode(boolean ycckDecodeMode) {
-            this.ycckDecodeMode = ycckDecodeMode;
-        }
+	/**
+	 * Decodes jpeg data, possibly attempting a manual YCCK decode if requested.
+	 * Users should use {@link #getColorModel()} to see which color model should
+	 * now be used after a successful decode.
+	 */
+	private class JpegDecoder {
+		/** The jpeg bytes */
+		private final ByteBuffer jpegData;
+		/** The color model employed */
+		private ColorModel cm;
+		/** Whether the YCCK/CMYK decode work-around should be used */
+		private boolean ycckcmykDecodeMode = false;
 
-        /**
-         * Get the color model that should be used now
-         * @return
-         */
-        public ColorModel getColorModel() {
-            return cm;
-        }
+		/**
+		 * Class constructor
+		 * 
+		 * @param jpegData
+		 *            the JPEG data
+		 * @param cm
+		 *            the color model as presented in the PDF
+		 */
+		private JpegDecoder(ByteBuffer jpegData, ColorModel cm) {
+			this.jpegData = jpegData;
+			this.cm = cm;
+		}
 
-        /**
-         * Attempt to decode the jpeg data
-         * @return the successfully decoded image
-         * @throws IOException if the image couldn't be decoded due
-         *  to a lack of support or some IO problem
-         */
-        private BufferedImage decode() throws IOException {
+		/**
+		 * Identify whether the decoder should operate in YCCK/CMYK decode mode,
+		 * whereby the YCCK Chroma is specifically looked for and the color
+		 * model is changed to support converting raw YCCK color values, working
+		 * around a lack of YCCK/CMYK report in the standard Java jpeg readers.
+		 * Non-YCCK images will not be decoded while in this mode.
+		 * 
+		 * @param ycckcmykDecodeMode
+		 */
+		public void ycckcmykDecodeMode(boolean ycckcmykDecodeMode) {
+			this.ycckcmykDecodeMode = ycckcmykDecodeMode;
+		}
 
-            ImageReadParam readParam = null;
-            if (getDecode() != null) {
-                // we have to allocate our own buffered image so that we can
-                // install our colour model which will do the desired decode
-                readParam = new ImageReadParam();
-                SampleModel sm =
-                        cm.createCompatibleSampleModel (getWidth (), getHeight ());
-                final WritableRaster raster =
-                        Raster.createWritableRaster(sm, new Point(0, 0));
-                readParam.setDestination(new BufferedImage(cm, raster, true, null));
-            }
+		/**
+		 * Get the color model that should be used now
+		 * 
+		 * @return
+		 */
+		public ColorModel getColorModel() {
+			return cm;
+		}
 
-            Iterator<ImageReader> jpegReaderIt = ImageIO.getImageReadersByFormatName("jpeg");
-            IIOException lastIioEx = null;
-            while (jpegReaderIt.hasNext()) {
-                try {
-                    final ImageReader jpegReader = jpegReaderIt.next();
-                    jpegReader.setInput(ImageIO.createImageInputStream(
-                            new ByteBufferInputStream(jpegData)), true, false);
-                    try {
-                        return readImage(jpegReader, readParam);
-                    } catch (Exception e) {
-                        if (e instanceof IIOException) {
-                            throw (IIOException)e;
-                        }
-                        // Any other exceptions here are probably due to internal
-                        // problems with the image reader.
-                        // A concrete example of this happening is described here:
-                        // http://java.net/jira/browse/PDF_RENDERER-132 where
-                        // JAI imageio extension throws an
-                        // IndexOutOfBoundsException on progressive JPEGs.
-                        // We'll just treat it as an IIOException for convenience
-                        // and hopefully a subsequent reader can handle it
-                        throw new IIOException("Internal reader error?", e);
-                    } finally {
-                        jpegReader.dispose();
-                    }
-                } catch (IIOException e) {
-                    // its most likely complaining about an unsupported image
-                    // type; hopefully the next image reader will be able to
-                    // understand it
-                    jpegData.reset();
-                    lastIioEx = e;
-                }
-            }
+		/**
+		 * Attempt to decode the jpeg data
+		 * 
+		 * @return the successfully decoded image
+		 * @throws IOException
+		 *             if the image couldn't be decoded due to a lack of support
+		 *             or some IO problem
+		 */
+		private BufferedImage decode() throws IOException {
 
-            throw lastIioEx;
+			ImageReadParam readParam = null;
+			if (getDecode() != null) {
+				// we have to allocate our own buffered image so that we can
+				// install our colour model which will do the desired decode
+				readParam = new ImageReadParam();
+				SampleModel sm = cm.createCompatibleSampleModel(getWidth(), getHeight());
+				final WritableRaster raster = Raster.createWritableRaster(sm, new Point(0, 0));
+				readParam.setDestination(new BufferedImage(cm, raster, true, null));
+			}
 
-        }
+			Iterator<ImageReader> jpegReaderIt = ImageIO.getImageReadersByFormatName("jpeg");
+			IIOException lastIioEx = null;
+			while (jpegReaderIt.hasNext()) {
+				try {
+					final ImageReader jpegReader = jpegReaderIt.next();
+					jpegReader.setInput(ImageIO.createImageInputStream(new ByteBufferInputStream(jpegData)), true,
+							false);
+					try {
+						return readImage(jpegReader, readParam);
+					} catch (Exception e) {
+						if (e instanceof IIOException) {
+							throw (IIOException) e;
+						}
+						// Any other exceptions here are probably due to
+						// internal
+						// problems with the image reader.
+						// A concrete example of this happening is described
+						// here:
+						// http://java.net/jira/browse/PDF_RENDERER-132 where
+						// JAI imageio extension throws an
+						// IndexOutOfBoundsException on progressive JPEGs.
+						// We'll just treat it as an IIOException for
+						// convenience
+						// and hopefully a subsequent reader can handle it
+						throw new IIOException("Internal reader error?", e);
+					} finally {
+						jpegReader.dispose();
+					}
+				} catch (IIOException e) {
+					// its most likely complaining about an unsupported image
+					// type; hopefully the next image reader will be able to
+					// understand it
+					jpegData.reset();
+					lastIioEx = e;
+				}
+			}
 
-        private BufferedImage readImage(ImageReader jpegReader, ImageReadParam param) throws IOException {
-            if (ycckDecodeMode) {
-                // The standard Oracle Java JPEG readers can't deal with CMYK YCCK encoded images
-                // without a little help from us. We'll try and pick up such instances and work around it.
-                final IIOMetadata imageMeta = jpegReader.getImageMetadata(0);
-                if (imageMeta != null) {
-                    final Node standardMeta = imageMeta.getAsTree(IIOMetadataFormatImpl.standardMetadataFormatName);
-                    if (standardMeta != null) {
-                        final Node chroma = getChild(standardMeta, "Chroma");
-                        if (chroma != null) {
-                            final Node csType = getChild(chroma, "ColorSpaceType");
-                            if (csType != null) {
-                                final Attr csTypeNameNode = (Attr)csType.getAttributes().getNamedItem("name");
-                                if (csTypeNameNode != null && "YCCK".equals(csTypeNameNode.getValue())) {
-                                    // So it's a YCCK image, and we can coax a workable image out of it
-                                    // by grabbing the raw raster and installing a YCCK converting
-                                    // color space wrapper around the existing (CMYK) color space; this will
-                                    // do the YCCK conversion for us
+			throw lastIioEx;
 
-                                    // first make sure we can get the unadjusted raster
-                                    final Raster raster = jpegReader.readRaster(0, param);
+		}
 
-                                    // and now use it with a YCCK converting color space.
-                                    PDFImage.this.colorSpace = new PDFColorSpace(new YCCKColorSpace(colorSpace.getColorSpace()));
-                                    // re-calculate the color model since the color space has changed
-                                    cm = PDFImage.this.createColorModel();
-                                    return new BufferedImage(
-                                        cm,
-                                        Raster.createWritableRaster(raster.getSampleModel(), raster.getDataBuffer(), null),
-                                        true,
-                                        null);
+		private BufferedImage readImage(ImageReader jpegReader, ImageReadParam param) throws IOException {
+			if (ycckcmykDecodeMode) {
+				// The standard Oracle Java JPEG readers can't deal with CMYK
+				// YCCK encoded images
+				// without a little help from us. We'll try and pick up such
+				// instances and work around it.
+				final IIOMetadata imageMeta = jpegReader.getImageMetadata(0);
+				if (imageMeta != null) {
+					final Node standardMeta = imageMeta.getAsTree(IIOMetadataFormatImpl.standardMetadataFormatName);
+					if (standardMeta != null) {
+						final Node chroma = getChild(standardMeta, "Chroma");
+						if (chroma != null) {
+							final Node csType = getChild(chroma, "ColorSpaceType");
+							if (csType != null) {
+								final Attr csTypeNameNode = (Attr) csType.getAttributes().getNamedItem("name");
+								if (csTypeNameNode != null) {
+									final String typeName = csTypeNameNode.getValue();
+									final boolean YCCK;
+									if ((YCCK = "YCCK".equals(typeName)) || "CMYK".equals(typeName)) {
+										// If it's a YCCK image, then we can
+										// coax a workable image out of it
+										// by grabbing the raw raster and
+										// installing a YCCK converting
+										// color space wrapper around the
+										// existing (CMYK) color space; this
+										// will
+										// do the YCCK conversion for us
+										//
+										// If it's a CMYK image - just raster it
+										// in existing CMYK color space
 
-                                }
-                            }
-                        }
-                    }
-                }
+										// first make sure we can get the
+										// unadjusted raster
+										final Raster raster = jpegReader.readRaster(0, param);
 
-                throw new IIOException("Not a YCCK image");
+										if (YCCK) {
+											// and now use it with a YCCK
+											// converting color space.
+											PDFImage.this.colorSpace = new PDFColorSpace(
+													new YCCKColorSpace(colorSpace.getColorSpace()));
+											// re-calculate the color model
+											// since the color space has changed
+											cm = PDFImage.this.createColorModel();
+										}
 
-            } else {
+										return new BufferedImage(cm, Raster.createWritableRaster(
+												raster.getSampleModel(), raster.getDataBuffer(), null), true, null);
 
-                if (param != null && param.getDestination() != null) {
-                    // if we've already set up a destination image then we'll use it
-                    return jpegReader.read(0, param);
-                } else {
-                    // otherwise we'll create a new buffered image with the
-                    // desired color model
-                    return new BufferedImage(cm, jpegReader.read(0, param).getRaster(), true, null);
-                }
-            }
+									}
+								}
+							}
+						}
+					}
+				}
 
-        }
+				throw new IIOException("Neither YCCK nor CMYK image");
 
-        /**
-         * Get a named child node
-         * @param aNode the node
-         * @param aChildName the name of the child node
-         * @return the first direct child node with that name or null
-         *  if it doesn't exist
-         */
-        private Node getChild(Node aNode, String aChildName) {
-            for (int i = 0; i < aNode.getChildNodes().getLength(); ++i) {
-                final Node child = aNode.getChildNodes().item(i);
-                if (child.getNodeName().equals(aChildName)) {
-                    return child;
-                }
-            }
-            return null;
-        }
-    }
-    
-    /**
-     * A wrapper for ComponentColorSpace which normalizes based on the
-     * decode array.
-     */
-    static class PdfComponentColorModel extends ComponentColorModel {
+			} else {
 
-        int bitsPerComponent;
+				if (param != null && param.getDestination() != null) {
+					// if we've already set up a destination image then we'll
+					// use it
+					return jpegReader.read(0, param);
+				} else {
+					// otherwise we'll create a new buffered image with the
+					// desired color model
+					return new BufferedImage(cm, jpegReader.read(0, param).getRaster(), true, null);
+				}
+			}
 
-        public PdfComponentColorModel(ColorSpace cs, int[] bpc) {
-            super(cs, bpc, false, false, Transparency.OPAQUE,
-                    DataBuffer.TYPE_BYTE);
+		}
 
-            pixel_bits = bpc.length * bpc[0];
-            this.bitsPerComponent = bpc[0];
-        }
+		/**
+		 * Get a named child node
+		 * 
+		 * @param aNode
+		 *            the node
+		 * @param aChildName
+		 *            the name of the child node
+		 * @return the first direct child node with that name or null if it
+		 *         doesn't exist
+		 */
+		private Node getChild(Node aNode, String aChildName) {
+			for (int i = 0; i < aNode.getChildNodes().getLength(); ++i) {
+				final Node child = aNode.getChildNodes().item(i);
+				if (child.getNodeName().equals(aChildName)) {
+					return child;
+				}
+			}
+			return null;
+		}
+	}
 
-        @Override
-        public SampleModel createCompatibleSampleModel(int width, int height) {
+	/**
+	 * A wrapper for ComponentColorSpace which normalizes based on the decode
+	 * array.
+	 */
+	static class PdfComponentColorModel extends ComponentColorModel {
 
-            if (bitsPerComponent >= 8) {
-                assert bitsPerComponent == 8 || bitsPerComponent == 16;
-                final int numComponents = getNumComponents();
-                int[] bandOffsets = new int[numComponents];
-                for (int i=0; i < numComponents; i++) {
-                    bandOffsets[i] = i;
-                }
-                return new PixelInterleavedSampleModel(
-                        getTransferType(), width, height,
-                        numComponents,
-                        width * numComponents,
-                        bandOffsets);
-            } else {
-                switch (getPixelSize()) {
-                    case 1:
-                    case 2:
-                    case 4:
-                        // pixels don't span byte boundaries, so we can use the standard multi pixel
-                        // packing, which offers a slight performance advantage over the other sample
-                        // model, which must consider such cases. Given that sample model interactions
-                        // can dominate processing, this small distinction is worthwhile
-                        return new MultiPixelPackedSampleModel(getTransferType(),
-                            width,
-                            height,
-                            getPixelSize());
-                    default:
-                        // pixels will cross byte boundaries
-                        assert getTransferType() == DataBuffer.TYPE_BYTE;
-                        return new PdfSubByteSampleModel(width, height, getNumComponents(), bitsPerComponent);
-                }
-            }
-        }
+		int bitsPerComponent;
 
-        @Override
-        public boolean isCompatibleRaster(Raster raster) {
-            if (bitsPerComponent < 8 || getNumComponents() == 1) {
-                SampleModel sm = raster.getSampleModel();
-                return sm.getSampleSize(0) == bitsPerComponent;
-            }
-            return super.isCompatibleRaster(raster);
-        }
+		public PdfComponentColorModel(ColorSpace cs, int[] bpc) {
+			super(cs, bpc, false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
 
-    }
+			pixel_bits = bpc.length * bpc[0];
+			this.bitsPerComponent = bpc[0];
+		}
+
+		@Override
+		public SampleModel createCompatibleSampleModel(int width, int height) {
+
+			if (bitsPerComponent >= 8) {
+				assert bitsPerComponent == 8 || bitsPerComponent == 16;
+				final int numComponents = getNumComponents();
+				int[] bandOffsets = new int[numComponents];
+				for (int i = 0; i < numComponents; i++) {
+					bandOffsets[i] = i;
+				}
+				return new PixelInterleavedSampleModel(getTransferType(), width, height, numComponents,
+						width * numComponents, bandOffsets);
+			} else {
+				switch (getPixelSize()) {
+				case 1:
+				case 2:
+				case 4:
+					// pixels don't span byte boundaries, so we can use the
+					// standard multi pixel
+					// packing, which offers a slight performance advantage over
+					// the other sample
+					// model, which must consider such cases. Given that sample
+					// model interactions
+					// can dominate processing, this small distinction is
+					// worthwhile
+					return new MultiPixelPackedSampleModel(getTransferType(), width, height, getPixelSize());
+				default:
+					// pixels will cross byte boundaries
+					assert getTransferType() == DataBuffer.TYPE_BYTE;
+					return new PdfSubByteSampleModel(width, height, getNumComponents(), bitsPerComponent);
+				}
+			}
+		}
+
+		@Override
+		public boolean isCompatibleRaster(Raster raster) {
+			if (bitsPerComponent < 8 || getNumComponents() == 1) {
+				SampleModel sm = raster.getSampleModel();
+				return sm.getSampleSize(0) == bitsPerComponent;
+			}
+			return super.isCompatibleRaster(raster);
+		}
+
+	}
 }
