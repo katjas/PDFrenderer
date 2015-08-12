@@ -872,8 +872,9 @@ public class PDFImage {
 				}
 				return new DecodeComponentColorModel(rgbCS, bits);
 			}
-			int[] bits = new int[cs.getNumComponents()];
-			for (int i = 0; i < bits.length; i++) {
+			ColorSpace colorSpace = cs.getColorSpace();
+			int[] bits = new int[colorSpace.getNumComponents()];
+			for (int i = 0; i < bits.length; i++){
 				bits[i] = getBitsPerComponent();
 			}
 
@@ -1204,7 +1205,17 @@ public class PDFImage {
 				} else {
 					// otherwise we'll create a new buffered image with the
 					// desired color model
-					return new BufferedImage(cm, jpegReader.read(0, param).getRaster(), true, null);
+					//return new BufferedImage(cm, jpegReader.read(0, param).getRaster(), true, null);
+					BufferedImage bi = jpegReader.read(0, param);
+					try {
+						return new BufferedImage(cm, bi.getRaster(), true, null);
+					} catch (IllegalArgumentException raster_ByteInterleavedRaster) {
+						BufferedImage bi2 = new BufferedImage(bi.getWidth(), bi.getHeight(),
+								BufferedImage.TYPE_BYTE_INDEXED,
+								new IndexColorModel(8, 1, new byte[] { 0 }, new byte[] { 0 }, new byte[] { 0 }, 0));
+						cm = bi2.getColorModel();
+						return bi2;
+					}
 				}
 			}
 
