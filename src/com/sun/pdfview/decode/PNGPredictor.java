@@ -182,7 +182,7 @@ public class PNGPredictor extends Predictor {
                 up = prevLine[i] & 0xff;
             }
             
-            if (prevIdx > 0 && prevLine != null) {
+            if (prevIdx >= 0 && prevLine != null) {
                 upLeft = prevLine[prevIdx] & 0xff;
             }
             
