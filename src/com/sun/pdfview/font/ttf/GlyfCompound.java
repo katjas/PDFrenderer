@@ -69,7 +69,7 @@ public class GlyfCompound extends Glyf {
         do {
             cur = new GlyfComponent();
             cur.flags = data.getShort();
-            cur.glyphIndex = data.getShort();
+            cur.glyphIndex = data.getShort() & 0xFFFF;
           
             // read either e/f or matching points, as shorts or bytes...
             if (((cur.flags & ARG_1_AND_2_ARE_WORDS) != 0) &&
@@ -165,7 +165,7 @@ public class GlyfCompound extends Glyf {
     /**
      * Get the glyf index for a given glyf
      */
-    public short getGlyphIndex(int index) {
+    public int getGlyphIndex(int index) {
         return this.components[index].glyphIndex;
     }
     
@@ -312,7 +312,7 @@ public class GlyfCompound extends Glyf {
         short flags;
         
         /** the index of the component glyf */
-        short glyphIndex;
+        int glyphIndex;
         
         /** the points to match */
         int compoundPoint;
