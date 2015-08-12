@@ -200,6 +200,8 @@ public class PDFFontEncoding {
             return FontSupport.type1CExpertCharset;
         } else if (encodingName.equals("WinAnsiEncoding")) {
             return FontSupport.winAnsiEncoding;
+        } else if (encodingName.equals("StandardEncoding")) {
+        	return FontSupport.standardEncoding; 
         } else {
             throw new IllegalArgumentException("Unknown encoding: " + encodingName);
         }
