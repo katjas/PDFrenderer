@@ -67,18 +67,8 @@ public class TTFFont extends OutlineFont {
             throws IOException {
         super (baseFont, fontObj, descriptor);
 
-        String fontName = descriptor.getFontName ();
         PDFObject ttfObj = descriptor.getFontFile2 ();
 
-        // try {
-        //    byte[] fontData = ttfObj.getStream();
-        //    java.io.FileOutputStream fis = new java.io.FileOutputStream("/tmp/" + fontName + ".ttf");
-        //    fis.write(fontData);
-        //    fis.flush();
-        //    fis.close();
-        // } catch (Exception ex) {
-        //    ex.printStackTrace();
-        // }
         if (ttfObj != null || fontFile != null) {
             if (ttfObj != null) {
                 font = TrueTypeFont.parseFont (ttfObj.getStreamBuffer ());
@@ -220,10 +210,11 @@ public class TTFFont extends OutlineFont {
         // scale the glyph to match the desired advance
         float widthfactor = width / advance;
 
-        // the base transform scales the glyph to 1x1
-        AffineTransform at = AffineTransform.getScaleInstance (1 / this.unitsPerEm,
-                1 / this.unitsPerEm);
-        at.concatenate (AffineTransform.getScaleInstance (widthfactor, 1));
+		// the base transform scales the glyph to 1x1
+		AffineTransform at = AffineTransform.getScaleInstance(1 / this.unitsPerEm, 1 / this.unitsPerEm);
+		if (advance != 0) {
+			at.concatenate(AffineTransform.getScaleInstance(widthfactor, 1));
+		}
 
         gp.transform (at);
 
