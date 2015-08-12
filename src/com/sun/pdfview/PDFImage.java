@@ -255,9 +255,8 @@ public class PDFImage {
 			}
 			return bi;
 		} catch (IOException ioe) {
-			System.out.println("Error reading image");
-			ioe.printStackTrace();
-			return null;
+			// For ALF-6162 we want to know the image is invalid so we can try another transformer or
+			throw new RuntimeException("Error reading image: "+ioe.getMessage(), ioe);
 		}
 	}
 

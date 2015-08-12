@@ -1609,9 +1609,15 @@ public class PDFFile {
             }
         }
 
-        if (parser != null && !parser.isFinished()) {
-            parser.go(wait);
-        }
+		if (parser != null) {
+			if (!parser.isFinished()) {
+				parser.go(wait);
+			}
+			if (wait && parser.getStatus() == Watchable.ERROR) {
+				System.out.println("PDFRenderer: An error took place. Returning a null page");
+				return null;
+			}
+		}
 
         return page;
     }
