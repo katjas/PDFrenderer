@@ -12,6 +12,7 @@ To do:
 * some colours are displayed incorrect, there seem to be open issues regarding colour space handling
 * some fonts can't be rendered and are replaced with built in fonts 
 * embedded Type0 font with a CIDType0 font is not supported correctly. Currently there is a hack in the code to fall back to the built in fonts in this case.
+* try to improve support of auto adjust stroke and overprint mode - the data is read but not really handled correctly.
 
 Done:
 -----
@@ -37,7 +38,10 @@ Done:
 * Employ local TTF files if available instead of using the built-ins as substitutes. Scanning of available TTFs will take some time on the first request for an unavailable TTF. This behaviour can be disabled by setting the system property PDFRenderer.avoidExternalTtf to true. The PDFRenderer.fontSearchPath system property can be used to alter the search path, though Windows and Mac OS X defaults should hopefully be sensible. 
 * Added TIFF Type 2 Predictor for decoding
 * use built in font as workaround for MMType1 fonts instead of throwing an exception
-* 
+* introduced configuration options for improving the memory usage when rendering PDFs with large (e.g. scanned) images
+* improved parsing of SMask images
+* modified parsing of paths, some closures were missing
+* added some debugging
 
 Usage / Example
 -------
