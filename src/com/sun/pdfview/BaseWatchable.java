@@ -36,6 +36,7 @@ public abstract class BaseWatchable implements Watchable, Runnable {
     private static boolean SuppressSetErrorStackTrace = false;
     /** the thread we are running in */
     private Thread thread;
+    private Exception exception;
 
     /** 
      * Creates a new instance of BaseWatchable
@@ -325,6 +326,7 @@ public abstract class BaseWatchable implements Watchable, Runnable {
      * Set an error on this watchable
      */
     protected void setError(Exception error) {
+    	exception = error;
         if (!SuppressSetErrorStackTrace) {
             error.printStackTrace();
         }
@@ -332,27 +334,9 @@ public abstract class BaseWatchable implements Watchable, Runnable {
         setStatus(Watchable.ERROR);
     }
 
-    private String getStatusString() {
-        switch (getStatus()) {
-            case Watchable.NOT_STARTED:
-                return "Not started";
-            case Watchable.RUNNING:
-                return "Running";
-            case Watchable.NEEDS_DATA:
-                return "Needs Data";
-            case Watchable.PAUSED:
-                return "Paused";
-            case Watchable.STOPPED:
-                return "Stopped";
-            case Watchable.COMPLETED:
-                return "Completed";
-            case Watchable.ERROR:
-                return "Error";
-            default:
-                return "Unknown";
-
-        }
-    }
+	public Exception getException() {
+		return exception;
+	}
 
     /** A class that lets us give it a target time or number of steps,
      * and will tell us to stop after that much time or that many steps

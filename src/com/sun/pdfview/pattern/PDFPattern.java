@@ -63,13 +63,13 @@ public abstract class PDFPattern {
          
         // read the pattern transform matrix
         PDFObject matrix = patternObj.getDictRef("Matrix");
-	AffineTransform xform = null;
+        AffineTransform xform = null;
         if (matrix == null) {
             xform = new AffineTransform();
         } else {
             float elts[]= new float[6];
             for (int i = 0; i < elts.length; i++) {
-                elts[i] = (matrix.getAt(i)).getFloatValue();
+            	elts[i] = matrix.getAt(i).getFloatValue();
             }
         
             xform = new AffineTransform(elts); 

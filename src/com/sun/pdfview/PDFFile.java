@@ -1401,7 +1401,7 @@ public class PDFFile {
             // find startxref in scan
             String scans = new String(scan);
             loc = scans.indexOf("startxref");
-            if (loc > 0) {
+            if (loc >= 0) {
                 if (scanPos + loc + scan.length <= this.buf.limit()) {
                     scanPos = scanPos + loc;
                     loc = 0;
@@ -1609,9 +1609,15 @@ public class PDFFile {
             }
         }
 
-        if (parser != null && !parser.isFinished()) {
-            parser.go(wait);
-        }
+		if (parser != null) {
+			if (!parser.isFinished()) {
+				parser.go(wait);
+			}
+			if (wait && parser.getStatus() == Watchable.ERROR) {
+				System.out.println("PDFRenderer: An error took place. Returning a null page");
+				return null;
+			}
+		}
 
         return page;
     }

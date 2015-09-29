@@ -18,7 +18,6 @@
  */
 package com.sun.pdfview.font.cid;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
