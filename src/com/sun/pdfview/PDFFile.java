@@ -1582,7 +1582,6 @@ public class PDFFile {
         Integer key = Integer.valueOf(pagenum);
         HashMap<String,PDFObject> resources = null;
         PDFObject pageObj = null;
-        boolean needread = false;
 
         PDFPage page = this.cache.getPage(key);
         PDFParser parser = this.cache.getPageParser(key);
@@ -1613,9 +1612,8 @@ public class PDFFile {
 			if (!parser.isFinished()) {
 				parser.go(wait);
 			}
-			if (wait && parser.getStatus() == Watchable.ERROR) {
-				System.out.println("PDFRenderer: An error took place. Returning a null page");
-				return null;
+			if (parser.getStatus() == Watchable.ERROR) {
+				PDFDebugger.debug("Error in parsing the PDF page!");
 			}
 		}
 
