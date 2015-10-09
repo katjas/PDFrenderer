@@ -189,7 +189,14 @@ public class PDFColorSpace {
 
             // number of indices= ary[2], data is in ary[3];
             int count = ary[2].getIntValue();
-            value = new IndexedColor(refspace, count, ary[3]);
+            try {
+                value = new IndexedColor(refspace, count, ary[3]);
+            }catch(Exception e) {
+                // there might be problems in reading the colorspace from stream, 
+                // in that case use the reference colorspace
+                value = refspace;
+            }
+            
         } else if (name.equals("Pattern")) {
             if (ary.length == 1) {
                 return getColorSpace(COLORSPACE_PATTERN);

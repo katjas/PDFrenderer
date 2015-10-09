@@ -233,8 +233,9 @@ public class PDFImage {
 	 * Get the image that this PDFImage generates.
 	 * 
 	 * @return a buffered image containing the decoded image data
+	 * @throws PDFImageParseException 
 	 */
-	public BufferedImage getImage() {
+	public BufferedImage getImage() throws PDFImageParseException {
 		try {
 			BufferedImage bi = (BufferedImage) this.imageObj.getCache();
 
@@ -255,8 +256,8 @@ public class PDFImage {
 			}
 			return bi;
 		} catch (IOException ioe) {
-			// For ALF-6162 we want to know the image is invalid so we can try another transformer or
-			throw new RuntimeException("Error reading image: "+ioe.getMessage(), ioe);
+			// let the caller know that there was a problem parsing the image
+			throw new PDFImageParseException("Error reading image: "+ioe.getMessage(), ioe);
 		}
 	}
 
@@ -443,40 +444,44 @@ public class PDFImage {
 		PDFImage sMaskImage = getSMask();
 		if (sMaskImage != null) {
 			BufferedImage si = null;
-			if (sMaskImage.getHeight() != this.height && sMaskImage.getWidth() != this.width) {
-				// in case the two images do not have the same size, scale the
-				// sMask image
-				// this fixed a problem in which only part of the image was
-				// displayed
-				si = scaleSMaskImage(sMaskImage);
-			} else {
-				si = sMaskImage.getImage();
-			}
-			PDFDebugger.debugImage(si, "smask" + this.imageObj.getObjNum());
+			try {
+	            if (sMaskImage.getHeight() != this.height && sMaskImage.getWidth() != this.width) {
+	                // in case the two images do not have the same size, scale the
+	                // sMask image
+	                // this fixed a problem in which only part of the image was
+	                // displayed
+	                si = scaleSMaskImage(sMaskImage);  
+	            } else {
+	                si = sMaskImage.getImage();
+	            }
+	            PDFDebugger.debugImage(si, "smask" + this.imageObj.getObjNum());
 
-			BufferedImage outImage = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB);
-			PDFDebugger.debugImage(si, "outImage" + this.imageObj.getObjNum());
-			int[] srcArray = new int[this.width];
-			int[] maskArray = new int[this.width];
-
-			for (int i = 0; i < this.height; i++) {
-				bi.getRGB(0, i, this.width, 1, srcArray, 0, this.width);
-				si.getRGB(0, i, this.width, 1, maskArray, 0, this.width);
-
-				for (int j = 0; j < this.width; j++) {
-					int ac = 0xff000000;
-
-					maskArray[j] = ((maskArray[j] & 0xff) << 24) | (srcArray[j] & ~ac);
-				}
-
-				outImage.setRGB(0, i, this.width, 1, maskArray, 0, this.width);
-			}
-
-			bi = outImage;
+    			BufferedImage outImage = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB);
+    			PDFDebugger.debugImage(si, "outImage" + this.imageObj.getObjNum());
+    			int[] srcArray = new int[this.width];
+    			int[] maskArray = new int[this.width];
+    
+    			for (int i = 0; i < this.height; i++) {
+    				bi.getRGB(0, i, this.width, 1, srcArray, 0, this.width);
+    				si.getRGB(0, i, this.width, 1, maskArray, 0, this.width);
+    
+    				for (int j = 0; j < this.width; j++) {
+    					int ac = 0xff000000;
+    
+    					maskArray[j] = ((maskArray[j] & 0xff) << 24) | (srcArray[j] & ~ac);
+    				}
+    
+    				outImage.setRGB(0, i, this.width, 1, maskArray, 0, this.width);
+    			}
+    
+    			bi = outImage;
+            } catch (PDFImageParseException e) {
+                PDFDebugger.debug("Error parsing sMask image caused by:" + e.getMessage(), 100);
+            }
 		}
 
 		PDFDebugger.debugImage(bi, "result" + this.imageObj.getObjNum());
-		return (bi);
+		return bi;
 	}
 
 	/**
@@ -484,8 +489,9 @@ public class PDFImage {
 	 * 
 	 * @param sMaskImage
 	 * @return
+	 * @throws PDFImageParseException 
 	 */
-	private BufferedImage scaleSMaskImage(PDFImage sMaskImage) {
+	private BufferedImage scaleSMaskImage(PDFImage sMaskImage) throws PDFImageParseException {
 		BufferedImage before = sMaskImage.getImage();
 		int w = before.getWidth();
 		int h = before.getHeight();

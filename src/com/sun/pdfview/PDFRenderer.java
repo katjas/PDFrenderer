@@ -275,11 +275,13 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
                 0, -1f / image.getHeight(),
                 0, 1);
 
-        BufferedImage bi = image.getImage();
-        if (bi == null) {
-        	// maybe it was an unsupported format, or something.
-        	// Nothing to draw, anyway!
-        	return new Rectangle2D.Double();
+        BufferedImage bi;
+        try {
+            bi = image.getImage();
+        }catch (PDFImageParseException e) {
+            // maybe it was an unsupported format, or something.
+            // Nothing to draw, anyway!
+            return new Rectangle2D.Double();
         }
 
         if (image.isImageMask()) {
@@ -305,7 +307,6 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         //but it is also slower :(
 		this.g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
 				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		// TODO XOND: 05.08.2015 to be tested  
         // banded rendering may lead to lower memory consumption for e.g. scanned PDFs with large images
         int bandSize = Configuration.getInstance().getThresholdForBandedImageRendering();
         if (bandSize > 0 && bi.getHeight() > bandSize) {
@@ -409,7 +410,6 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         //but it is also slower :(
 		this.g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
 				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		// TODO XOND: 05.08.2015 to be tested  
         // banded rendering may lead to lower memory consumption for e.g. scanned PDFs with large images
         int bandSize = Configuration.getInstance().getThresholdForBandedImageRendering();
         if (bandSize > 0 && bi.getHeight() > bandSize) {

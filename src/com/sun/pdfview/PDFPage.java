@@ -219,10 +219,11 @@ public class PDFPage {
             if (observer != null) {
                 renderer.addObserver(observer);
             }
+            
 			if (!renderer.isFinished()) {
 				renderer.go(wait);
 				if (renderer.getStatus() == Watchable.ERROR) {
-					throw new RuntimeException(renderer.getException());
+					PDFDebugger.debug("Error during reading image!");
 				}
 			}
         }

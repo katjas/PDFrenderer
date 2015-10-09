@@ -55,7 +55,7 @@ public class PDFDebugger {
 
     // TODO: add debug level and print it? 
     public static void debug(String msg, int level) {
-        if (level >= debuglevel) {
+        if (level > debuglevel) {
             System.out.println(escape(msg));
         }
     }
