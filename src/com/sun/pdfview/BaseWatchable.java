@@ -37,6 +37,9 @@ public abstract class BaseWatchable implements Watchable, Runnable {
     /** the thread we are running in */
     private Thread thread;
     private Exception exception;
+    
+    // handle exceptions via this class
+    private static PDFErrorHandler errorHandler = new PDFErrorHandler(); 
 
     /** 
      * Creates a new instance of BaseWatchable
@@ -328,7 +331,7 @@ public abstract class BaseWatchable implements Watchable, Runnable {
     protected void setError(Exception error) {
     	exception = error;
         if (!SuppressSetErrorStackTrace) {
-            error.printStackTrace();
+            errorHandler.publishException(error);
         }
 
         setStatus(Watchable.ERROR);
@@ -380,5 +383,16 @@ public abstract class BaseWatchable implements Watchable, Runnable {
 
             return stop();
         }
+    }
+    
+    public static void setErrorHandler(PDFErrorHandler e) {
+        errorHandler = e;
+    }
+    
+    public static PDFErrorHandler getErrorHandler(){
+        if(errorHandler == null) {
+            errorHandler = new PDFErrorHandler();
+        }
+        return errorHandler;
     }
 }

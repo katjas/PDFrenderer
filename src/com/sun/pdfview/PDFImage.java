@@ -210,7 +210,7 @@ public class PDFImage {
 					} catch (IOException ex) {
 						PDFDebugger.debug("ERROR: there was a problem parsing the mask for this object");
 						PDFDebugger.dump(obj);
-						ex.printStackTrace(System.out);
+						BaseWatchable.getErrorHandler().publishException(ex);
 					}
 				} else if (sMaskObj.getType() == PDFObject.ARRAY) {
 					// retrieve the range of the ColorKeyMask
@@ -220,7 +220,7 @@ public class PDFImage {
 					} catch (IOException ex) {
 						PDFDebugger.debug("ERROR: there was a problem parsing the color mask for this object");
 						PDFDebugger.dump(obj);
-						ex.printStackTrace(System.out);
+						BaseWatchable.getErrorHandler().publishException(ex);
 					}
 				}
 			}

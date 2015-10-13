@@ -24,6 +24,8 @@ import java.awt.color.ICC_ColorSpace;
 import java.awt.color.ICC_Profile;
 import java.io.IOException;
 
+import com.sun.pdfview.BaseWatchable;
+
 /**
  * A ColorSpace for the CMYK color space.
  *
@@ -46,8 +48,7 @@ public class CMYKColorSpace extends ColorSpace {
 			icc = ICC_Profile.getInstance(getClass().getResourceAsStream("/ch/randelshofer/media/jpeg/Generic_CMYK_Profile.icc"));
 			icc_cs = new ICC_ColorSpace(icc);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    BaseWatchable.getErrorHandler().publishException(e);
 		}
 	}
 

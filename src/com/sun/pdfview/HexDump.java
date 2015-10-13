@@ -78,7 +78,7 @@ public class HexDump {
             raf.readFully(data);
             printData(data);
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            BaseWatchable.getErrorHandler().publishException(ioe);
         }
     }
 }
