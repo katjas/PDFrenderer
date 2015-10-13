@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.sun.pdfview.BaseWatchable;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 import com.sun.pdfview.font.cid.PDFCMap;
@@ -262,7 +263,7 @@ public abstract class PDFFont {
                                 // in the font parsing, so we'll avoid relying on
                                 // this not to fail
                                 System.err.println("Problem parsing " + ttfFile);
-                                t.printStackTrace(System.err);
+                                BaseWatchable.getErrorHandler().publishException(t);
                             }
                         }
                     }

@@ -48,7 +48,7 @@ public class PDFDebugger {
                 File outputfile = new File("D:/tmp/PDFimages/" + name + ".png");
                 ImageIO.write(image, "png", outputfile);
             } catch (IOException e) {
-                e.printStackTrace();
+                BaseWatchable.getErrorHandler().publishException(e);
             }
         }
     }

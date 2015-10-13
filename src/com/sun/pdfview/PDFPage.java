@@ -824,8 +824,7 @@ class PDFShadeCommand extends PDFCmd {
             try {
                 s = state.getLastTransform().createInverse().createTransformedShape(s);
             } catch (NoninvertibleTransformException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                BaseWatchable.getErrorHandler().publishException(e);
             }
         }
         state.setFillAlpha(1);
