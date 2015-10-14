@@ -42,6 +42,8 @@ Done:
 * improved parsing of SMask images
 * modified parsing of paths, some closures were missing
 * added some debugging
+* Add option to inject exception handling - e.g. for redirecting the stack trace to a log file
+* Add SymbolSetEncoding
 
 Usage / Example
 -------
