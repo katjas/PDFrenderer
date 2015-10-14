@@ -221,6 +221,8 @@ public class PDFFontEncoding {
             return FontSupport.winAnsiEncoding;
         } else if (encodingName.equals("StandardEncoding")) {
         	return FontSupport.standardEncoding; 
+        } else if(encodingName.equals("SymbolSetEncoding")) {
+            return FontSupport.symbolSetEncoding;
         } else {
             throw new IllegalArgumentException("Unknown encoding: " + encodingName);
         }
