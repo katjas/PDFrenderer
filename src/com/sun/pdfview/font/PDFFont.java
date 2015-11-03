@@ -173,7 +173,12 @@ public abstract class PDFFont {
         } else if (subType.equals("TrueType")) {
             if (descriptor.getFontFile2() != null) {
                 // load a TrueType font
-                font = new TTFFont(baseFont, obj, descriptor);
+                try {
+                    font = new TTFFont(baseFont, obj, descriptor);
+                }catch (Exception e) {
+                    // fake it with a built-in font
+                    font = new BuiltinFont(baseFont, obj, descriptor);
+                }
             } else {
                 final File extFontFile = findExternalTtf(baseFont);
                 if (extFontFile != null) {
