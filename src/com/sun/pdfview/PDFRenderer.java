@@ -82,8 +82,6 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
     private long then = 0;
     /** the sum of all the individual dirty regions since the last update */
     private Rectangle2D unupdatedRegion;
-    /** Use blur before image resize to enhance the result (Antialias) **/
-    public boolean useBlurResizingForImages = true;
 
     /** how long (in milliseconds) to wait between image updates */
     public static final long UPDATE_DURATION = 200;
@@ -291,7 +289,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         Rectangle r = g.getTransform().createTransformedShape(new Rectangle(0,0,1,1)).getBounds();
         boolean isBlured = false;
         
-        if (useBlurResizingForImages && 
+        if (Configuration.getInstance().isUseBlurResizingForImages() && 
         		bi.getType() != BufferedImage.TYPE_CUSTOM && 
         		image.getWidth() >= 1.75*r.getWidth() && image.getHeight() >= 1.75*r.getHeight()){
         	try {
@@ -350,7 +348,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
     private Rectangle2D smartDrawImage(PDFImage image, BufferedImage bi, Rectangle r, AffineTransform at) {
         boolean isBlured = false;
         
-        if (useBlurResizingForImages && 
+        if (Configuration.getInstance().isUseBlurResizingForImages() && 
         		bi.getType() != BufferedImage.TYPE_CUSTOM && 
         		image.getWidth() >= 1.75*r.getWidth() && image.getHeight() >= 1.75*r.getHeight()){
 
