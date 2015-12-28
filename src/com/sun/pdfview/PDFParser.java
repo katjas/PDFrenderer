@@ -1229,6 +1229,9 @@ public class PDFParser extends BaseWatchable {
     */
     private void doShader(PDFObject shaderObj) throws IOException {
         PDFShader shader = PDFShader.getShader(shaderObj, this.resources);
+        if(shader == null) {
+        	return;
+        }
         this.cmds.addPush();
         Rectangle2D bbox = shader.getBBox();
         if (bbox != null) {
