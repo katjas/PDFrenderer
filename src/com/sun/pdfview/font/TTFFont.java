@@ -175,7 +175,6 @@ public class TTFFont extends OutlineFont {
             if (idx != 0) {
                 return getOutline (idx, width);
             }
-            return null;
         }
 
         Integer res = AdobeGlyphList.getGlyphNameIndex (name);

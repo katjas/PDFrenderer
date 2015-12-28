@@ -199,25 +199,6 @@ public class PDFFontEncoding {
         } else if (encodingName.equals("MacExpertEncoding")) {
             return FontSupport.type1CExpertCharset;
         } else if (encodingName.equals("WinAnsiEncoding")) {
-        	differences.put(new Character((char) 138), "Scaron");
-        	differences.put(new Character((char) 141), "Tcaron");
-        	differences.put(new Character((char) 142), "Zcaron");
-        	differences.put(new Character((char) 154), "scaron");
-        	differences.put(new Character((char) 157), "tcaron");
-        	differences.put(new Character((char) 158), "zcaron");
-        	differences.put(new Character((char) 200), "Ccaron");
-        	differences.put(new Character((char) 204), "Ecaron");
-        	differences.put(new Character((char) 207), "Dcaron");
-        	differences.put(new Character((char) 210), "Ncaron");
-        	differences.put(new Character((char) 216), "Rcaron");
-        	differences.put(new Character((char) 217), "Uring");
-        	differences.put(new Character((char) 232), "ccaron");
-        	differences.put(new Character((char) 236), "ecaron");
-        	differences.put(new Character((char) 239), "dcaron");
-        	differences.put(new Character((char) 242), "ncaron");
-        	differences.put(new Character((char) 248), "rcaron");
-        	differences.put(new Character((char) 249), "uring");
-        	differences.put(new Character((char) 248), "rcaron");
             return FontSupport.winAnsiEncoding;
         } else if (encodingName.equals("StandardEncoding")) {
         	return FontSupport.standardEncoding; 
