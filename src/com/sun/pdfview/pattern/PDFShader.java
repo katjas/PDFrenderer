@@ -136,7 +136,7 @@ public abstract class PDFShader {
             case COONS_PATCH_MESH_SHADING:
             case TENSOR_PRODUCTS_MESH_SHADING:
             default:    
-                throw new PDFParseException("Unsupported shader type: " + type);
+            		shader = new DummyShader(type);
         }
         
         // read the color space (required)
