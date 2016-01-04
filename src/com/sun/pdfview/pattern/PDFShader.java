@@ -136,9 +136,8 @@ public abstract class PDFShader {
             case LATTICE_SHADING:
             case COONS_PATCH_MESH_SHADING:
             case TENSOR_PRODUCTS_MESH_SHADING:
-            default:
-              	PDFDebugger.debug("Unsupported shader type: " + type, 10000);
-            		return null;
+            default:    
+            		shader = new DummyShader(type);
         }
         
         // read the color space (required)
