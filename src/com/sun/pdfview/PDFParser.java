@@ -1238,9 +1238,8 @@ public class PDFParser extends BaseWatchable {
             this.cmds.addFillPaint(shader.getPaint());
             this.cmds.addPath(new GeneralPath(bbox), PDFShapeCmd.FILL, this.autoAdjustStroke);
         } else {
-            // if no bounding box is set, use the default user space
             this.cmds.addFillPaint(shader.getPaint());
-            this.cmds.addPath(new GeneralPath(this.cmds.getBBox()), PDFShapeCmd.FILL, this.autoAdjustStroke);
+            this.cmds.addPath(null, PDFShapeCmd.FILL, this.autoAdjustStroke);
         }
         this.cmds.addPop();
     }
