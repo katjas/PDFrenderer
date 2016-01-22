@@ -575,12 +575,7 @@ public class PDFParser extends BaseWatchable {
                 this.path = new GeneralPath();
                 PDFDebugger.logPath(path, "new path");
             } else if (cmd.equals("f") || cmd.equals("F")) {
-                try {
-                    tryClosingPath();
-                    PDFDebugger.logPath(path, "closed");
-                }catch(java.awt.geom.IllegalPathStateException e) {
-                    // do nothing
-                }
+                 tryClosingPath();
                 // fill the path (close/not close identical)
                 if (!PDFDebugger.DISABLE_PATH_FILL || (!PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
                     this.cmds.addPath(this.path, PDFShapeCmd.FILL | this.clip, this.autoAdjustStroke);
@@ -892,7 +887,7 @@ public class PDFParser extends BaseWatchable {
             this.path.closePath();
             PDFDebugger.logPath(path, "closed");
         }catch(java.awt.geom.IllegalPathStateException e) {
-            // do nothing
+            PDFDebugger.debug("Failed to close path", 1000);
         }
     }
 
