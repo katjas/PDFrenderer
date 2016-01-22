@@ -19,6 +19,7 @@
 package com.sun.pdfview.font.ttf;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -72,7 +73,23 @@ public class CmapTable extends TrueTypeTable {
      * Get all CMaps
      */
     public CMap[] getCMaps() {
-        Collection<CMap> c = this.subtables.values();
+        Collection<CMap> c = new ArrayList<CMap>();
+        
+        CMap cmap_3_1 = this.getCMap((short)3, (short)1);
+        if (cmap_3_1 != null) {
+        	c.add(cmap_3_1);
+        }
+        CMap cmap_1_0 = this.getCMap((short)1, (short)0);
+        if (cmap_1_0 != null) {
+        	c.add(cmap_1_0);
+        }
+
+        for (CMap cmap : this.subtables.values()) {
+        	if (!c.contains(cmap)) {
+        		c.add(cmap);
+        	}
+        }
+                ;
         CMap[] maps = new CMap[c.size()];
         
         c.toArray(maps);

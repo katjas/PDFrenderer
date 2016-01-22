@@ -1237,15 +1237,17 @@ public class PDFParser extends BaseWatchable {
     */
     private void doShader(PDFObject shaderObj) throws IOException {
         PDFShader shader = PDFShader.getShader(shaderObj, this.resources);
+        if(shader == null) {
+        	return;
+        }
         this.cmds.addPush();
         Rectangle2D bbox = shader.getBBox();
         if (bbox != null) {
             this.cmds.addFillPaint(shader.getPaint());
             this.cmds.addPath(new GeneralPath(bbox), PDFShapeCmd.FILL, this.autoAdjustStroke);
         } else {
-            // if no bounding box is set, use the default user space
             this.cmds.addFillPaint(shader.getPaint());
-            this.cmds.addPath(new GeneralPath(this.cmds.getBBox()), PDFShapeCmd.FILL, this.autoAdjustStroke);
+            this.cmds.addPath(null, PDFShapeCmd.FILL, this.autoAdjustStroke);
         }
         this.cmds.addPop();
     }

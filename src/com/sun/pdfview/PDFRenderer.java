@@ -261,6 +261,12 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
      */
     public Rectangle2D fill(GeneralPath s) {
         this.g.setComposite(this.state.fillAlpha);
+        if (s == null) {
+        	GraphicsState gs =  stack.peek();
+          if (gs.cliprgn != null) {
+          	s = new GeneralPath(gs.cliprgn);
+          }
+        }
         return this.state.fillPaint.fill(this, this.g, s);
     }
 
