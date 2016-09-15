@@ -128,6 +128,19 @@ public class TTFFont extends OutlineFont {
                 return getOutline (idx, width);
             }
         }
+        
+        // windows symbol font CMap may use one of the following code ranges
+        if (src >= 0 && src <= 0xFF) {
+        	int[] symbolPages = new int[]{0xF000, 0xF100, 0xF200};        	
+        	for (int codePage : symbolPages) {
+                for (int i = 0; i < maps.length; i++) {
+                    int idx = maps[i].map ( (char)(src | codePage));
+                    if (idx != 0) {
+                        return getOutline (idx, width);
+                    }
+                }        					
+			}
+        }
 
         // not found, return the empty glyph
         return getOutline (0, width);
