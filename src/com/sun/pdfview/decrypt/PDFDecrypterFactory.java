@@ -161,6 +161,8 @@ public class PDFDecrypterFactory {
                 && encryptMetadataObj.getType() == PDFObject.BOOLEAN) {
             encryptMetadata = encryptMetadataObj.getBooleanValue();
         }
+        
+        final PDFObject bitLengthObj = encryptDict.getDictRef("Length");        
 
         // Assemble decrypters for each filter in the
         // crypt filter (CF) dictionary
@@ -179,8 +181,8 @@ public class PDFDecrypterFactory {
             final PDFObject lengthObj = cryptFilter.getDictRef("Length");
             // The Errata for PDF 1.7 explains that the value of
             // Length in CF dictionaries is in bytes
-            final Integer length = lengthObj != null ?
-                    lengthObj.getIntValue() * 8 : null;
+            final Integer length = lengthObj != null ? lengthObj.getIntValue() * 8 : 
+                    	(bitLengthObj != null) ? bitLengthObj.getIntValue() : null;
 
             // CFM is the crypt filter method, describing whether RC4,
             // AES, or None (i.e., identity) is the encryption mechanism
