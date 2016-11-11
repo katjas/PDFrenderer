@@ -32,9 +32,12 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
+import java.awt.image.ColorModel;
 import java.awt.image.ConvolveOp;
 import java.awt.image.ImageObserver;
+import java.awt.image.IndexColorModel;
 import java.awt.image.Kernel;
+import java.awt.image.WritableRaster;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -359,7 +362,8 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         		image.getWidth() >= 1.75*r.getWidth() && image.getHeight() >= 1.75*r.getHeight()){
 
         	BufferedImageOp op;
-        	
+        	// indexed colored images need to be converted for the convolveOp
+        	boolean colorConversion = (bi.getColorModel() instanceof IndexColorModel);
         	final float maxFactor = 3.5f;
         	final boolean RESIZE = true;
         	if (image.getWidth() > maxFactor*r.getWidth() && image.getHeight() > maxFactor*r.getHeight()){
@@ -370,13 +374,13 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         			newHeight = image.getHeight();
         			newWidth = image.getWidth();
         		}
-        		BufferedImage blured = new BufferedImage(newWidth, 
-        				newHeight, bi.getType());
-        		Graphics2D bg = (Graphics2D) blured.getGraphics();
+        		BufferedImage resized = new BufferedImage(newWidth, 
+        				newHeight, colorConversion?BufferedImage.TYPE_INT_ARGB:bi.getType());
+        		Graphics2D bg = (Graphics2D) resized.getGraphics();
         		bg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
         				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         		bg.drawImage(bi, 0, 0, newWidth, newHeight, null);
-        		bi = blured;
+        		bi = resized;
                 at = new AffineTransform(1f / bi.getWidth(), 0,
                         0, -1f / bi.getHeight(),
                         0, 1);
@@ -397,11 +401,20 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         				2*weight, 6*weight, 2*weight,
         				1*weight, 2*weight, 1*weight
         		};
-
+        		if (colorConversion) {
+            		BufferedImage colored = new BufferedImage(image.getWidth(), 
+            				image.getHeight(), colorConversion?BufferedImage.TYPE_INT_ARGB:bi.getType());
+            		Graphics2D bg = (Graphics2D) colored.getGraphics();
+            		bg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
+            				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            		bg.drawImage(bi, 0, 0, image.getWidth(), image.getHeight(), null);
+            		bi = colored;
+        		}
         		op = new ConvolveOp(new Kernel(3, 3, blurKernel), ConvolveOp.EDGE_NO_OP, null);
         	}
         	
-        	BufferedImage blured = op.createCompatibleDestImage(bi, bi.getColorModel());
+        	BufferedImage blured = op.createCompatibleDestImage(bi, 
+        			colorConversion?ColorModel.getRGBdefault():bi.getColorModel());
         	
            	op.filter(bi, blured);
         	bi = blured;
@@ -872,7 +885,52 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
     	}
 
     	Color col = (Color) paint;
-    	        
+    	ColorModel colorModel = bi.getColorModel();
+    	if (colorModel instanceof IndexColorModel) {
+    		int mapSize = ((IndexColorModel) colorModel).getMapSize();
+    		int pixelSize = colorModel.getPixelSize();
+    		if (mapSize == 2 && pixelSize == 1) {
+    			// we have a monochrome image mask with 1 bit per pixel
+    			// swap out the standard color with the current paint color
+    			int[] rgbValues = new int[2];
+    			((IndexColorModel) colorModel).getRGBs(rgbValues);
+    			byte[] colorComponents = null;
+    			if (rgbValues[0] == 0xff000000) {
+    				// normal case color at 0
+        			colorComponents = new byte[]{
+        					(byte) col.getRed(), 
+        					(byte) col.getGreen(), 
+        					(byte) col.getBlue(), 
+        					(byte) col.getAlpha(),
+        					0, 0, 0, 0 // the background is transparent
+        					};    				
+    			}
+    			else if (rgbValues[1] == 0xff000000){
+    				// alternate case color at 1
+        			colorComponents = new byte[]{        					
+        					0, 0, 0, 0, // the background is transparent
+        					(byte) col.getRed(), 
+        					(byte) col.getGreen(), 
+        					(byte) col.getBlue(), 
+        					(byte) col.getAlpha()
+        					};    				    				
+    			}
+    			
+    			if (colorComponents != null) {
+    				// replace mapped colors
+        			int startIndex = 0;
+        			boolean hasAlpha = true;
+    				ColorModel replacementColorModel = new IndexColorModel(pixelSize, mapSize, colorComponents, startIndex, hasAlpha);				
+    				WritableRaster raster = bi.getRaster();
+        			BufferedImage adaptedImage = new BufferedImage(replacementColorModel, raster, false, null);
+       				return adaptedImage;    				
+    			}
+    			else {
+    				return bi; // no color replacement 
+    			}
+    		}
+    	}
+    	
         // format as 8 bits each of ARGB
         int paintColor = col.getAlpha() << 24;
         paintColor |= col.getRed() << 16;
