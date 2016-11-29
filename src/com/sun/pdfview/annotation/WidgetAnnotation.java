@@ -106,22 +106,83 @@ public class WidgetAnnotation extends PDFAnnotation {
 	}
 	
 	private List<PDFCmd> parseCommand(PDFObject obj) throws IOException {
-        String type = obj.getDictRef("Subtype").getStringValue();
+        PDFObject dictRefSubType = obj.getDictRef("Subtype");
+		String type = null;
+		if(dictRefSubType != null) {
+			type = dictRefSubType.getStringValue();
+		}
+		
         if (type == null) {
-            type = obj.getDictRef ("S").getStringValue ();
+        	PDFObject dictRefS = obj.getDictRef("S");
+        	if(dictRefS != null) {
+        		type = dictRefS.getStringValue();
+        	}
         }
+        
+        //if type is still null, check for AcroForm, if AcroForm is available the PDF could be not compatible
+        //with the PDF specification, anyway check if obj is in AcroForm, if so, proceed as for a good PDF
+        if(type == null) {
+        	PDFObject acroForm = obj.getRoot().getDictRef("AcroForm");
+        	PDFObject fields = acroForm.getDictRef("Fields");
+        	PDFObject[] arrayFields = fields.getArray();
+        	
+        	for (PDFObject pdfObject : arrayFields) {
+				PDFObject dictRefAP = pdfObject.getDictRef("AP");
+				if(dictRefAP != null) {
+					PDFObject dictRefN = dictRefAP.getDictRef("N");
+				
+					if(dictRefN.equals(obj)) {					
+						PDFObject dictRefAS = pdfObject.getDictRef("AS");
+						if(dictRefAS != null) {		//this is a combobox
+							PDFObject dictRef = dictRefN.getDictRef(dictRefAS.getStringValue());
+							obj = dictRef;
+						}
+						
+						type = "Form";
+						break;
+					}
+				}
+			}
+        	
+        	if(type == null) {	//check for radiobutton
+        		PDFObject dictRef = obj.getDictRef("Off");
+        		if(dictRef != null) {
+        			for (PDFObject pdfObject : arrayFields) {
+						PDFObject dictRefT = pdfObject.getDictRef("T");
+						if(dictRefT != null && dictRefT.getStringValue().contains("Group")) {
+							PDFObject kids = pdfObject.getDictRef("Kids");
+							PDFObject[] arrayKids = kids.getArray();
+							for (PDFObject kid : arrayKids) {
+								PDFObject kidAP = kid.getDictRef("AP");
+								PDFObject kidN = kidAP.getDictRef("N");
+								if(kidN.equals(obj)) {					
+									PDFObject kidAS = kid.getDictRef("AS");
+									if(kidAS != null) {		
+										PDFObject kidRef = kidN.getDictRef(kidAS.getStringValue());
+										obj = kidRef;
+									}
+									
+									type = "Form";
+									break;
+								}
+							}
+						}
+					}
+        		}
+        	}
+        }
+        
         ArrayList<PDFCmd> result = new ArrayList<PDFCmd>();
         result.add(PDFPage.createPushCmd());
         result.add(PDFPage.createPushCmd());
-        if (type.equals("Image")) {
+        if ("Image".equals(type)) {
             // stamp annotation transformation
             AffineTransform rectAt = getPositionTransformation();
             result.add(PDFPage.createXFormCmd(rectAt));
             
         	PDFImage img = PDFImage.createImage(obj, new HashMap<String, PDFObject>() , false);        	
         	result.add(PDFPage.createImageCmd(img));
-        } else if (type.equals("Form")) {
-        	
+        } else if ("Form".equals(type)) {
             // rats.  parse it.
             PDFObject bobj = obj.getDictRef("BBox");
             Float bbox = new Rectangle2D.Float(bobj.getAt(0).getFloatValue(),
