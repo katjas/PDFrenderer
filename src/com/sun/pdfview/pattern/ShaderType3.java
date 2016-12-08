@@ -36,6 +36,7 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 
+import com.sun.pdfview.BaseWatchable;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFPaint;
 import com.sun.pdfview.PDFParseException;
@@ -266,8 +267,7 @@ public class ShaderType3 extends PDFShader {
 				this.invXform = xform.createInverse();
 			}
 			catch (NoninvertibleTransformException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			    BaseWatchable.getErrorHandler().publishException(e);
 			}
         }
         

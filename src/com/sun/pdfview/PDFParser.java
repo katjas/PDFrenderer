@@ -538,8 +538,7 @@ public class PDFParser extends BaseWatchable {
                 this.path.curveTo(a[0], a[1], a[2], a[3], a[2], a[3]);
                 PDFDebugger.logPath(path, "3 curve to " + Arrays.toString(a));
             } else if (cmd.equals("h")) {
-                // path close
-                this.path.closePath();
+                tryClosingPath();
                 PDFDebugger.logPath(path, "closed");
             } else if (cmd.equals("re")) {
                 // path add rectangle
@@ -552,7 +551,7 @@ public class PDFParser extends BaseWatchable {
                 PDFDebugger.logPath(path, "3 line to " + (a[0] + a[2]) + "," + (a[1] + a[3]));
                 this.path.lineTo(a[0], a[1] + a[3]);
                 PDFDebugger.logPath(path, "4 line to " + a[0] + "," + (a[1] + a[3]));
-                this.path.closePath();
+                tryClosingPath();
                 PDFDebugger.logPath(path, "closed");
             } else if (cmd.equals("S")) {
                 // stroke the path
@@ -567,8 +566,7 @@ public class PDFParser extends BaseWatchable {
                 this.path = new GeneralPath();
                 PDFDebugger.logPath(path, "new path");
             } else if (cmd.equals("s")) {
-                // close and stroke the path
-                this.path.closePath();
+                tryClosingPath();
                 PDFDebugger.logPath(path, "closed");
                 if (!PDFDebugger.DISABLE_PATH_STROKE || (!PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
                     this.cmds.addPath(this.path, PDFShapeCmd.STROKE | this.clip, this.autoAdjustStroke);
@@ -577,8 +575,7 @@ public class PDFParser extends BaseWatchable {
                 this.path = new GeneralPath();
                 PDFDebugger.logPath(path, "new path");
             } else if (cmd.equals("f") || cmd.equals("F")) {
-                this.path.closePath();
-                PDFDebugger.logPath(path, "closed");
+                 tryClosingPath();
                 // fill the path (close/not close identical)
                 if (!PDFDebugger.DISABLE_PATH_FILL || (!PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
                     this.cmds.addPath(this.path, PDFShapeCmd.FILL | this.clip, this.autoAdjustStroke);
@@ -615,8 +612,7 @@ public class PDFParser extends BaseWatchable {
                 this.path = new GeneralPath();
                 PDFDebugger.logPath(path, "new path");
             } else if (cmd.equals("b")) {
-                // close the path, then fill and stroke it
-                this.path.closePath();
+                tryClosingPath();
                 PDFDebugger.logPath(path, "close");
                 if (!PDFDebugger.DISABLE_PATH_STROKE_FILL || (!PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
                     this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip, this.autoAdjustStroke);
@@ -625,8 +621,7 @@ public class PDFParser extends BaseWatchable {
                 this.path = new GeneralPath();
                 PDFDebugger.logPath(path, "new path");
             } else if (cmd.equals("b*")) {
-                // close path, fill using even/odd rule, then stroke it
-                this.path.closePath();
+                tryClosingPath();
                 PDFDebugger.logPath(path, "close");
                 this.path.setWindingRule(WIND_EVEN_ODD);
                 PDFDebugger.logPath(path, "set winding rule " + WIND_EVEN_ODD);
@@ -638,7 +633,7 @@ public class PDFParser extends BaseWatchable {
                 PDFDebugger.logPath(path, "new path");
             } else if (cmd.equals("n")) {
                 if (path.getCurrentPoint() != null) {
-                    this.path.closePath();
+                    tryClosingPath();
                     PDFDebugger.logPath(path, "closed");
                 }
                 // clip with the path and discard it
@@ -881,6 +876,19 @@ public class PDFParser extends BaseWatchable {
         // gc'd if it is no longer in use
         this.cmds = null;
         return Watchable.RUNNING;
+    }
+
+    /**
+     * Try to close a path but don't fail with exception if this is not working.
+     * This is just a workaround for some PDFs with wrong content...
+     */
+    private void tryClosingPath() {
+        try {
+            this.path.closePath();
+            PDFDebugger.logPath(path, "closed");
+        }catch(java.awt.geom.IllegalPathStateException e) {
+            PDFDebugger.debug("Failed to close path", 1000);
+        }
     }
 
     @SuppressWarnings("unused")
@@ -1229,15 +1237,17 @@ public class PDFParser extends BaseWatchable {
     */
     private void doShader(PDFObject shaderObj) throws IOException {
         PDFShader shader = PDFShader.getShader(shaderObj, this.resources);
+        if(shader == null) {
+        	return;
+        }
         this.cmds.addPush();
         Rectangle2D bbox = shader.getBBox();
         if (bbox != null) {
             this.cmds.addFillPaint(shader.getPaint());
             this.cmds.addPath(new GeneralPath(bbox), PDFShapeCmd.FILL, this.autoAdjustStroke);
         } else {
-            // if no bounding box is set, use the default user space
             this.cmds.addFillPaint(shader.getPaint());
-            this.cmds.addPath(new GeneralPath(this.cmds.getBBox()), PDFShapeCmd.FILL, this.autoAdjustStroke);
+            this.cmds.addPath(null, PDFShapeCmd.FILL, this.autoAdjustStroke);
         }
         this.cmds.addPop();
     }

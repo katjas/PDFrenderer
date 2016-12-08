@@ -17,6 +17,9 @@ public class Configuration {
     private int thresholdForBandedImageRendering = 0;
     /** whether color convert op should be used or not for parsing an image*/
     private boolean avoidColorConvertOp = false;
+    /** Use blur before image resize to enhance the result (Antialias) **/
+    private boolean useBlurResizingForImages = true;
+
     
 	public static synchronized Configuration getInstance() {
 		if (INSTANCE == null) {
@@ -93,6 +96,23 @@ public class Configuration {
      */
     public void setAvoidColorConvertOp(boolean avoidColorConvertOp) {
         this.avoidColorConvertOp = avoidColorConvertOp;
+    }
+
+    /**
+     * Use blur before image resize to enhance the result (Antialias)?
+     * @return the useBlurResizingForImages
+     */
+    public boolean isUseBlurResizingForImages() {
+        return useBlurResizingForImages;
+    }
+
+    /**
+     * Use blur before image resize to enhance the result (Antialias)
+     * 
+     * @param useBlurResizingForImages 
+     */
+    public void setUseBlurResizingForImages(boolean useBlurResizingForImages) {
+        this.useBlurResizingForImages = useBlurResizingForImages;
     }
 
 }

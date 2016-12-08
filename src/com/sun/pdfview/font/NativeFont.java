@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.sun.pdfview.BaseWatchable;
 import com.sun.pdfview.PDFDebugger;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
@@ -283,7 +284,7 @@ public class NativeFont extends OutlineFont {
             }
         } catch (Exception ex) {
             PDFDebugger.debug("Error parsing font : " + getBaseFont ());
-            ex.printStackTrace ();
+            BaseWatchable.getErrorHandler().publishException(ex);
         }
 
         ByteArrayInputStream bais = new ByteArrayInputStream (fontdata);

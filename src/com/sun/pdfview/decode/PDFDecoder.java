@@ -100,7 +100,7 @@ public class PDFDecoder {
             // apply filters
             FilterSpec spec = new FilterSpec(dict, filter);
 
-	    // determine whether default encryption applies or if there's a
+            // determine whether default encryption applies or if there's a
             // specific Crypt filter; it must be the first filter according to
             // the errata for PDF1.7
             boolean specificCryptFilter =
@@ -114,40 +114,45 @@ public class PDFDecoder {
 
             for (int i = 0; i < spec.ary.length; i++) {
                 String enctype = spec.ary[i].getStringValue();
-                if (filterLimits.contains(enctype)) {
-                    break;
-                }
-                if (enctype == null) {
-                } else if (enctype.equals("FlateDecode") || enctype.equals("Fl")) {
-                    streamBuf = FlateDecode.decode(dict, streamBuf, spec.params[i]);
-                } else if (enctype.equals("LZWDecode") || enctype.equals("LZW")) {
-                    streamBuf = LZWDecode.decode(streamBuf, spec.params[i]);
-                } else if (enctype.equals("ASCII85Decode") || enctype.equals("A85")) {
-                    streamBuf = ASCII85Decode.decode(streamBuf, spec.params[i]);
-                } else if (enctype.equals("ASCIIHexDecode") || enctype.equals("AHx")) {
-                    streamBuf = ASCIIHexDecode.decode(streamBuf, spec.params[i]);
-                } else if (enctype.equals("RunLengthDecode") || enctype.equals("RL")) {
-                    streamBuf = RunLengthDecode.decode(streamBuf, spec.params[i]);
-                } else if (enctype.equals("DCTDecode") || enctype.equals("DCT")) {
-                    streamBuf = DCTDecode.decode(dict, streamBuf, spec.params[i]);
-                } else if (enctype.equals("JPXDecode")) {
-                    streamBuf = JPXDecode.decode(dict, streamBuf, spec.params[i]);
-                } else if (enctype.equals("CCITTFaxDecode") || enctype.equals("CCF")) {
-                    streamBuf = CCITTFaxDecode.decode(dict, streamBuf, spec.params[i]);
-                } else if (enctype.equals("Crypt")) {
-                    String cfName = PDFDecrypterFactory.CF_IDENTITY;
-                    if (spec.params[i] != null) {
-                        final PDFObject nameObj = spec.params[i].getDictRef("Name");
-                        if (nameObj != null && nameObj.getType() == PDFObject.NAME) {
-                            cfName = nameObj.getStringValue();
-                        }
+                try {
+                    if (filterLimits.contains(enctype)) {
+                        break;
                     }
-                    streamBuf = dict.getDecrypter().decryptBuffer(cfName, null, streamBuf);
-                } else if (enctype.equals("JBIG2Decode")) {
-                    streamBuf = JBig2Decode.decode(dict, streamBuf, spec.params[i]);
-                } else {
-                    throw new PDFParseException("Unknown coding method:" + spec.ary[i].getStringValue());
+                    if (enctype == null) {
+                    } else if (enctype.equals("FlateDecode") || enctype.equals("Fl")) {
+                        streamBuf = FlateDecode.decode(dict, streamBuf, spec.params[i]);
+                    } else if (enctype.equals("LZWDecode") || enctype.equals("LZW")) {
+                        streamBuf = LZWDecode.decode(streamBuf, spec.params[i]);
+                    } else if (enctype.equals("ASCII85Decode") || enctype.equals("A85")) {
+                        streamBuf = ASCII85Decode.decode(streamBuf, spec.params[i]);
+                    } else if (enctype.equals("ASCIIHexDecode") || enctype.equals("AHx")) {
+                        streamBuf = ASCIIHexDecode.decode(streamBuf, spec.params[i]);
+                    } else if (enctype.equals("RunLengthDecode") || enctype.equals("RL")) {
+                        streamBuf = RunLengthDecode.decode(streamBuf, spec.params[i]);
+                    } else if (enctype.equals("DCTDecode") || enctype.equals("DCT")) {
+                        streamBuf = DCTDecode.decode(dict, streamBuf, spec.params[i]);
+                    } else if (enctype.equals("JPXDecode")) {
+                        streamBuf = JPXDecode.decode(dict, streamBuf, spec.params[i]);
+                    } else if (enctype.equals("CCITTFaxDecode") || enctype.equals("CCF")) {
+                        streamBuf = CCITTFaxDecode.decode(dict, streamBuf, spec.params[i]);
+                    } else if (enctype.equals("Crypt")) {
+                        String cfName = PDFDecrypterFactory.CF_IDENTITY;
+                        if (spec.params[i] != null) {
+                            final PDFObject nameObj = spec.params[i].getDictRef("Name");
+                            if (nameObj != null && nameObj.getType() == PDFObject.NAME) {
+                                cfName = nameObj.getStringValue();
+                            }
+                        }
+                        streamBuf = dict.getDecrypter().decryptBuffer(cfName, null, streamBuf);
+                    } else if (enctype.equals("JBIG2Decode")) {
+                        streamBuf = JBig2Decode.decode(dict, streamBuf, spec.params[i]);
+                    } else {
+                        throw new PDFParseException("Unknown coding method:" + spec.ary[i].getStringValue());
+                    }
+                }catch(Exception e) {
+                    throw new PDFParseException("Problem decoding "+enctype+" encoded stream!", e);
                 }
+
             }
         }
 

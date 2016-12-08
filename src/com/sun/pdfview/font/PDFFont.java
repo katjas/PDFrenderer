@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.sun.pdfview.BaseWatchable;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 import com.sun.pdfview.font.cid.PDFCMap;
@@ -172,7 +173,12 @@ public abstract class PDFFont {
         } else if (subType.equals("TrueType")) {
             if (descriptor.getFontFile2() != null) {
                 // load a TrueType font
-                font = new TTFFont(baseFont, obj, descriptor);
+                try {
+                    font = new TTFFont(baseFont, obj, descriptor);
+                }catch (Exception e) {
+                    // fake it with a built-in font
+                    font = new BuiltinFont(baseFont, obj, descriptor);
+                }
             } else {
                 final File extFontFile = findExternalTtf(baseFont);
                 if (extFontFile != null) {
@@ -262,7 +268,7 @@ public abstract class PDFFont {
                                 // in the font parsing, so we'll avoid relying on
                                 // this not to fail
                                 System.err.println("Problem parsing " + ttfFile);
-                                t.printStackTrace(System.err);
+                                BaseWatchable.getErrorHandler().publishException(t);
                             }
                         }
                     }

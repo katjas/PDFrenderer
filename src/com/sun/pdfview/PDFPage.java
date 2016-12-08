@@ -93,9 +93,12 @@ public class PDFPage {
         if (bbox == null) {
             bbox = new Rectangle2D.Float(0, 0, 1, 1);
         }
+        rotation = rotation % 360; // less than a full turn
         if (rotation < 0) {
             rotation += 360;
         }
+        rotation = rotation / 90; // for page rotation use only multiples of 90 degrees 
+        rotation = rotation * 90; // 0, 90, 180, 270
         this.rotation = rotation;
         if (rotation == 90 || rotation == 270) {
             bbox = new Rectangle2D.Double(bbox.getX(), bbox.getY(), bbox.getHeight(), bbox.getWidth());
@@ -824,8 +827,7 @@ class PDFShadeCommand extends PDFCmd {
             try {
                 s = state.getLastTransform().createInverse().createTransformedShape(s);
             } catch (NoninvertibleTransformException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                BaseWatchable.getErrorHandler().publishException(e);
             }
         }
         state.setFillAlpha(1);

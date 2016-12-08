@@ -19,6 +19,7 @@
 package com.sun.pdfview;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
@@ -210,7 +211,7 @@ public class PDFImage {
 					} catch (IOException ex) {
 						PDFDebugger.debug("ERROR: there was a problem parsing the mask for this object");
 						PDFDebugger.dump(obj);
-						ex.printStackTrace(System.out);
+						BaseWatchable.getErrorHandler().publishException(ex);
 					}
 				} else if (sMaskObj.getType() == PDFObject.ARRAY) {
 					// retrieve the range of the ColorKeyMask
@@ -220,7 +221,7 @@ public class PDFImage {
 					} catch (IOException ex) {
 						PDFDebugger.debug("ERROR: there was a problem parsing the color mask for this object");
 						PDFDebugger.dump(obj);
-						ex.printStackTrace(System.out);
+						BaseWatchable.getErrorHandler().publishException(ex);
 					}
 				}
 			}
@@ -438,6 +439,14 @@ public class PDFImage {
 			BufferedImage converted = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 
 			bi = op.filter(bi, converted);
+		}
+		else if (cs.getType() == ColorSpace.TYPE_CMYK) {
+			// convert to ARGB for faster drawing without ColorConvertOp
+			BufferedImage converted = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+			Graphics2D graphics = converted.createGraphics();
+			graphics.drawImage(bi,0,0,null);
+			graphics.dispose();
+			bi = converted;
 		}
 
 		// add in the alpha data supplied by the SMask, if any

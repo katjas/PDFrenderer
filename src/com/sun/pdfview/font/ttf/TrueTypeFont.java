@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import com.sun.pdfview.BaseWatchable;
 import com.sun.pdfview.PDFDebugger;
 
 /**
@@ -459,7 +460,7 @@ public class TrueTypeFont {
             Font f = Font.createFont (Font.TRUETYPE_FONT, fontStream);
             raf.close();
         } catch (Exception e) {
-            e.printStackTrace ();
+            BaseWatchable.getErrorHandler().publishException(e);
         }
     }
 }
