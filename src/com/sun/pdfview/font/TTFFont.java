@@ -147,14 +147,14 @@ public class TTFFont extends OutlineFont {
     }
 
     /**
-     * lookup the outline using the CMAPs, as specified in 32000-1:2008,
+     * lookup the outline using the (3, 1) cmap, as specified in 32000-1:2008,
      * 9.6.6.4, when an Encoding is specified.
      * 
      * @param val
      * @param width
      * @return GeneralPath
      */
-    protected synchronized GeneralPath getOutlineFromCMaps (char val,
+    protected synchronized GeneralPath getOutlineFrom31CMap (char val,
                                                             float width) {
         // find the cmaps
         CmapTable cmap = (CmapTable) this.font.getTable ("cmap");
@@ -163,10 +163,10 @@ public class TTFFont extends OutlineFont {
             return null;
         }
 
-        // try maps in required order of (3, 1), (1, 0)
+        // find the (3, 1) cmap subtable (Microsoft Unicode)
         CMap map = cmap.getCMap ((short) 3, (short) 1);
         if (map == null) {
-            map = cmap.getCMap ((short) 1, (short) 0);
+        	return null;
         }
         int idx = map.map (val);
         if (idx != 0) {
@@ -193,7 +193,7 @@ public class TTFFont extends OutlineFont {
         Integer res = AdobeGlyphList.getGlyphNameIndex (name);
         if (res != null) {
             idx = res;
-            return getOutlineFromCMaps ((char) idx, width);
+            return getOutlineFrom31CMap ((char) idx, width);
         }
         return null;
     }
