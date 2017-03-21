@@ -99,6 +99,13 @@ public class FunctionType2 extends PDFFunction {
         }
     }
     
+    @Override
+    public int getNumOutputs()
+    {
+        // For Type 2 functions, the number of outputs is determined by the size of C0 (or C1).
+        return c0.length;
+    }
+    
     /**
      * Get the exponent
      */
