@@ -151,7 +151,7 @@ public abstract class PDFFont {
         }
 
         if (descObj != null) {
-            descriptor = new PDFFontDescriptor(descObj);
+            descriptor = new PDFFontDescriptor(descObj, subType);
         } else {
             descriptor = new PDFFontDescriptor(baseFont);
         }

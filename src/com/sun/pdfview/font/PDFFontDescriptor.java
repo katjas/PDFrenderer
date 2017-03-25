@@ -100,25 +100,40 @@ public class PDFFontDescriptor {
     }
 
     /** Creates a new instance of PDFFontDescriptor */
-    public PDFFontDescriptor(PDFObject obj) throws IOException {
+    public PDFFontDescriptor(PDFObject obj, String fontSubType) throws IOException {
         // required parameters
-        setAscent(obj.getDictRef("Ascent").getIntValue());
-        setCapHeight(obj.getDictRef("CapHeight").getIntValue());
-        setDescent(obj.getDictRef("Descent").getIntValue());
         setFlags(obj.getDictRef("Flags").getIntValue());
         setFontName(obj.getDictRef("FontName").getStringValue());
         setItalicAngle(obj.getDictRef("ItalicAngle").getIntValue());
-        setStemV(obj.getDictRef("StemV").getIntValue());
+        
+        // conditionally required parameters
+        boolean areConditionalParametersRequired = !"Type3".equals(fontSubType)
+                && !Boolean.getBoolean("PDFRenderer.lenientFontDescriptorParsing");
+        
+        if (areConditionalParametersRequired || obj.getDictionary().containsKey("Ascent")) {
+            setAscent(obj.getDictRef("Ascent").getIntValue());
+        }
+        if (areConditionalParametersRequired || obj.getDictionary().containsKey("CapHeight")) {
+            setCapHeight(obj.getDictRef("CapHeight").getIntValue());
+        }
+        if (areConditionalParametersRequired || obj.getDictionary().containsKey("Descent")) {
+            setDescent(obj.getDictRef("Descent").getIntValue());
+        }
+        if (areConditionalParametersRequired || obj.getDictionary().containsKey("StemV")) {
+            setStemV(obj.getDictRef("StemV").getIntValue());
+        }
 
         // font bounding box
-        PDFObject[] bboxdef = obj.getDictRef("FontBBox").getArray();
-        float[] bboxfdef = new float[4];
-        for (int i = 0; i < 4; i++) {
-            bboxfdef[i] = bboxdef[i].getFloatValue();
+        if (areConditionalParametersRequired || obj.getDictionary().containsKey("FontBBox")) {
+            PDFObject[] bboxdef = obj.getDictRef("FontBBox").getArray();
+            float[] bboxfdef = new float[4];
+            for (int i = 0; i < 4; i++) {
+                bboxfdef[i] = bboxdef[i].getFloatValue();
+            }
+            setFontBBox(new Rectangle2D.Float(bboxfdef[0], bboxfdef[1],
+                    bboxfdef[2] - bboxfdef[0],
+                    bboxfdef[3] - bboxfdef[1]));
         }
-        setFontBBox(new Rectangle2D.Float(bboxfdef[0], bboxfdef[1],
-                bboxfdef[2] - bboxfdef[0],
-                bboxfdef[3] - bboxfdef[1]));
 
         // optional parameters
         if (obj.getDictionary().containsKey("AvgWidth")) {
