@@ -170,9 +170,9 @@ public class PatternType1 extends PDFPattern {
                                                            false, 
                                                            Transparency.TRANSLUCENT,
                                                            DataBuffer.TYPE_BYTE);
-           
+                
                 Rectangle2D devBBox = 
-                    xform.createTransformedShape(getBBox()).getBounds2D();
+                        xform.createTransformedShape(userBounds).getBounds2D();
                 
                 double[] steps = new double[] { getXStep(), getYStep() };
                 xform.deltaTransform(steps, 0, steps, 0, 1);
