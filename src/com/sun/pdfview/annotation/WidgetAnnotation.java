@@ -193,6 +193,9 @@ public class WidgetAnnotation extends PDFAnnotation {
             // stamp annotation transformation
             AffineTransform rectAt = getPositionTransformation();
             formCmds.addXform(rectAt);
+            
+            AffineTransform rectScaled = getScalingTransformation(bbox);
+            formCmds.addXform(rectScaled);
 
             // form transformation
             AffineTransform at;
