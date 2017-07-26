@@ -1,5 +1,6 @@
 package com.sun.pdfview.annotation;
 
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Rectangle2D.Float;
 import java.io.IOException;
@@ -191,4 +192,14 @@ public class PDFAnnotation{
 	public List<PDFCmd> getPageCommandsForAnnotation() {
 		return new ArrayList<PDFCmd>();
 	}
+	
+
+	protected AffineTransform getScalingTransformation(Float bbox) {
+		AffineTransform at = new AffineTransform();		
+		double scaleHeight = getRect().getHeight()/bbox.getHeight();
+        double scaleWidth = getRect().getWidth()/bbox.getWidth();
+        at.scale(scaleWidth, scaleHeight);
+		return at;
+	}
+
 }

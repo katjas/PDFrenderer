@@ -101,14 +101,25 @@ public class StampAnnotation extends PDFAnnotation {
         	
             // rats.  parse it.
             PDFObject bobj = obj.getDictRef("BBox");
-            Float bbox = new Rectangle2D.Float(bobj.getAt(0).getFloatValue(),
-                    bobj.getAt(1).getFloatValue(),
-                    bobj.getAt(2).getFloatValue(),
-                    bobj.getAt(3).getFloatValue());
+            float xMin = bobj.getAt(0).getFloatValue();
+            float yMin = bobj.getAt(1).getFloatValue();
+			float xMax = bobj.getAt(2).getFloatValue();
+			float yMax = bobj.getAt(3).getFloatValue();
+			Float bbox = new Rectangle2D.Float(xMin,
+                    yMin,
+                    xMax - xMin,
+                    yMax - yMin);
             PDFPage formCmds = new PDFPage(bbox, 0);
+            
             // stamp annotation transformation
-            AffineTransform rectAt = getPositionTransformation();
-            formCmds.addXform(rectAt);
+            AffineTransform rectAt = getPositionTransformation();           
+           formCmds.addXform(rectAt);
+           
+           AffineTransform rectScaled = getScalingTransformation(bbox);
+           formCmds.addXform(rectScaled);
+           
+           
+           
 
             // form transformation
             AffineTransform at;
