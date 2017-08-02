@@ -79,50 +79,46 @@ public class AdobeGlyphList {
     private AdobeGlyphList() {
         glyphToUnicodes = new HashMap<String, int[]>(4500);
         unicodeToGlyph = new HashMap<Integer, String>(4500);
-        glyphLoaderThread = new Thread(new Runnable() {
+        glyphLoaderThread = new Thread((Runnable) () -> {
+		    int[] codes;
+		    StringTokenizer codeTokens;
+		    String glyphName;
+		    StringTokenizer tokens;
+		    ArrayList<String> unicodes = new ArrayList<String>();
 
-            @Override
-			public void run() {
-                int[] codes;
-                StringTokenizer codeTokens;
-                String glyphName;
-                StringTokenizer tokens;
-                ArrayList<String> unicodes = new ArrayList<String>();
+		    InputStream istr = getClass().getResourceAsStream("/com/sun/pdfview/font/ttf/resource/glyphlist.txt");
 
-                InputStream istr = getClass().getResourceAsStream("/com/sun/pdfview/font/ttf/resource/glyphlist.txt");
+		    BufferedReader reader = new BufferedReader(new InputStreamReader(istr));
+		    String line = "";
+		    while (line != null) {
+		        try {
+		            unicodes.clear();
+		            line = reader.readLine();
+		            if (line == null) {
+		                break;
+		            }
+		            line = line.trim();
+		            if (line.length() > 0 && !line.startsWith("#")) {
+		                // ignore comment lines
+		                tokens = new StringTokenizer(line, ";");
+		                glyphName = tokens.nextToken();
+		                codeTokens = new StringTokenizer(tokens.nextToken(), " ");
+		                while (codeTokens.hasMoreTokens()) {
+		                    unicodes.add(codeTokens.nextToken());
+		                }
+		                codes = new int[unicodes.size()];
+		                for (int i = 0; i < unicodes.size(); i++) {
+		                    codes[i] = Integer.parseInt(unicodes.get(i), 16);
+		                    unicodeToGlyph.put(Integer.valueOf(codes[i]), glyphName);
+		                }
+		                glyphToUnicodes.put(glyphName, codes);
+		            }
 
-                BufferedReader reader = new BufferedReader(new InputStreamReader(istr));
-                String line = "";
-                while (line != null) {
-                    try {
-                        unicodes.clear();
-                        line = reader.readLine();
-                        if (line == null) {
-                            break;
-                        }
-                        line = line.trim();
-                        if (line.length() > 0 && !line.startsWith("#")) {
-                            // ignore comment lines
-                            tokens = new StringTokenizer(line, ";");
-                            glyphName = tokens.nextToken();
-                            codeTokens = new StringTokenizer(tokens.nextToken(), " ");
-                            while (codeTokens.hasMoreTokens()) {
-                                unicodes.add(codeTokens.nextToken());
-                            }
-                            codes = new int[unicodes.size()];
-                            for (int i = 0; i < unicodes.size(); i++) {
-                                codes[i] = Integer.parseInt(unicodes.get(i), 16);
-                                unicodeToGlyph.put(Integer.valueOf(codes[i]), glyphName);
-                            }
-                            glyphToUnicodes.put(glyphName, codes);
-                        }
-
-                    } catch (IOException ex) {
-                        break;
-                    }
-                }
-            }
-        }, "Adobe Glyph Loader Thread");
+		        } catch (IOException ex) {
+		            break;
+		        }
+		    }
+		}, "Adobe Glyph Loader Thread");
         glyphLoaderThread.setDaemon(true);
         glyphLoaderThread.setPriority(Thread.MIN_PRIORITY);
         glyphLoaderThread.start();
