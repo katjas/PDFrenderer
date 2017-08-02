@@ -617,8 +617,8 @@ public class CCITTFaxDecoder {
 
 			// Get the 3 fields from the entry
 			isT = entry & 0x0001;
-			bits = (entry >>> 1) & 0x000f;
-			code = (entry >>> 5) & 0x07ff;
+			bits = entry >>> 1 & 0x000f;
+			code = entry >>> 5 & 0x07ff;
 
 			if (code == 100) {
 				current = nextNBits(9);
@@ -626,16 +626,16 @@ public class CCITTFaxDecoder {
 
 				// Get the 3 fields from the entry
 				isT = entry & 0x0001;
-				bits = (entry >>> 1) & 0x000f;
-				code = (entry >>> 5) & 0x07ff;
+				bits = entry >>> 1 & 0x000f;
+				code = entry >>> 5 & 0x07ff;
 
 				if (bits == 12) {
 					// Additional makeup codes
 					updatePointer(5);
 					current = nextLesserThan8Bits(4);
 					entry = additionalMakeup[current];
-					bits = (entry >>> 1) & 0x07; // 3 bits 0000 0111
-					code = (entry >>> 4) & 0x0fff; // 12 bits
+					bits = entry >>> 1 & 0x07; // 3 bits 0000 0111
+					code = entry >>> 4 & 0x0fff; // 12 bits
 					runLength += code;
 
 					updatePointer(4 - bits);
@@ -654,9 +654,9 @@ public class CCITTFaxDecoder {
 				// Is a Terminating code
 				current = nextLesserThan8Bits(2);
 				entry = twoBitBlack[current];
-				code = (entry >>> 5) & 0x07ff;
+				code = entry >>> 5 & 0x07ff;
 				runLength += code;
-				bits = (entry >>> 1) & 0x0f;
+				bits = entry >>> 1 & 0x0f;
 				updatePointer(2 - bits);
 				isWhite = true;
 			} else {
@@ -692,16 +692,16 @@ public class CCITTFaxDecoder {
 
 				// Get the 3 fields from the entry
 				isT = entry & 0x0001;
-				bits = (entry >>> 1) & 0x0f;
+				bits = entry >>> 1 & 0x0f;
 
 				if (bits == 12) { // Additional Make up code
 					// Get the next 2 bits
 					twoBits = nextLesserThan8Bits(2);
 					// Consolidate the 2 new bits and last 2 bits into 4 bits
-					current = ((current << 2) & 0x000c) | twoBits;
+					current = current << 2 & 0x000c | twoBits;
 					entry = additionalMakeup[current];
-					bits = (entry >>> 1) & 0x07; // 3 bits 0000 0111
-					code = (entry >>> 4) & 0x0fff; // 12 bits
+					bits = entry >>> 1 & 0x07; // 3 bits 0000 0111
+					code = entry >>> 4 & 0x0fff; // 12 bits
 					bitOffset += code; // Skip white run
 
 					updatePointer(4 - bits);
@@ -714,7 +714,7 @@ public class CCITTFaxDecoder {
 					return;
 				} else {
 					// 11 bits - 0000 0111 1111 1111 = 0x07ff
-					code = (entry >>> 5) & 0x07ff;
+					code = entry >>> 5 & 0x07ff;
 					bitOffset += code;
 
 					updatePointer(10 - bits);
@@ -739,8 +739,8 @@ public class CCITTFaxDecoder {
 
 				// Get the 3 fields from the entry
 				isT = entry & 0x0001;
-				bits = (entry >>> 1) & 0x000f;
-				code = (entry >>> 5) & 0x07ff;
+				bits = entry >>> 1 & 0x000f;
+				code = entry >>> 5 & 0x07ff;
 
 				if (code == 100) {
 					current = nextNBits(9);
@@ -748,16 +748,16 @@ public class CCITTFaxDecoder {
 
 					// Get the 3 fields from the entry
 					isT = entry & 0x0001;
-					bits = (entry >>> 1) & 0x000f;
-					code = (entry >>> 5) & 0x07ff;
+					bits = entry >>> 1 & 0x000f;
+					code = entry >>> 5 & 0x07ff;
 
 					if (bits == 12) {
 						// Additional makeup codes
 						updatePointer(5);
 						current = nextLesserThan8Bits(4);
 						entry = additionalMakeup[current];
-						bits = (entry >>> 1) & 0x07; // 3 bits 0000 0111
-						code = (entry >>> 4) & 0x0fff; // 12 bits
+						bits = entry >>> 1 & 0x07; // 3 bits 0000 0111
+						code = entry >>> 4 & 0x0fff; // 12 bits
 
 						setToBlack(buffer, lineOffset, bitOffset, code);
 						bitOffset += code;
@@ -782,8 +782,8 @@ public class CCITTFaxDecoder {
 					// Is a Terminating code
 					current = nextLesserThan8Bits(2);
 					entry = twoBitBlack[current];
-					code = (entry >>> 5) & 0x07ff;
-					bits = (entry >>> 1) & 0x0f;
+					code = entry >>> 5 & 0x07ff;
+					bits = entry >>> 1 & 0x0f;
 
 					setToBlack(buffer, lineOffset, bitOffset, code);
 					bitOffset += code;
@@ -892,7 +892,7 @@ public class CCITTFaxDecoder {
 					entry = nextLesserThan8Bits(7);
 
 					// Run these through the 2DCodes table
-					entry = (twoDCodes[entry] & 0xff);
+					entry = twoDCodes[entry] & 0xff;
 
 					// Get the code and the number of bits used up
 					code = (entry & 0x78) >>> 3;
@@ -936,7 +936,7 @@ public class CCITTFaxDecoder {
 						a0 = bitOffset;
 					} else if (code <= 8) {
 						// Vertical
-						a1 = b1 + (code - 5);
+						a1 = b1 + code - 5;
 
 						this.currChangingElems[currIndex++] = a1;
 
@@ -1035,7 +1035,7 @@ public class CCITTFaxDecoder {
 				// Get the next seven bits
 				entry = nextLesserThan8Bits(7);
 				// Run these through the 2DCodes table
-				entry = (twoDCodes[entry] & 0xff);
+				entry = twoDCodes[entry] & 0xff;
 
 				// Get the code and the number of bits used up
 				code = (entry & 0x78) >>> 3;
@@ -1090,7 +1090,7 @@ public class CCITTFaxDecoder {
 
 					a0 = bitOffset;
 				} else if (code <= 8) { // Vertical
-					a1 = b1 + (code - 5);
+					a1 = b1 + code - 5;
 					cce[currIndex++] = a1;
 
 					// We write the current color till a1 - 1 pos,
@@ -1126,7 +1126,7 @@ public class CCITTFaxDecoder {
 							// Zeros before exit code
 							zeros = zeros - 6;
 
-							if (!isWhite && (zeros > 0)) {
+							if (!isWhite && zeros > 0) {
 								cce[currIndex++] = bitOffset;
 							}
 
@@ -1218,16 +1218,16 @@ public class CCITTFaxDecoder {
 
 			// Get the 3 fields from the entry
 			isT = entry & 0x0001;
-			bits = (entry >>> 1) & 0x0f;
+			bits = entry >>> 1 & 0x0f;
 
 			if (bits == 12) { // Additional Make up code
 				// Get the next 2 bits
 				twoBits = nextLesserThan8Bits(2);
 				// Consolidate the 2 new bits and last 2 bits into 4 bits
-				current = ((current << 2) & 0x000c) | twoBits;
+				current = current << 2 & 0x000c | twoBits;
 				entry = additionalMakeup[current];
-				bits = (entry >>> 1) & 0x07; // 3 bits 0000 0111
-				code = (entry >>> 4) & 0x0fff; // 12 bits
+				bits = entry >>> 1 & 0x07; // 3 bits 0000 0111
+				code = entry >>> 4 & 0x0fff; // 12 bits
 				runLength += code;
 				updatePointer(4 - bits);
 			} else if (bits == 0) { // ERROR
@@ -1237,7 +1237,7 @@ public class CCITTFaxDecoder {
 						"EOL code word encountered in White run."); //$NON-NLS-1$
 			} else {
 				// 11 bits - 0000 0111 1111 1111 = 0x07ff
-				code = (entry >>> 5) & 0x07ff;
+				code = entry >>> 5 & 0x07ff;
 				runLength += code;
 				updatePointer(10 - bits);
 				if (isT == 0) {
@@ -1257,7 +1257,7 @@ public class CCITTFaxDecoder {
 		// If the previous match was at an odd element, we still
 		// have to search the preceeding element.
 		// int start = lastChangingElement & ~0x1;
-		int start = (this.lastChangingElement > 0) ? (this.lastChangingElement - 1) : 0;
+		int start = this.lastChangingElement > 0 ? this.lastChangingElement - 1 : 0;
 		if (isWhite) {
 			start &= ~0x1; // Search even numbered elements
 		} else {
@@ -1274,7 +1274,7 @@ public class CCITTFaxDecoder {
 			}
 		}
 
-		if ((i + 1) < ces) {
+		if (i + 1 < ces) {
 			ret[1] = pce[i + 1];
 		}
 	}
@@ -1325,8 +1325,8 @@ public class CCITTFaxDecoder {
 				this.bytePointer++;
 			}
 		} else {
-			i1 = (b & table1[bitsLeft]) << (-shift);
-			i2 = (next & table2[bitsFromNextByte]) >>> (8 - bitsFromNextByte);
+			i1 = (b & table1[bitsLeft]) << -shift;
+			i2 = (next & table2[bitsFromNextByte]) >>> 8 - bitsFromNextByte;
 
 			i1 |= i2;
 			this.bytePointer++;
@@ -1349,7 +1349,7 @@ public class CCITTFaxDecoder {
 			if (bp == l) {
 				next = 0x00;
 				next2next = 0x00;
-			} else if ((bp + 1) == l) {
+			} else if (bp + 1 == l) {
 				next = this.data[bp + 1];
 				next2next = 0x00;
 			} else {
@@ -1362,7 +1362,7 @@ public class CCITTFaxDecoder {
 			if (bp == l) {
 				next = 0x00;
 				next2next = 0x00;
-			} else if ((bp + 1) == l) {
+			} else if (bp + 1 == l) {
 				next = flipTable[this.data[bp + 1] & 0xff];
 				next2next = 0x00;
 			} else {
@@ -1383,13 +1383,13 @@ public class CCITTFaxDecoder {
 
 		this.bytePointer++;
 
-		int i1 = (b & table1[bitsLeft]) << (bitsToGet - bitsLeft);
-		int i2 = (next & table2[bitsFromNextByte]) >>> (8 - bitsFromNextByte);
+		int i1 = (b & table1[bitsLeft]) << bitsToGet - bitsLeft;
+		int i2 = (next & table2[bitsFromNextByte]) >>> 8 - bitsFromNextByte;
 
 		int i3 = 0;
 		if (bitsFromNext2NextByte != 0) {
 			i2 <<= bitsFromNext2NextByte;
-			i3 = (next2next & table2[bitsFromNext2NextByte]) >>> (8 - bitsFromNext2NextByte);
+			i3 = (next2next & table2[bitsFromNext2NextByte]) >>> 8 - bitsFromNext2NextByte;
 			i2 |= i3;
 			this.bytePointer++;
 			this.bitPointer = bitsFromNext2NextByte;
@@ -1414,7 +1414,7 @@ public class CCITTFaxDecoder {
 
 		if (!this.fillBits) {
 			int next12Bits = nextNBits(12);
-			if (isFirstEOL && (next12Bits == 0)) {
+			if (isFirstEOL && next12Bits == 0) {
 				// Might have the case of EOL padding being used even
 				// though it was not flagged.
 				// This was observed to be the case in TIFFs produced
@@ -1503,8 +1503,8 @@ public class CCITTFaxDecoder {
 			// Loop while the 12 bits are not unity, i.e., while the EOL
 			// has not been reached, and there is at least one bit left.
 			while (next12Bits != 1 && bitIndex < bitIndexMax) {
-				next12Bits = ((next12Bits & 0x000007ff) << 1)
-						| (nextLesserThan8Bits(1) & 0x00000001);
+				next12Bits = (next12Bits & 0x000007ff) << 1
+						| nextLesserThan8Bits(1) & 0x00000001;
 				bitIndex++;
 			}
 
@@ -1529,7 +1529,7 @@ public class CCITTFaxDecoder {
 
 	private void setToBlack(byte[] buffer, int lineOffset, int bitOffset,
 			int numBits) {
-		int bitNum = (8 * lineOffset) + bitOffset;
+		int bitNum = 8 * lineOffset + bitOffset;
 		int lastBit = bitNum + numBits;
 
 		int byteNum = bitNum >> 3;
@@ -1537,9 +1537,9 @@ public class CCITTFaxDecoder {
 		// Handle bits in first byte
 		int shift = bitNum & 0x7;
 		if (shift > 0) {
-			int maskVal = 1 << (7 - shift);
+			int maskVal = 1 << 7 - shift;
 			byte val = buffer[byteNum];
-			while ((maskVal > 0) && (bitNum < lastBit)) {
+			while (maskVal > 0 && bitNum < lastBit) {
 				val |= maskVal;
 				maskVal >>= 1;
 				++bitNum;
@@ -1549,7 +1549,7 @@ public class CCITTFaxDecoder {
 
 		// Fill in 8 bits at a time
 		byteNum = bitNum >> 3;
-		while (bitNum < (lastBit - 7)) {
+		while (bitNum < lastBit - 7) {
 			buffer[byteNum++] = (byte) 255;
 			bitNum += 8;
 		}
@@ -1557,7 +1557,7 @@ public class CCITTFaxDecoder {
 		// Fill in remaining bits
 		while (bitNum < lastBit) {
 			byteNum = bitNum >> 3;
-			buffer[byteNum] |= (1 << (7 - (bitNum & 0x7)));
+			buffer[byteNum] |= 1 << 7 - (bitNum & 0x7);
 			++bitNum;
 		}
 	}

@@ -155,7 +155,7 @@ public class PDFObject {
     public PDFObject(Object obj) throws PDFParseException {
         this.owner = null;
         this.value = obj;
-        if ((obj instanceof Double) || (obj instanceof Integer)) {
+        if (obj instanceof Double || obj instanceof Integer) {
             this.type = NUMBER;
         } else if (obj instanceof String) {
             this.type = NAME;
@@ -716,7 +716,7 @@ public class PDFObject {
      * @return whether currently indirect
      */
     public boolean isIndirect() {
-        return (type == INDIRECT);
+        return type == INDIRECT;
     }
 
     /** 
@@ -737,8 +737,8 @@ public class PDFObject {
                 PDFXref lXref = (PDFXref) value;
                 PDFXref rXref = (PDFXref) obj.value;
 
-                return ((lXref.getID() == rXref.getID()) &&
-                        (lXref.getGeneration() == rXref.getGeneration()));
+                return lXref.getID() == rXref.getID() &&
+                        lXref.getGeneration() == rXref.getGeneration();
             }
         }
 

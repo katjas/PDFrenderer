@@ -111,8 +111,8 @@ public class PDFShapeCmd extends PDFCmd {
             if (mypoints != null && prevpoints != null) {
                 for (int i = 0; i < prevcount; i += 4) {
                     for (int j = 0; j < mycount; j += 4) {
-                        if ((Math.abs(mypoints[j + 2] - prevpoints[i]) < 0.01 && Math.abs(mypoints[j + 3] - prevpoints[i + 1]) < 0.01 && Math.abs(mypoints[j] - prevpoints[i + 2]) < 0.01 && Math
-                                .abs(mypoints[j + 1] - prevpoints[i + 3]) < 0.01)) {
+                        if (Math.abs(mypoints[j + 2] - prevpoints[i]) < 0.01 && Math.abs(mypoints[j + 3] - prevpoints[i + 1]) < 0.01 && Math.abs(mypoints[j] - prevpoints[i + 2]) < 0.01 && Math
+                                .abs(mypoints[j + 1] - prevpoints[i + 3]) < 0.01) {
                             // it seems that need to use the original points location (without the Affine Transform)
                             mypoints = new float[16];
                             getPoints(this.gp, mypoints, null);// without AffineTransform

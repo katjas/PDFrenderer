@@ -28,7 +28,12 @@ import com.sun.pdfview.PDFParseException;
 // TODO - consider having this not extend PDFParseException so that
 // it will be handled more explicitly?
 public class PDFAuthenticationFailureException extends PDFParseException {
-    public PDFAuthenticationFailureException(String message) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public PDFAuthenticationFailureException(String message) {
         super(message);
     }
 }

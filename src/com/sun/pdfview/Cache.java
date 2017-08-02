@@ -197,7 +197,7 @@ public class Cache {
         PDFDebugger.debug("Request for page " + pageNumber, 1000);
         SoftReference<PageRecord> ref = this.pages.get(pageNumber);
         if (ref != null) {
-            String val = (ref.get() == null) ? " not in " : " in ";
+            String val = ref.get() == null ? " not in " : " in ";
             PDFDebugger.debug("Page " + pageNumber + val + "cache", 1000);
             return ref.get();
         }
@@ -259,7 +259,7 @@ public class Cache {
         if (pageRec != null) {
             SoftReference<Record> ref = pageRec.images.get(info);
             if (ref != null) {
-                String val = (ref.get() == null) ? " not in " : " in ";
+                String val = ref.get() == null ? " not in " : " in ";
                 PDFDebugger.debug("Image on page " + pageNumber + val + " cache", 1000);
                 return ref.get();
             }

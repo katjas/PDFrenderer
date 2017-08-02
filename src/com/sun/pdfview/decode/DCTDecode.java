@@ -28,10 +28,10 @@ import java.nio.ByteBuffer;
 
 import javax.swing.ImageIcon;
 
-import ch.randelshofer.media.jpeg.JPEGImageIO;
-
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
+
+import ch.randelshofer.media.jpeg.JPEGImageIO;
 
 /**
  * decode a DCT encoded array into a byte array.  This class uses Java's

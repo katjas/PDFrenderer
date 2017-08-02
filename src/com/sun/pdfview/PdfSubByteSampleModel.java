@@ -89,7 +89,7 @@ public class PdfSubByteSampleModel extends SampleModel
         final int b = data.getElem(boffset);
         final int bitIndexInB = aBitIndex & 7;
         final int shift =  ignoredBitsPerComponentPerByte - bitIndexInB;
-        return (b >>> shift) & componentMask;
+        return b >>> shift & componentMask;
     }
 
     @Override

@@ -33,7 +33,7 @@ public class ImageDataDecoder {
 			for (int i = 0, offset = 0; i < data.length; i++, offset += 3) {
 				output[offset] = (byte) (data[i] >> 16);
 				output[offset + 1] = (byte) (data[i] >> 8);
-				output[offset + 2] = (byte) (data[i]);
+				output[offset + 2] = (byte) data[i];
 			}
 		} else if (type == BufferedImage.TYPE_BYTE_GRAY) {
 			DataBufferByte db = (DataBufferByte) bimg.getData()
@@ -50,7 +50,7 @@ public class ImageDataDecoder {
 				output[offset] = (byte) (data[i] >> 24);
 				output[offset + 1] = (byte) (data[i] >> 16);
 				output[offset + 2] = (byte) (data[i] >> 8);
-				output[offset + 3] = (byte) (data[i]);
+				output[offset + 3] = (byte) data[i];
 			}
 		} else {
 			// The raster is in some other format.
@@ -69,7 +69,7 @@ public class ImageDataDecoder {
 			for (int i = 0, offset = 0; i < data.length; i++, offset += 3) {
 				output[offset] = (byte) (data[i] >> 16);
 				output[offset + 1] = (byte) (data[i] >> 8);
-				output[offset + 2] = (byte) (data[i]);
+				output[offset + 2] = (byte) data[i];
 			}
 			tmp.flush();
 		}

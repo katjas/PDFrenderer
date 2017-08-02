@@ -23,7 +23,6 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.Map;
 
-import com.sun.pdfview.PDFDebugger;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFPaint;
 import com.sun.pdfview.PDFParseException;

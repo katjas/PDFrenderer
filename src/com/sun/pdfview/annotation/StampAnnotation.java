@@ -64,7 +64,7 @@ public class StampAnnotation extends PDFAnnotation {
 			this.onAppearance = normalAP.getDictRef("On");
 			this.offAppearance = normalAP.getDictRef("Off");
 			PDFObject as = dictRef.getDictRef("AS");			
-			this.appearanceStateOn = (as != null) && ("On".equals(as.getStringValue()));
+			this.appearanceStateOn = as != null && "On".equals(as.getStringValue());
 		}else {
 			this.onAppearance = normalAP;
 			this.offAppearance = null;
@@ -129,7 +129,7 @@ public class StampAnnotation extends PDFAnnotation {
             } else {
                 float elts[] = new float[6];
                 for (int i = 0; i < elts.length; i++) {
-                    elts[i] = (matrix.getAt(i)).getFloatValue();
+                    elts[i] = matrix.getAt(i).getFloatValue();
                 }
                 at = new AffineTransform(elts);
             }
@@ -169,7 +169,7 @@ public class StampAnnotation extends PDFAnnotation {
 	}
 
 	private void parsePopupAnnotation(PDFObject popupObj) throws IOException {
-		this.popupAnnotation = (popupObj != null)?createAnnotation(popupObj):null;
+		this.popupAnnotation = popupObj != null?createAnnotation(popupObj):null;
 	}
 
 	/**

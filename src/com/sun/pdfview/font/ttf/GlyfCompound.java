@@ -72,15 +72,15 @@ public class GlyfCompound extends Glyf {
             cur.glyphIndex = data.getShort() & 0xFFFF;
           
             // read either e/f or matching points, as shorts or bytes...
-            if (((cur.flags & ARG_1_AND_2_ARE_WORDS) != 0) &&
-                ((cur.flags & ARGS_ARE_XY_VALUES) != 0)) {
+            if ((cur.flags & ARG_1_AND_2_ARE_WORDS) != 0 &&
+                (cur.flags & ARGS_ARE_XY_VALUES) != 0) {
                 cur.e = data.getShort();
                 cur.f = data.getShort();
             } else if (!((cur.flags & ARG_1_AND_2_ARE_WORDS) != 0) &&
-                        ((cur.flags & ARGS_ARE_XY_VALUES) != 0)) {
+                        (cur.flags & ARGS_ARE_XY_VALUES) != 0) {
                 cur.e = data.get();
                 cur.f = data.get();
-            } else if ( ((cur.flags & ARG_1_AND_2_ARE_WORDS) != 0) &&
+            } else if ( (cur.flags & ARG_1_AND_2_ARE_WORDS) != 0 &&
                        !((cur.flags & ARGS_ARE_XY_VALUES) != 0)) {
                 cur.compoundPoint = data.getShort();
                 cur.componentPoint = data.getShort();
@@ -177,12 +177,12 @@ public class GlyfCompound extends Glyf {
         GlyfComponent gc = this.components[index];
 
         float m = Math.max(Math.abs(gc.a), Math.abs(gc.b));
-        if (Math.abs(Math.abs(gc.a) - Math.abs(gc.c)) < (33 / 65536)) {
+        if (Math.abs(Math.abs(gc.a) - Math.abs(gc.c)) < 33 / 65536) {
             m *= 2;
         }
 
 	float n = Math.max(Math.abs(gc.c), Math.abs(gc.d));
-        if (Math.abs(Math.abs(gc.c) - Math.abs(gc.d)) < (33 / 65536)) {
+        if (Math.abs(Math.abs(gc.c) - Math.abs(gc.d)) < 33 / 65536) {
             n *= 2;
         }
         
@@ -210,70 +210,70 @@ public class GlyfCompound extends Glyf {
      * Determine whether args 1 and 2 are words or bytes
      */
     public boolean argsAreWords(int index) {
-        return ((getFlag(index) & ARG_1_AND_2_ARE_WORDS) != 0);
+        return (getFlag(index) & ARG_1_AND_2_ARE_WORDS) != 0;
     }
     
     /**
      * Determine whether args 1 and 2 are xy values or point indices
      */
     public boolean argsAreXYValues(int index) {
-        return ((getFlag(index) & ARGS_ARE_XY_VALUES) != 0);
+        return (getFlag(index) & ARGS_ARE_XY_VALUES) != 0;
     }
     
     /**
      * Determine whether to round XY values to the grid
      */
     public boolean roundXYToGrid(int index) {
-        return ((getFlag(index) & ROUND_XY_TO_GRID) != 0);
+        return (getFlag(index) & ROUND_XY_TO_GRID) != 0;
     }
     
     /**
      * Determine whether there is a simple scale
      */
     public boolean hasAScale(int index) {
-        return ((getFlag(index) & WE_HAVE_A_SCALE) != 0);
+        return (getFlag(index) & WE_HAVE_A_SCALE) != 0;
     }
     
     /**
      * Determine whether there are more components left to read
      */
     protected boolean moreComponents(int index) {
-        return ((getFlag(index) & MORE_COMPONENTS) != 0);
+        return (getFlag(index) & MORE_COMPONENTS) != 0;
     }
     
     /**
      * Determine whether there are separate scales on X and Y
      */
     protected boolean hasXYScale(int index) {
-        return ((getFlag(index) & WE_HAVE_AN_X_AND_Y_SCALE) != 0);
+        return (getFlag(index) & WE_HAVE_AN_X_AND_Y_SCALE) != 0;
     }
     
     /**
      * Determine whether there is a 2x2 transform
      */
     protected boolean hasTwoByTwo(int index) {
-        return ((getFlag(index) & WE_HAVE_A_TWO_BY_TWO) != 0);
+        return (getFlag(index) & WE_HAVE_A_TWO_BY_TWO) != 0;
     }
     
     /**
      * Determine whether there are instructions
      */
     protected boolean hasInstructions(int index) {
-        return ((getFlag(index) & WE_HAVE_INSTRUCTIONS) != 0);
+        return (getFlag(index) & WE_HAVE_INSTRUCTIONS) != 0;
     }
     
     /**
      * Use the metrics of this component for the compound
      */
     public boolean useMetrics(int index) {
-        return ((getFlag(index) & USE_MY_METRICS) != 0);
+        return (getFlag(index) & USE_MY_METRICS) != 0;
     }
     
     /**
      * This component overlaps the existing compound
      */
     public boolean overlapCompound(int index) {
-        return ((getFlag(index) & OVERLAP_COMPOUND) != 0);
+        return (getFlag(index) & OVERLAP_COMPOUND) != 0;
     }
     
     /**

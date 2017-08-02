@@ -107,10 +107,10 @@ public class ASCII85Decode {
 
         for (int j = 0; j < i; j++) {
             int shift = 8 * (3 - j);
-            baos.write((byte) ((value >> shift) & 0xff));
+            baos.write((byte) (value >> shift & 0xff));
         }
 
-        return (i == 4);
+        return i == 4;
     }
 
     /**

@@ -426,9 +426,9 @@ public abstract class PDFFont {
             char[] arry = text.toCharArray();
             outList = new ArrayList<PDFGlyph>(arry.length);
 
-            for (int i = 0; i < arry.length; i++) {
+            for (char element : arry) {
                 // only look at 2 bytes when there is no encoding
-                char src = (char) (arry[i] & 0xff);
+                char src = (char) (element & 0xff);
                 outList.add(getCachedGlyph(src, null));
             }
         }

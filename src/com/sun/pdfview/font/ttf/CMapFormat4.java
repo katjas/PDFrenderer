@@ -23,11 +23,8 @@ package com.sun.pdfview.font.ttf;
 
 import java.nio.ByteBuffer;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import com.sun.pdfview.font.ttf.CMapFormat4.Segment;
 
 /**
  *
@@ -55,7 +52,7 @@ public class CMapFormat4 extends CMap {
      * Add a segment with a map 
      */
     public void addSegment(short startCode, short endCode, char[] map) {
-        if (map.length != (endCode - startCode) + 1) {
+        if (map.length != endCode - startCode + 1) {
             throw new IllegalArgumentException("Wrong number of entries in map");
         }
         
@@ -95,8 +92,8 @@ public class CMapFormat4 extends CMap {
         size += this.segments.size() * 8;
         
         // add the total number of mappings times the size of a mapping
-        for (Iterator i = this.segments.keySet().iterator(); i.hasNext();) {
-            Segment s = (Segment) i.next();
+        for (Object element : this.segments.keySet()) {
+            Segment s = (Segment) element;
             
             // see if there's a map
             if (s.hasMap) {
@@ -129,8 +126,8 @@ public class CMapFormat4 extends CMap {
     @Override
 	public char map(char src) {
         // find first segment with endcode > src
-        for (Iterator i = this.segments.keySet().iterator(); i.hasNext();) {
-            Segment s = (Segment) i.next();
+        for (Object element : this.segments.keySet()) {
+            Segment s = (Segment) element;
             
             if (s.endCode >= src) {
                 // are we within range?
@@ -162,8 +159,8 @@ public class CMapFormat4 extends CMap {
     @Override
 	public char reverseMap(short glyphID) {
         // look at each segment
-        for (Iterator i = this.segments.keySet().iterator(); i.hasNext();) {
-            Segment s = (Segment) i.next();
+        for (Object element : this.segments.keySet()) {
+            Segment s = (Segment) element;
             
             // see if we have a map or a delta
             if (s.hasMap) {
@@ -201,9 +198,9 @@ public class CMapFormat4 extends CMap {
 	public void setData(int length, ByteBuffer data) {
         // read the table size values
         short segCount = (short) (data.getShort() / 2);
-        short searchRange = data.getShort();
-        short entrySelector = data.getShort();
-        short rangeShift = data.getShort();
+        data.getShort();
+        data.getShort();
+        data.getShort();
     
         // create arrays to store segment info
         short[] endCodes = new short[segCount];
@@ -211,9 +208,6 @@ public class CMapFormat4 extends CMap {
         short[] idDeltas = new short[segCount];
         short[] idRangeOffsets = new short[segCount];
           
-        // the start of the glyph array
-        int glyphArrayPos = 16 + (8 * segCount);
-        
         // read the endCodes
         for (int i = 0; i < segCount; i++) {
            endCodes[i] = data.getShort();
@@ -242,10 +236,10 @@ public class CMapFormat4 extends CMap {
                 addSegment(startCodes[i], endCodes[i], idDeltas[i]);
             } else {
                 // find the start of the data segment
-                int offset = (data.position() - 2) + idRangeOffsets[i];
+                int offset = data.position() - 2 + idRangeOffsets[i];
             
                 // get the number of entries in the map
-                int size = (endCodes[i] - startCodes[i]) + 1;
+                int size = endCodes[i] - startCodes[i] + 1;
             
                 // allocate the actual map
                 char[] map = new char[size];
@@ -255,7 +249,7 @@ public class CMapFormat4 extends CMap {
                  
                 // read the mappings    
                 for (int c = 0; c < size; c++) {
-                    data.position(offset + (c * 2));
+                    data.position(offset + c * 2);
                     map[c] = data.getChar();
                 }
       
@@ -286,8 +280,7 @@ public class CMapFormat4 extends CMap {
         buf.putShort(getRangeShift());
         
         // write the endCodes
-        for (Iterator<Segment> i = this.segments.keySet().iterator(); i.hasNext();) {
-            Segment s = i.next();
+        for (Segment s : this.segments.keySet()) {
             buf.putShort((short) s.endCode);
         }
         
@@ -295,15 +288,12 @@ public class CMapFormat4 extends CMap {
         buf.putShort((short) 0);
         
         // write the startCodes
-        for (Iterator<Segment> i = this.segments.keySet().iterator(); i.hasNext();) {
-            Segment s = i.next();
+        for (Segment s : this.segments.keySet()) {
             buf.putShort((short) s.startCode);
         }
         
         // write the idDeltas for segments using deltas
-        for (Iterator<Segment> i = this.segments.keySet().iterator(); i.hasNext();) {
-            Segment s = i.next();
-            
+        for (Segment s : this.segments.keySet()) {
             if (!s.hasMap) {
                 Integer idDelta = (Integer) this.segments.get(s);
                 buf.putShort(idDelta.shortValue());
@@ -313,12 +303,10 @@ public class CMapFormat4 extends CMap {
         }
         
         // the start of the glyph array
-        int glyphArrayOffset = 16 + (8 * getSegmentCount());
+        int glyphArrayOffset = 16 + 8 * getSegmentCount();
         
         // write the idRangeOffsets and maps for segments using maps
-        for (Iterator<Segment> i = this.segments.keySet().iterator(); i.hasNext();) {
-            Segment s = i.next();
-            
+        for (Segment s : this.segments.keySet()) {
             if (s.hasMap) {
                 // first set the offset, which is the number of bytes from the
                 // current position to the current offset
@@ -332,8 +320,8 @@ public class CMapFormat4 extends CMap {
                 
                 // now write the map
                 char[] map = (char[]) this.segments.get(s);
-                for (int c = 0; c < map.length; c++) {
-                    buf.putChar(map[c]);
+                for (char element : map) {
+                    buf.putChar(element);
                 }
                 
                 // reset the data pointer
@@ -384,7 +372,7 @@ public class CMapFormat4 extends CMap {
      * Get the rangeShift()
      */
     public short getRangeShift() {
-        return (short) ((2 * getSegmentCount()) - getSearchRange());
+        return (short) (2 * getSegmentCount() - getSearchRange());
     }
     
     /** Get a pretty string */
@@ -398,9 +386,7 @@ public class CMapFormat4 extends CMap {
         buf.append(indent + "EntrySelector: " + getEntrySelector() + "\n");
         buf.append(indent + "RangeShift   : " + getRangeShift() + "\n");
         
-        for (Iterator<Segment> i = this.segments.keySet().iterator(); i.hasNext();) {
-            Segment s = i.next();
-            
+        for (Segment s : this.segments.keySet()) {
             buf.append(indent);
             buf.append("Segment: " + Integer.toHexString(s.startCode));
             buf.append("-" + Integer.toHexString(s.endCode) + " ");
@@ -429,15 +415,15 @@ public class CMapFormat4 extends CMap {
         /** Create a new segment */
         public Segment(short startCode, short endCode, boolean hasMap) {
             // convert from unsigned short
-            this.endCode   = (0xffff & endCode);
-            this.startCode = (0xffff & startCode);
+            this.endCode   = 0xffff & endCode;
+            this.startCode = 0xffff & startCode;
             
             this.hasMap = hasMap;
         }
         
         /** Equals based on compareTo (only compares endCode) */
         @Override public boolean equals(Object o) {
-            return (compareTo(o) == 0);
+            return compareTo(o) == 0;
         }
         
         /** Segments sort by increasing endCode */
@@ -451,8 +437,8 @@ public class CMapFormat4 extends CMap {
         
             // if regions overlap at all, declare the segments equal,
             // to avoid overlap in the segment list
-            if (((s.endCode >= this.startCode) && (s.endCode <= this.endCode)) ||
-                ((s.startCode >= this.startCode) && (s.startCode <= this.endCode))) {
+            if (s.endCode >= this.startCode && s.endCode <= this.endCode ||
+                s.startCode >= this.startCode && s.startCode <= this.endCode) {
                 return 0;
             } if (this.endCode > s.endCode) {
                 return 1;

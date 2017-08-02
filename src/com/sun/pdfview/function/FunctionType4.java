@@ -20,7 +20,8 @@ package com.sun.pdfview.function;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.List;
+import java.util.Stack;
 
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.function.postscript.PostScriptParser;
@@ -74,8 +75,7 @@ public class FunctionType4 extends PDFFunction {
     @Override
 	protected void doFunction(float[] inputs, int inputOffset, float[] outputs, int outputOffset) {
     	prepareInitialStack(inputs, inputOffset);
-    	for (Iterator<String> iterator = this.tokens.iterator(); iterator.hasNext(); ) {
-			String token = iterator.next();
+    	for (String token : this.tokens) {
 			PostScriptOperation op = OperationSet.getInstance().getOperation(token);
 			op.eval(this.stack);
 		}

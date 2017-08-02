@@ -19,12 +19,9 @@
 
 package com.sun.pdfview.decode;
 
-import java.nio.ByteBuffer;
-
 import java.io.IOException;
-
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -54,7 +51,7 @@ public class PNGPredictor extends Predictor {
         
         while(imageData.remaining() >= rowSize + 1) {
             // the first byte determines the algorithm
-            int algorithm = (imageData.get() & 0xff);
+            int algorithm = imageData.get() & 0xff;
             
             // read the rest of the line
             curLine = new byte[rowSize];
@@ -85,8 +82,8 @@ public class PNGPredictor extends Predictor {
         
         // turn into byte array
         ByteBuffer outBuf = ByteBuffer.allocate(rows.size() * rowSize);
-        for (Iterator i = rows.iterator(); i.hasNext();) {
-            outBuf.put((byte[]) i.next());
+        for (Object element : rows) {
+            outBuf.put((byte[]) element);
         }
         
         // reset start pointer
@@ -103,7 +100,7 @@ public class PNGPredictor extends Predictor {
      */
     protected void doSubLine(byte[] curLine) {
         // get the number of bytes per sample
-        int sub = (int) Math.ceil((getBitsPerComponent() * getColors()) / 8.0); 
+        int sub = (int) Math.ceil(getBitsPerComponent() * getColors() / 8.0); 
         
         for (int i = 0; i < curLine.length; i++) {
             int prevIdx = i - sub;
@@ -135,7 +132,7 @@ public class PNGPredictor extends Predictor {
      */
     protected void doAverageLine(byte[] curLine, byte[] prevLine) {
          // get the number of bytes per sample
-        int sub = (int) Math.ceil((getBitsPerComponent() * getColors()) / 8.0); 
+        int sub = (int) Math.ceil(getBitsPerComponent() * getColors() / 8.0); 
         
         for (int i = 0; i < curLine.length; i++) {
             int raw = 0;
@@ -164,7 +161,7 @@ public class PNGPredictor extends Predictor {
      */
     protected void doPaethLine(byte[] curLine, byte[] prevLine) {
          // get the number of bytes per sample
-        int sub = (int) Math.ceil((getBitsPerComponent() * getColors()) / 8.0); 
+        int sub = (int) Math.ceil(getBitsPerComponent() * getColors() / 8.0); 
         
         for (int i = 0; i < curLine.length; i++) {
             int left = 0;
@@ -200,7 +197,7 @@ public class PNGPredictor extends Predictor {
         int pb = Math.abs(p - up);
         int pc = Math.abs(p - upLeft);
         
-        if ((pa <= pb) && (pa <= pc)) {
+        if (pa <= pb && pa <= pc) {
             return left;
         } else if (pb <= pc) {
             return up;

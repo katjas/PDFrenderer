@@ -70,19 +70,19 @@ public class NameTree {
         if (kidsObj != null) {
             PDFObject[] kids = kidsObj.getArray();
 
-            for (int i = 0; i < kids.length; i++) {
+            for (PDFObject kid : kids) {
                 // find the limits of this kid
-                PDFObject limitsObj = kids[i].getDictRef("Limits");
+                PDFObject limitsObj = kid.getDictRef("Limits");
                 if (limitsObj != null) {
                     String lowerLimit = limitsObj.getAt(0).getStringValue();
                     String upperLimit = limitsObj.getAt(1).getStringValue();
 
                     // are we in range?
-                    if ((key.compareTo(lowerLimit) >= 0) &&
-                            (key.compareTo(upperLimit) <= 0)) {
+                    if (key.compareTo(lowerLimit) >= 0 &&
+                            key.compareTo(upperLimit) <= 0) {
 
                         // we are, so find in this child
-                        return find(kids[i], key);
+                        return find(kid, key);
                     }
                 }
             }
@@ -103,14 +103,14 @@ public class NameTree {
 
         while (end >= start && start >= 0 && end < array.length) {
             // find the key at the midpoint
-            int pos = start + ((end - start) / 2);
+            int pos = start + (end - start) / 2;
             String posKey = array[pos * 2].getStringValue();
 
             // compare the key to the key we are looking for
             int comp = key.compareTo(posKey);
             if (comp == 0) {
                 // they match.  Return the value
-        		int tmp = (pos * 2) + 1;
+        		int tmp = pos * 2 + 1;
         		if(array.length>tmp){
                     return array[tmp];
         		}else {

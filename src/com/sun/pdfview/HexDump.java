@@ -27,7 +27,7 @@ public class HexDump {
         char[] parts = new char[17];
         int partsloc = 0;
         for (int i = 0; i < data.length; i++) {
-            int d = (data[i]) & 0xff;
+            int d = data[i] & 0xff;
             if (d == 0) {
                 parts[partsloc++] = '.';
             } else if (d < 32 || d >= 127) {

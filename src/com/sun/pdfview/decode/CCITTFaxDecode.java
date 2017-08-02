@@ -41,7 +41,7 @@ public class CCITTFaxDecode {
 		int columns = getOptionFieldInt(dict, "Columns", width);
 		int rows = getOptionFieldInt(dict, "Rows", height);
 		int k = getOptionFieldInt(dict, "K", 0);
-		int size = rows * ((columns + 7) >> 3);
+		int size = rows * (columns + 7 >> 3);
 		byte[] destination = new byte[size];
 
 		boolean align = getOptionFieldBoolean(dict, "EncodedByteAlign", false);

@@ -74,8 +74,7 @@ public class GlyfTable extends TrueTypeTable {
         ByteBuffer buf = ByteBuffer.allocate(size);
         
         // write the offsets
-        for (int i = 0; i < this.glyphs.length; i++) {
-            Object o = this.glyphs[i];
+        for (Object o : this.glyphs) {
             if (o == null) {
 		continue;
             }
@@ -125,8 +124,7 @@ public class GlyfTable extends TrueTypeTable {
 	public int getLength() {
         int length = 0;
         
-        for (int i = 0; i < this.glyphs.length; i++) {
-            Object o = this.glyphs[i];
+        for (Object o : this.glyphs) {
             if (o == null) {
                 continue;
             }

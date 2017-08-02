@@ -47,10 +47,10 @@ public class LaunchAction extends PDFAction {
 		this.macParam = obj.getDictRef("Mac");
 
 		// check if at least the file or one of the OS specific launch parameters is set:
-		if ((this.file == null) 
-			&& (this.winParam == null) 
-			&& (this.unixParam == null)
-			&& (this.macParam == null)) {
+		if (this.file == null 
+			&& this.winParam == null 
+			&& this.unixParam == null
+			&& this.macParam == null) {
 			throw new PDFParseException("Could not parse launch action (file or OS " +
 					"specific launch parameters are missing): " + obj.toString());
 		}

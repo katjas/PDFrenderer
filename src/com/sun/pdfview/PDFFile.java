@@ -261,30 +261,33 @@ public class PDFFile {
         else { // compressed
 	        int compId = this.objIdx[id].getID();
 	        int idx = this.objIdx[id].getIndex();
-	        if (idx < 0)
-	            return PDFObject.nullObj;
+	        if (idx < 0) {
+				return PDFObject.nullObj;
+			}
 	        PDFXref compRef = new PDFXref(compId, 0);
 	        PDFObject compObj = dereference(compRef, decrypter);
 	        int first = compObj.getDictionary().get("First").getIntValue();
-	        int length = compObj.getDictionary().get("Length").getIntValue();
+	        compObj.getDictionary().get("Length").getIntValue();
 	        int n = compObj.getDictionary().get("N").getIntValue();
-	        if (idx >= n)
-	            return PDFObject.nullObj;
+	        if (idx >= n) {
+				return PDFObject.nullObj;
+			}
 	        ByteBuffer strm = compObj.getStreamBuffer();
 	        
         	ByteBuffer oldBuf = this.buf;
         	this.buf = strm;
 	        // skip other nums
 	        for (int i=0; i<idx; i++) {
-	        	PDFObject skip1num= readObject(-1, -1, true, IdentityDecrypter.getInstance());
-	        	PDFObject skip2num= readObject(-1, -1, true, IdentityDecrypter.getInstance());
+	        	readObject(-1, -1, true, IdentityDecrypter.getInstance());
+	        	readObject(-1, -1, true, IdentityDecrypter.getInstance());
 	        }
         	PDFObject objNumPO= readObject(-1, -1, true, IdentityDecrypter.getInstance());
         	PDFObject offsetPO= readObject(-1, -1, true, IdentityDecrypter.getInstance());
         	int objNum = objNumPO.getIntValue();
         	int offset = offsetPO.getIntValue();
-        	if (objNum != id)
-	            return PDFObject.nullObj;
+        	if (objNum != id) {
+				return PDFObject.nullObj;
+			}
         	
         	this.buf.position(first+offset);
         	obj= readObject(objNum, 0, IdentityDecrypter.getInstance());
@@ -308,7 +311,9 @@ public class PDFFile {
      * ISO Spec 32000-1:2008 - Table 1
      */
     public static boolean isWhiteSpace(int c) {
-        if (c == ' ' || c == NUL_CHAR || c == '\t' || c == '\n' || c == '\r' || c == FF_CHAR) return true;
+        if (c == ' ' || c == NUL_CHAR || c == '\t' || c == '\n' || c == '\r' || c == FF_CHAR) {
+			return true;
+		}
         return false;
     	/*switch (c) { 
             case NUL_CHAR:  // Null (NULL)
@@ -417,7 +422,7 @@ public class PDFFile {
             } else if (c == '%') {
                 // it's a comment
                 readLine();
-            } else if ((c >= '0' && c <= '9') || c == '-' || c == '+' || c == '.') {
+            } else if (c >= '0' && c <= '9' || c == '-' || c == '+' || c == '.') {
                 // it's a number
                 obj = readNumber((char) c);
                 if (!numscan) {
@@ -456,7 +461,7 @@ public class PDFFile {
                         this.buf.position(startPos);
                     }
                 }
-            } else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+            } else if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
                 // it's a keyword
                 obj = readKeyword((char) c);
             } else {
@@ -634,7 +639,7 @@ public class PDFFile {
         int second = readHexDigit();
         if (second < 0) {
             this.buf.position(this.buf.position() - 1);
-            return (first << 4);
+            return first << 4;
         } else {
             return (first << 4) + second;
         }
@@ -867,7 +872,7 @@ public class PDFFile {
                 break;      // out-of-range, should have been hex
             }
             // H.3.2.4 indicates version 1.1 did not do hex escapes
-            if (c == '#' && (this.majorVersion != 1 && this.minorVersion != 1)) {
+            if (c == '#' && this.majorVersion != 1 && this.minorVersion != 1) {
                 int hex = readHexPair();
                 if (hex >= 0) {
                     c = hex;
@@ -890,7 +895,7 @@ public class PDFFile {
         boolean neg = start == '-';
         boolean sawdot = start == '.';
         double dotmult = sawdot ? 0.1 : 1;
-        double value = (start >= '0' && start <= '9') ? start - '0' : 0;
+        double value = start >= '0' && start <= '9' ? start - '0' : 0;
         while (true) {
             int c = this.buf.get();
             if (c == '.') {
@@ -1368,8 +1373,9 @@ public class PDFFile {
 
     private int readNum(byte[] sbuf, int pos, int numBytes) {
     	int result = 0;
-    	for (int i=0; i<numBytes; i++)
-    		result = (result << 8) + (sbuf[pos+i]&0xff);
+    	for (int i=0; i<numBytes; i++) {
+			result = (result << 8) + (sbuf[pos+i]&0xff);
+		}
 		return result;
 	}
 
@@ -1546,11 +1552,11 @@ public class PDFFile {
                 break;
             }
             PDFObject kids[] = parent.getDictRef("Kids").getArray();
-            for (int i = 0; i < kids.length; i++) {
-                if (kids[i].equals(page)) {
+            for (PDFObject kid : kids) {
+                if (kid.equals(page)) {
                     break;
                 } else {
-                    PDFObject kcount = kids[i].getDictRef("Count");
+                    PDFObject kcount = kid.getDictRef("Count");
                     if (kcount != null) {
                         count += kcount.getIntValue();
                     } else {
@@ -1666,8 +1672,8 @@ public class PDFFile {
         // now assemble them all into one object
         byte[] stream = new byte[len];
         len = 0;
-        for (int i = 0; i < contents.length; i++) {
-            byte data[] = contents[i].getStream();
+        for (PDFObject content : contents) {
+            byte data[] = content.getStream();
             System.arraycopy(data, 0, stream, len, data.length);
             len += data.length;
         }
@@ -1728,7 +1734,7 @@ public class PDFFile {
 			}            
         }
         
-        Rectangle2D bbox = (trimbox == null ? ((cropbox == null) ? mediabox : cropbox) : trimbox);
+        Rectangle2D bbox = trimbox == null ? cropbox == null ? mediabox : cropbox : trimbox;
         PDFPage page = new PDFPage(pagenum, bbox, rotation, this.cache);
         page.setAnnots(annotationList);
         return page;
@@ -1763,18 +1769,18 @@ public class PDFFile {
         PDFObject kidsObj = pagedict.getDictRef("Kids");
         if (kidsObj != null) {
             PDFObject[] kids = kidsObj.getArray();
-            for (int i = 0; i < kids.length; i++) {
+            for (PDFObject kid : kids) {
                 int count = 1;
                 // BUG: some PDFs (T1Format.pdf) don't have the Type tag.
                 // use the Count tag to indicate a Pages dictionary instead.
-                PDFObject countItem = kids[i].getDictRef("Count");
+                PDFObject countItem = kid.getDictRef("Count");
                 //                if (kids[i].getDictRef("Type").getStringValue().equals("Pages")) {
                 if (countItem != null) {
                     count = countItem.getIntValue();
                 }
 
                 if (start + count >= getPage) {
-                    return findPage(kids[i], start, getPage, resources);
+                    return findPage(kid, start, getPage, resources);
                 }
 
                 start += count;

@@ -121,15 +121,10 @@ public class PatternType1 extends PDFPattern {
      */
     @Override
 	public PDFPaint getPaint(PDFPaint basePaint) {
-        // create the outline of the pattern in user space by creating
-        // a box with width xstep and height ystep.  Transform that
-        // box using the pattern's matrix to get the user space
-        // bounding box
-        Rectangle2D anchor = new Rectangle2D.Double(getBBox().getMinX(),
+        new Rectangle2D.Double(getBBox().getMinX(),
                                                     getBBox().getMinY(),
                                                     getXStep(),
                                                     getYStep());
-        //anchor = getTransform().createTransformedShape(anchor).getBounds2D();
         
         // now create a page bounded by the pattern's user space size
         final PDFPage page = new PDFPage(getBBox(), 0);
@@ -152,8 +147,8 @@ public class PatternType1 extends PDFPattern {
         PDFParser prc = new PDFParser(page, this.data, getResources());
         prc.go(true);
         
-        int width = (int) getBBox().getWidth();
-        int height = (int) getBBox().getHeight();
+        getBBox().getWidth();
+        getBBox().getHeight();
         
         // get actual image
         Paint paint = new Paint() {
@@ -354,8 +349,8 @@ public class PatternType1 extends PDFPattern {
             for (int j = 0; j < h; j++) {
                 for (int i = 0; i < w; i ++) {
                     // figure out what pixel we are at relative to the image
-                    int xloc = (x + i) - (int) Math.ceil(this.bbox.getX());
-                    int yloc = (y + j) - (int) Math.ceil(this.bbox.getY());
+                    int xloc = x + i - (int) Math.ceil(this.bbox.getX());
+                    int yloc = y + j - (int) Math.ceil(this.bbox.getY());
                     
                     xloc %= useXStep;
                     yloc %= useYStep;

@@ -163,7 +163,9 @@ public class FunctionType3 extends PDFFunction {
 
     	// calculate the output values
     	int p = bounds.length - 2;
-    	while (x < bounds[p]) p--;
+    	while (x < bounds[p]) {
+			p--;
+		}
     	x = interpolate(x, bounds[p], bounds[p+1], encode[2*p], encode[2*p + 1]);
     	float[] out = functions[p].calculate(new float[]{x});
     	for (int i = 0; i < out.length; i++) {

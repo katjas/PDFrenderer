@@ -329,10 +329,15 @@ public class ShaderType2 extends PDFShader {
         			// find t for that user coordinate
         			float xp = getXPrime(i + x, j + y, x0, y0);
         			float t = 0;
-        			if (xp >= 0 && xp <= 1) t = getMinT() + (dt1t0 * xp);
-        			else if (xp < 0 && extendStart) t = getMinT();
-        			else if (xp > 1 && extendEnd) t = getMaxT();
-        			else render = false;
+        			if (xp >= 0 && xp <= 1) {
+						t = getMinT() + dt1t0 * xp;
+					} else if (xp < 0 && extendStart) {
+						t = getMinT();
+					} else if (xp > 1 && extendEnd) {
+						t = getMaxT();
+					} else {
+						render = false;
+					}
 
         			if (render) {
         				// calculate the pixel values at t
@@ -347,8 +352,9 @@ public class ShaderType2 extends PDFShader {
         				if (functions[0].getNumOutputs() != numComponents) {
         					//CMYK
         					outputRBG = shadeCSpace.getColorSpace().toRGB(outputs);
-        				}
-        				else outputRBG = outputs;
+        				} else {
+							outputRBG = outputs;
+						}
 
         				int base = (j * w + i) * (numComponents + 1);
         				for (int c = 0; c < numComponents; c++) {
@@ -374,7 +380,7 @@ public class ShaderType2 extends PDFShader {
          */
         private float getXPrime(float x, float y, float x0, float y0) {
            
-            double tp = ((dx1x0* (x - x0)) + (dy1y0 * (y - y0))) / sqdx1x0psqdy1y0;
+            double tp = (dx1x0* (x - x0) + dy1y0 * (y - y0)) / sqdx1x0psqdy1y0;
         
             return (float) tp;
         }
@@ -389,7 +395,7 @@ public class ShaderType2 extends PDFShader {
             } else if (xp > 1) {
                 return getMaxT();
             } else {
-                return getMinT() + (dt1t0 * xp);
+                return getMinT() + dt1t0 * xp;
             }
         }
     }

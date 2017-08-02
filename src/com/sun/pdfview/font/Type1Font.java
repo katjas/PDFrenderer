@@ -166,7 +166,6 @@ public class Type1Font extends OutlineFont {
         // end at "def"
         PSParser psp = new PSParser(d, i);
         String type = psp.readThing();     // read the key (i is the start of the key)
-        double val;
         type = psp.readThing();
         if (type.equals("StandardEncoding")) {
             byte[] stdenc[] = new byte[FontSupport.standardEncoding.length][];
@@ -227,8 +226,8 @@ public class Type1Font extends OutlineFont {
         int c2 = 22719;
         for (ipos = start; ipos < end; ipos++) {
             int c = d[ipos] & 0xff;
-            int p = (c ^ (r >> 8)) & 0xff;
-            r = ((c + r) * c1 + c2) & 0xffff;
+            int p = (c ^ r >> 8) & 0xff;
+            r = (c + r) * c1 + c2 & 0xffff;
             if (ipos - start - skip >= 0) {
                 o[ipos - start - skip] = (byte) p;
             }
@@ -258,16 +257,16 @@ public class Type1Font extends OutlineFont {
             if (c >= '0' && c <= '9') {
                 b = (byte) (c - '0');
             } else if (c >= 'a' && c <= 'f') {
-                b = (byte) (10 + (c - 'a'));
+                b = (byte) (10 + c - 'a');
             } else if (c >= 'A' && c <= 'F') {
-                b = (byte) (10 + (c - 'A'));
+                b = (byte) (10 + c - 'A');
             } else {
                 // linefeed or something.  Skip.
                 continue;
             }
 
             // which half of the byte are we?
-            if ((bit++ % 2) == 0) {
+            if (bit++ % 2 == 0) {
                 o[count] = (byte) (b << 4);
             } else {
                 o[count++] |= b;
@@ -492,18 +491,18 @@ public class Type1Font extends OutlineFont {
         float[] flexArray = new float[16];
         int flexPt = 0;
         while (loc < cs.length) {
-            int v = (cs[loc++]) & 0xff;
+            int v = cs[loc++] & 0xff;
             if (v == 255) {
-                this.stack[this.sloc++] = (((cs[loc]) & 0xff) << 24) +
-                        (((cs[loc + 1]) & 0xff) << 16) +
-                        (((cs[loc + 2]) & 0xff) << 8) +
-                        (((cs[loc + 3]) & 0xff));
+                this.stack[this.sloc++] = ((cs[loc] & 0xff) << 24) +
+                        ((cs[loc + 1] & 0xff) << 16) +
+                        ((cs[loc + 2] & 0xff) << 8) +
+                        (cs[loc + 3] & 0xff);
                 loc += 4;
             } else if (v >= 251) {
-                this.stack[this.sloc++] = -((v - 251) << 8) - ((cs[loc]) & 0xff) - 108;
+                this.stack[this.sloc++] = -(v - 251 << 8) - (cs[loc] & 0xff) - 108;
                 loc++;
             } else if (v >= 247) {
-                this.stack[this.sloc++] = ((v - 247) << 8) + ((cs[loc]) & 0xff) + 108;
+                this.stack[this.sloc++] = (v - 247 << 8) + (cs[loc] & 0xff) + 108;
                 loc++;
             } else if (v >= 32) {
                 this.stack[this.sloc++] = v - 139;
@@ -613,7 +612,7 @@ public class Type1Font extends OutlineFont {
                     case 11:  // return
                         return;
                     case 12:  // ext...
-                        v = (cs[loc++]) & 0xff;
+                        v = cs[loc++] & 0xff;
                         if (v == 6) {  // s x y a b seac
                         char a = (char) pop();
                             char b = (char) pop();

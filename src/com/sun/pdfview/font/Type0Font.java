@@ -66,6 +66,6 @@ public class Type0Font extends PDFFont {
      */
     @Override
 	protected PDFGlyph getGlyph(char src, String name) {
-        return (getDescendantFont(0).getGlyph(src, name));
+        return getDescendantFont(0).getGlyph(src, name);
     }
 }

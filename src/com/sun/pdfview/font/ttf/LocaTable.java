@@ -40,7 +40,7 @@ public class LocaTable extends TrueTypeTable {
         
         HeadTable head = (HeadTable) ttf.getTable("head");
         short format = head.getIndexToLocFormat();
-        this.isLong = (format == 1);
+        this.isLong = format == 1;
         
         this.offsets = new int[numGlyphs + 1]; 
     }
@@ -77,11 +77,11 @@ public class LocaTable extends TrueTypeTable {
         ByteBuffer buf = ByteBuffer.allocate(size);
         
         // write the offsets
-        for (int i = 0; i < this.offsets.length; i++) {
+        for (int offset : this.offsets) {
             if (isLongFormat()) {
-                buf.putInt(this.offsets[i]);
+                buf.putInt(offset);
             } else {
-                buf.putShort((short) (this.offsets[i] / 2));
+                buf.putShort((short) (offset / 2));
             }
         }
         

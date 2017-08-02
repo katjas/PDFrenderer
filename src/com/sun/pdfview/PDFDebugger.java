@@ -35,6 +35,11 @@ public class PDFDebugger {
 
     @SuppressWarnings("serial")
     public static class DebugStopException extends Exception {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
         // nothing to do
     }
 
@@ -93,11 +98,13 @@ public class PDFDebugger {
             }
             System.out.println("Current path: ");
             Rectangle b = path.getBounds();
-            if (b != null)
-                System.out.println("        Bounds [x=" + b.x + ",y=" + b.y + ",width=" + b.width + ",height=" + b.height + "]");
+            if (b != null) {
+				System.out.println("        Bounds [x=" + b.x + ",y=" + b.y + ",width=" + b.width + ",height=" + b.height + "]");
+			}
             Point2D p = path.getCurrentPoint();
-            if (p != null)
-                System.out.println("        Point  [x=" + p.getX() + ",y=" + p.getY() + "]");
+            if (p != null) {
+				System.out.println("        Point  [x=" + p.getX() + ",y=" + p.getY() + "]");
+			}
         }
     }
 

@@ -25,14 +25,18 @@ import java.awt.color.ColorSpace;
 import java.io.IOException;
 
 import com.sun.pdfview.PDFObject;
-import com.sun.pdfview.function.FunctionType0;
+import com.sun.pdfview.function.PDFFunction;
 
 /**
  * A ColorSpace for calibrated RGB
  * @author Mike Wessler
  */
 public class CalRGBColor extends ColorSpace {
-    private static final float[] vonKriesM = {  0.40024f, -0.22630f, 0.00000f, 
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private static final float[] vonKriesM = {  0.40024f, -0.22630f, 0.00000f, 
                                                 0.70760f,  1.16532f, 0.00000f,                                      
                                                -0.08081f,  0.04570f, 0.91822f };
     private static final float[] vonKriesMinv = { 1.859936f,  0.361191f, 0.000000f,
@@ -154,7 +158,7 @@ public class CalRGBColor extends ColorSpace {
             
             // cheat -- scale based on max
             for (int i = 0; i < rgb.length; i++) {
-                rgb[i] = FunctionType0.interpolate(rgb[i], 0, this.max[i], 0, 1);
+                rgb[i] = PDFFunction.interpolate(rgb[i], 0, this.max[i], 0, 1);
             
                 // sometimes we get off a little bit due to precision loss
                 if (rgb[i] > 1.0) {
@@ -184,7 +188,7 @@ public class CalRGBColor extends ColorSpace {
               if (rgb[i] < 0.003928) {
                   rgb[i] *= 12.92;
               } else {
-                  rgb[i] = (float) ((Math.pow(rgb[i], 1.0 / 2.4) * 1.055) - 0.055);
+                  rgb[i] = (float) (Math.pow(rgb[i], 1.0 / 2.4) * 1.055 - 0.055);
               }
           }
           
@@ -240,7 +244,7 @@ public class CalRGBColor extends ColorSpace {
         for (int i = 0; i < rows; i++) {
             for (int k = 0; k < cols; k++) {
                 for (int j = 0; j < len; j++) {
-                    out[(i * cols) + k] += a[(i * len) + j] * b[(j * cols) + k];
+                    out[i * cols + k] += a[i * len + j] * b[j * cols + k];
                 }
             }
         }

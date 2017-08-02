@@ -296,7 +296,7 @@ public class StandardDecrypter implements PDFDecrypter {
         } catch (InvalidKeyException e) {
             throw new EncryptionUnsupportedByPlatformException(
                     "JCE does accept key size of " +
-                            (getSaltedContentKeyByteLength() * 8) +
+                            getSaltedContentKeyByteLength() * 8 +
                             " bits- could it be a policy restriction?", e);
         } catch (InvalidAlgorithmParameterException e) {
             throw new EncryptionUnsupportedByPlatformException(
@@ -889,8 +889,8 @@ public class StandardDecrypter implements PDFDecrypter {
         // Step 4: Treat the value of the P entry as an unsigned 4-byte integer
         // and pass these bytes to the MD5 hash function, low-order byte first
         md5.update((byte) (pValue & 0xFF));
-        md5.update((byte) ((pValue >> 8) & 0xFF));
-        md5.update((byte) ((pValue >> 16) & 0xFF));
+        md5.update((byte) (pValue >> 8 & 0xFF));
+        md5.update((byte) (pValue >> 16 & 0xFF));
         md5.update((byte) (pValue >> 24));
 
         // Step 5: Pass the first element of the fileâs file identifier array
@@ -913,7 +913,7 @@ public class StandardDecrypter implements PDFDecrypter {
         // Step 7: finish the hash
         byte[] hash = md5.digest();
 
-        final int keyLen = revision == 2 ? 5 : (keyBitLength / 8);
+        final int keyLen = revision == 2 ? 5 : keyBitLength / 8;
         final byte[] key = new byte[keyLen];
 
         // Step 8: (Revision 3 or greater) Do the following 50 times: Take the

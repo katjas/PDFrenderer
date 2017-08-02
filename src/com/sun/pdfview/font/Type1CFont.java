@@ -99,7 +99,7 @@ public class Type1CFont extends OutlineFont {
         char[] parts = new char[17];
         int partsloc = 0;
         for (int i = 0; i < this.data.length; i++) {
-            int d = (this.data[i]) & 0xff;
+            int d = this.data[i] & 0xff;
             if (d == 0) {
                 parts[partsloc++] = '.';
             } else if (d < 32 || d >= 127) {
@@ -129,23 +129,23 @@ public class Type1CFont extends OutlineFont {
      * @param charstring ????
      */
     private int readNext (boolean charstring) {
-        this.num = (this.data[this.pos++]) & 0xff;
+        this.num = this.data[this.pos++] & 0xff;
         if (this.num == 30 && !charstring) { // goofy floatingpoint rep
             readFNum ();
             return this.type = FLT;
         } else if (this.num == 28) {
-            this.num = ((this.data[this.pos]) << 8) + ((this.data[this.pos + 1]) & 0xff);
+            this.num = (this.data[this.pos] << 8) + (this.data[this.pos + 1] & 0xff);
             this.pos += 2;
             return this.type = NUM;
         } else if (this.num == 29 && !charstring) {
-            this.num = ((this.data[this.pos] & 0xff) << 24) |
-                    ((this.data[this.pos + 1] & 0xff) << 16) |
-                    ((this.data[this.pos + 2] & 0xff) << 8) |
-                    ((this.data[this.pos + 3] & 0xff));
+            this.num = (this.data[this.pos] & 0xff) << 24 |
+                    (this.data[this.pos + 1] & 0xff) << 16 |
+                    (this.data[this.pos + 2] & 0xff) << 8 |
+                    this.data[this.pos + 3] & 0xff;
             this.pos += 4;
             return this.type = NUM;
         } else if (this.num == 12) {  // two-byte command
-            this.num = 1000 + ((this.data[this.pos++]) & 0xff);
+            this.num = 1000 + (this.data[this.pos++] & 0xff);
             return this.type = CMD;
         } else if (this.num < 32) {
             return this.type = CMD;
@@ -153,19 +153,19 @@ public class Type1CFont extends OutlineFont {
             this.num -= 139;
             return this.type = NUM;
         } else if (this.num < 251) {
-            this.num = (this.num - 247) * 256 + ((this.data[this.pos++]) & 0xff) + 108;
+            this.num = (this.num - 247) * 256 + (this.data[this.pos++] & 0xff) + 108;
             return this.type = NUM;
         } else if (this.num < 255) {
-            this.num = -(this.num - 251) * 256 - ((this.data[this.pos++]) & 0xff) - 108;
+            this.num = -(this.num - 251) * 256 - (this.data[this.pos++] & 0xff) - 108;
             return this.type = NUM;
         } else if (!charstring) { // dict shouldn't have a 255 code
             printData ();
             throw new RuntimeException ("Got a 255 code while reading dict");
         } else { // num was 255
-        	this.fnum = (((this.data[this.pos] & 0xff) << 24) |
-                    ((this.data[this.pos + 1] & 0xff) << 16) |
-                    ((this.data[this.pos + 2] & 0xff) << 8) |
-                    ((this.data[this.pos + 3] & 0xff))) / 65536f;
+        	this.fnum = ((this.data[this.pos] & 0xff) << 24 |
+                    (this.data[this.pos + 1] & 0xff) << 16 |
+                    (this.data[this.pos + 2] & 0xff) << 8 |
+                    this.data[this.pos + 3] & 0xff) / 65536f;
             this.pos += 4;
             return this.type = FLT;
         }
@@ -187,8 +187,8 @@ public class Type1CFont extends OutlineFont {
             if (work == (byte) 0xdd) {
                 work = this.data[this.pos++];
             }
-            int nyb = (work >> 4) & 0xf;
-            work = (byte) ((work << 4) | 0xd);
+            int nyb = work >> 4 & 0xf;
+            work = (byte) (work << 4 | 0xd);
             if (nyb < 10) {
                 if (exp != 0) {         // working on the exponent
                     eval = eval * 10 + nyb;
@@ -221,7 +221,7 @@ public class Type1CFont extends OutlineFont {
     private int readInt (int len) {
         int n = 0;
         for (int i = 0; i < len; i++) {
-            n = (n << 8) | ((this.data[this.pos++]) & 0xff);
+            n = n << 8 | this.data[this.pos++] & 0xff;
         }
         return n;
     }
@@ -231,7 +231,7 @@ public class Type1CFont extends OutlineFont {
      * @return the byte
      */
     private int readByte () {
-        return (this.data[this.pos++]) & 0xff;
+        return this.data[this.pos++] & 0xff;
     }
 
     // DICT structure:
@@ -421,7 +421,7 @@ public class Type1CFont extends OutlineFont {
             if (t == CMD) {
                 return this.num;
             } else {
-                this.stack[this.stackptr++] = (t == NUM) ? (float) this.num : this.fnum;
+                this.stack[this.stackptr++] = t == NUM ? (float) this.num : this.fnum;
             }
         }
     }
@@ -532,10 +532,10 @@ public class Type1CFont extends OutlineFont {
      * @param encdif a dictionary describing the encoding.
      */
     private void parse () throws IOException {
-        int majorVersion = readByte ();
-        int minorVersion = readByte ();
+        readByte ();
+        readByte ();
         int hdrsz = readByte ();
-        int offsize = readByte ();
+        readByte ();
         // jump over rest of header: base of font names index
         int fnames = hdrsz;
         // offset in the file of the array of font dicts
@@ -711,7 +711,7 @@ public class Type1CFont extends OutlineFont {
     void parseGlyph (Range r, GeneralPath gp, FlPoint pt) {
         this.pos = r.getStart ();
         int i;
-        float x1, y1, x2, y2, x3, y3, ybase;
+        float x1, y1, x2, y2, ybase;
         int hold;
         while (this.pos < r.getEnd ()) {
             int cmd = readCommand (true);
@@ -806,12 +806,12 @@ public class Type1CFont extends OutlineFont {
                     stemhints = 0;
                     break;
                 case 18: // hstemhm
-                    stemhints += (this.stackptr) / 2;
+                    stemhints += this.stackptr / 2;
                     this.stackptr = 0;
                     break;
                 case 19: // hintmask
                 case 20: // cntrmask
-                	stemhints += (this.stackptr) / 2;
+                	stemhints += this.stackptr / 2;
                     this.pos += (stemhints - 1) / 8 + 1;
                     this.stackptr = 0;
                     break;
@@ -842,7 +842,7 @@ public class Type1CFont extends OutlineFont {
                     this.stackptr = 0;
                     break;
                 case 23: // vstemhm
-                    stemhints += (this.stackptr) / 2;
+                    stemhints += this.stackptr / 2;
                     this.stackptr = 0;
                     break;
                 case 24: // rcurveline
@@ -922,7 +922,7 @@ public class Type1CFont extends OutlineFont {
                     hold = 4;
                 case 31: // hvcurveto
                     for (i = 0; i < this.stackptr;) {
-                        boolean hv = (((i + hold) & 4) == 0);
+                        boolean hv = (i + hold & 4) == 0;
                         x1 = pt.x + (hv ? this.stack[i++] : 0);
                         y1 = pt.y + (hv ? 0 : this.stack[i++]);
                         x2 = x1 + this.stack[i++];
@@ -947,16 +947,16 @@ public class Type1CFont extends OutlineFont {
                 case 1003: // and
                     x1 = this.stack[--this.stackptr];
                     y1 = this.stack[--this.stackptr];
-                    this.stack[this.stackptr++] = ((x1 != 0) && (y1 != 0)) ? 1 : 0;
+                    this.stack[this.stackptr++] = x1 != 0 && y1 != 0 ? 1 : 0;
                     break;
                 case 1004: // or
                     x1 = this.stack[--this.stackptr];
                     y1 = this.stack[--this.stackptr];
-                    this.stack[this.stackptr++] = ((x1 != 0) || (y1 != 0)) ? 1 : 0;
+                    this.stack[this.stackptr++] = x1 != 0 || y1 != 0 ? 1 : 0;
                     break;
                 case 1005: // not
                     x1 = this.stack[--this.stackptr];
-                    this.stack[this.stackptr++] = (x1 == 0) ? 1 : 0;
+                    this.stack[this.stackptr++] = x1 == 0 ? 1 : 0;
                     break;
                 case 1009: // abs
                     this.stack[this.stackptr - 1] = Math.abs (this.stack[this.stackptr - 1]);
@@ -982,7 +982,7 @@ public class Type1CFont extends OutlineFont {
                 case 1015: // eq
                     x1 = this.stack[--this.stackptr];
                     y1 = this.stack[--this.stackptr];
-                    this.stack[this.stackptr++] = (x1 == y1) ? 1 : 0;
+                    this.stack[this.stackptr++] = x1 == y1 ? 1 : 0;
                     break;
                 case 1018: // drop
                     this.stackptr--;
@@ -1036,7 +1036,7 @@ public class Type1CFont extends OutlineFont {
                     if (i > 0) {
                         i = i % n;
                     } else {
-                        i = n - (-i % n);
+                        i = n - -i % n;
                     }
                     // x x x x i y y y -> y y y x x x x i (where i=3)
                     if (i > 0) {
@@ -1167,7 +1167,7 @@ public class Type1CFont extends OutlineFont {
     @Override
 	protected GeneralPath getOutline (char src, float width) {
         // ignore high bits
-        int index = (src & 0xff);
+        int index = src & 0xff;
 
         // if we use a standard encoding, the mapping is from glyph to SID
         // therefore we must find the glyph index in the name table

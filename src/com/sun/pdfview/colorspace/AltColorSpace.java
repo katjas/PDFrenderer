@@ -13,6 +13,10 @@ import com.sun.pdfview.function.PDFFunction;
  ****************************************************************************/
 public class AltColorSpace extends ColorSpace {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private PDFFunction fkt;
 	private ColorSpace origCs;
 	/**

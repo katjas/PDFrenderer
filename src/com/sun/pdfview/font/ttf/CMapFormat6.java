@@ -20,7 +20,7 @@
 package com.sun.pdfview.font.ttf;
 
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.HashMap;
 
 /**
  *
@@ -74,7 +74,7 @@ public class CMapFormat6 extends CMap {
 	public char map(char src) {
 
         // find first segment with endcode > src
-        if (src < this.firstCode || src > (this.firstCode + this.entryCount)) {
+        if (src < this.firstCode || src > this.firstCode + this.entryCount) {
             // Codes outside of the range are assumed to be missing and are
             // mapped to the glyph with index 0
             return '\000';
@@ -129,8 +129,8 @@ public class CMapFormat6 extends CMap {
         buf.putShort(this.entryCount);
 
         // write the endCodes
-        for (int i = 0; i < this.glyphIndexArray.length; i++) {
-            buf.putShort(this.glyphIndexArray[i]);
+        for (short element : this.glyphIndexArray) {
+            buf.putShort(element);
         }
         // reset the data pointer
         buf.flip();

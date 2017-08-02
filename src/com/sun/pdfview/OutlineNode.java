@@ -25,7 +25,11 @@ import com.sun.pdfview.action.PDFAction;
 public class OutlineNode extends DefaultMutableTreeNode {
     // the name of this node
 
-    private String title;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private String title;
 
     /** 
      * Create a new outline node

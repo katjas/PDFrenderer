@@ -61,7 +61,7 @@ import com.sun.pdfview.colorspace.IndexedColor;
 import com.sun.pdfview.colorspace.PDFColorSpace;
 import com.sun.pdfview.colorspace.YCCKColorSpace;
 import com.sun.pdfview.decode.PDFDecoder;
-import com.sun.pdfview.function.FunctionType0;
+import com.sun.pdfview.function.PDFFunction;
 
 /**
  * Encapsulates a PDF Image
@@ -417,8 +417,9 @@ public class PDFImage {
 
 				bi = biColorToGrayscale(raster, ncc);
 				// Return when there is no SMask
-				if (getSMask() == null)
+				if (getSMask() == null) {
 					return bi;
+				}
 			} else {
 				// Raster is already in a format which is supported by Java2D,
 				// such as RGB or Gray.
@@ -477,7 +478,7 @@ public class PDFImage {
     				for (int j = 0; j < this.width; j++) {
     					int ac = 0xff000000;
     
-    					maskArray[j] = ((maskArray[j] & 0xff) << 24) | (srcArray[j] & ~ac);
+    					maskArray[j] = (maskArray[j] & 0xff) << 24 | srcArray[j] & ~ac;
     				}
     
     				outImage.setRGB(0, i, this.width, 1, maskArray, 0, this.width);
@@ -511,7 +512,7 @@ public class PDFImage {
 		BufferedImage after = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 		AffineTransform at = new AffineTransform();
 
-		at.scale(((double) this.width / w), ((double) this.height / h));
+		at.scale((double) this.width / w, (double) this.height / h);
 
 		AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
 		return scaleOp.filter(before, after);
@@ -550,14 +551,14 @@ public class PDFImage {
 					rowStartByteIndex = y * calculatedLineBytes;
 					for (int x = 0; x < getWidth(); ++x) {
 						final byte b = data[rowStartByteIndex + x / 8];
-						final int white = b >> (7 - (x & 7)) & 1;
+						final int white = b >> 7 - (x & 7) & 1;
 						// if white == 0, white - 1 will be 0xFFFFFFFF,
 						// which when xored with 0xFFFFFF will produce 0
 						// if white == 1, white - 1 will be 0,
 						// which when xored with 0xFFFFFF will produce 0xFFFFFF
 						// (ignoring the top two bytes, which are always set
 						// high anyway)
-						convertedPixels[i] = 0xFF000000 | ((white - 1) ^ 0xFFFFFF);
+						convertedPixels[i] = 0xFF000000 | white - 1 ^ 0xFFFFFF;
 						++i;
 					}
 				}
@@ -568,7 +569,7 @@ public class PDFImage {
 					rowStartByteIndex = y * calculatedLineBytes;
 					for (int x = 0; x < getWidth(); ++x) {
 						final byte b = data[rowStartByteIndex + x / 8];
-						final int val = b >> (7 - (x & 7)) & 1;
+						final int val = b >> 7 - (x & 7) & 1;
 						convertedPixels[i] = greyToArgbMap[val];
 						++i;
 					}
@@ -665,10 +666,10 @@ public class PDFImage {
 					final byte bits = bufferO[i];
 					i++;
 					for (byte j = 7; j >= 0; j--) {
-						if (buffer.length <= (base - j)) {
+						if (buffer.length <= base - j) {
 							break;
 						}
-						final int c = ((bits >>> j) & 1);
+						final int c = bits >>> j & 1;
 						buffer[base - j] = ncc[c];
 					}
 					base += 8;
@@ -678,9 +679,10 @@ public class PDFImage {
 					final byte bits = bufferO[i];
 					i++;
 					for (byte j = 7; j >= 0; j--) {
-						if (base - j >= buffer.length)
+						if (base - j >= buffer.length) {
 							break;
-						buffer[base - j] = ncc[((bits >>> j) & 1)];
+						}
+						buffer[base - j] = ncc[bits >>> j & 1];
 					}
 					base += 8;
 				}
@@ -832,8 +834,8 @@ public class PDFImage {
 					int idx = (int) res[0];
 
 					normComps[i * 3] = components[idx * 3];
-					normComps[(i * 3) + 1] = components[(idx * 3) + 1];
-					normComps[(i * 3) + 2] = components[(idx * 3) + 2];
+					normComps[i * 3 + 1] = components[idx * 3 + 1];
+					normComps[i * 3 + 2] = components[idx * 3 + 2];
 				}
 
 				components = normComps;
@@ -856,14 +858,14 @@ public class PDFImage {
 				byte[] aComps = new byte[num * 4];
 				int idx = 0;
 				for (int i = 0; i < num; i++) {
-					aComps[idx++] = components[(i * 3)];
-					aComps[idx++] = components[(i * 3) + 1];
-					aComps[idx++] = components[(i * 3) + 2];
+					aComps[idx++] = components[i * 3];
+					aComps[idx++] = components[i * 3 + 1];
+					aComps[idx++] = components[i * 3 + 2];
 					aComps[idx++] = (byte) 0xFF;
 				}
 				for (int i = 0; i < this.colorKeyMask.length; i += 2) {
 					for (int j = this.colorKeyMask[i]; j <= this.colorKeyMask[i + 1]; j++) {
-						aComps[(j * 4) + 3] = 0; // make transparent
+						aComps[j * 4 + 3] = 0; // make transparent
 					}
 				}
 				return new IndexColorModel(getBitsPerComponent(), num, aComps, 0, true);
@@ -909,11 +911,11 @@ public class PDFImage {
 
 		for (int i = 0; i < pixels.length; i++) {
 			int val = pixels[i] & 0xff;
-			int pow = ((int) Math.pow(2, getBitsPerComponent())) - 1;
+			int pow = (int) Math.pow(2, getBitsPerComponent()) - 1;
 			float ymin = decodeArray[i * 2];
-			float ymax = decodeArray[(i * 2) + 1];
+			float ymax = decodeArray[i * 2 + 1];
 
-			normComponents[normOffset + i] = FunctionType0.interpolate(val, 0, pow, ymin, ymax);
+			normComponents[normOffset + i] = PDFFunction.interpolate(val, 0, pow, ymin, ymax);
 		}
 
 		return normComponents;
@@ -950,7 +952,7 @@ public class PDFImage {
 				SampleModel sm = raster.getSampleModel();
 
 				if (sm instanceof MultiPixelPackedSampleModel) {
-					return (sm.getSampleSize(0) == getPixelSize());
+					return sm.getSampleSize(0) == getPixelSize();
 				} else {
 					return false;
 				}
@@ -998,8 +1000,8 @@ public class PDFImage {
 					int idx = (int) res[0];
 
 					normComps[i * 3] = components[idx * 3];
-					normComps[(i * 3) + 1] = components[(idx * 3) + 1];
-					normComps[(i * 3) + 2] = components[(idx * 3) + 2];
+					normComps[i * 3 + 1] = components[idx * 3 + 1];
+					normComps[i * 3 + 2] = components[idx * 3 + 2];
 				}
 
 				components = normComps;
@@ -1022,14 +1024,14 @@ public class PDFImage {
 				byte[] aComps = new byte[num * 4];
 				int idx = 0;
 				for (int i = 0; i < num; i++) {
-					aComps[idx++] = components[(i * 3)];
-					aComps[idx++] = components[(i * 3) + 1];
-					aComps[idx++] = components[(i * 3) + 2];
+					aComps[idx++] = components[i * 3];
+					aComps[idx++] = components[i * 3 + 1];
+					aComps[idx++] = components[i * 3 + 2];
 					aComps[idx++] = (byte) 0xFF;
 				}
 				for (int i = 0; i < colorKeyMask.length; i += 2) {
 					for (int j = colorKeyMask[i]; j <= colorKeyMask[i + 1]; j++) {
-						aComps[(j * 4) + 3] = 0; // make transparent
+						aComps[j * 4 + 3] = 0; // make transparent
 					}
 				}
 				return new IndexColorModel(getBitsPerComponent(), num, aComps, 0, true);

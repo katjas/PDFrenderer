@@ -36,7 +36,8 @@ public class TIFFPredictor extends Predictor {
     /**
      * Undo data based on the png algorithm
      */
-    public ByteBuffer unpredict(ByteBuffer imageData)
+    @Override
+	public ByteBuffer unpredict(ByteBuffer imageData)
         throws IOException
     {
         ByteBuffer out = ByteBuffer.allocate(imageData.limit());
@@ -61,12 +62,12 @@ public class TIFFPredictor extends Predictor {
                 final short[] prev = new short[numComponents];
                 for (int c = 0; c < numComponents; c += 1) {
                     final int pos = c * 2;
-                    prev[c] = (short) ((row[pos] << 8 | (row[pos + 1]) & 0xFFFF));
+                    prev[c] = (short) (row[pos] << 8 | row[pos + 1] & 0xFFFF);
                 }
                 for (int i = numComponents * 2; i < row.length; i += numComponents * 2) {
                     for (int c = 0; c < numComponents; c += 1) {
                         final int pos = i + c * 2;
-                        short cur = (short) ((row[pos] << 8 | (row[pos + 1]) & 0xFFFF));
+                        short cur = (short) (row[pos] << 8 | row[pos + 1] & 0xFFFF);
                         cur += prev[c];
                         row[pos] = (byte) (cur >>> 8 & 0xFF);
                         row[pos + 1] = (byte) (cur & 0xFF);
@@ -105,18 +106,18 @@ public class TIFFPredictor extends Predictor {
 
     private static byte getbits(byte[] data, int bitIndex, int shiftWhenByteAligned, int mask)
     {
-        final int b = data[(bitIndex >> 3)];
+        final int b = data[bitIndex >> 3];
         final int bitIndexInB = bitIndex & 7;
         final int shift =  shiftWhenByteAligned - bitIndexInB;
-        return (byte) ((b >>> shift) & mask);
+        return (byte) (b >>> shift & mask);
     }
 
     private static void setbits(byte[] data, int bitIndex, int shiftWhenByteAligned, int mask, byte bits)
     {
-        final int b = data[(bitIndex >> 3)];
+        final int b = data[bitIndex >> 3];
         final int bitIndexInB = bitIndex & 7;
         final int shift =  shiftWhenByteAligned - bitIndexInB;
-        data[bitIndex >> 3] = (byte) ((b & ~(mask << shift)) | (bits << shift));
+        data[bitIndex >> 3] = (byte) (b & ~(mask << shift) | bits << shift);
     }
 
 

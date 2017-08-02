@@ -106,7 +106,7 @@ public class NativeFont extends OutlineFont {
             }
         } else {
             int flags = descriptor.getFlags ();
-            int style = ((flags & PDFFontDescriptor.FORCEBOLD) != 0) ? Font.BOLD : Font.PLAIN;
+            int style = (flags & PDFFontDescriptor.FORCEBOLD) != 0 ? Font.BOLD : Font.PLAIN;
 
             if (fontName.indexOf ("Bold") > 0) {
                 style |= Font.BOLD;
@@ -180,8 +180,8 @@ public class NativeFont extends OutlineFont {
         }
 
         // filter out control characters
-        for (int i = 0; i < controlChars.length; i++) {
-            if (controlChars[i] == src) {
+        for (char controlChar : controlChars) {
+            if (controlChar == src) {
                 src = (char) (0xf000 | src);
                 break;
             }
@@ -420,9 +420,9 @@ public class NativeFont extends OutlineFont {
         }
 
         // now that we have a type four map, remap control characters
-        for (int i = 0; i < controlChars.length; i++) {
-            short idx = (short) (0xf000 | controlChars[i]);
-            short value = (short) fourMap.map (controlChars[i]);
+        for (char controlChar : controlChars) {
+            short idx = (short) (0xf000 | controlChar);
+            short value = (short) fourMap.map (controlChar);
 
             fourMap.addSegment (idx, idx, (short) (value - idx));
         }

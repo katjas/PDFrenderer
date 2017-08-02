@@ -16,6 +16,6 @@ final class Truncate implements PostScriptOperation {
 	 */
 	public void eval(Stack<Object> environment) {
 	    double num1 = (Double)environment.pop();
-	    environment.push((((long) num1) - num1));
+	    environment.push((long) num1 - num1);
 	}
 }

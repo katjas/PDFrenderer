@@ -137,9 +137,9 @@ public class FunctionType0 extends PDFFunction {
             //                       encode<2i>, encode<2i + 1>)
             encoded[i] = interpolate(inputs[i + inputOffset],
                                      getDomain(2 * i),
-                                     getDomain((2 * i) + 1),
+                                     getDomain(2 * i + 1),
                                      getEncode(2 * i),
-                                     getEncode((2 * i) + 1));
+                                     getEncode(2 * i + 1));
         
             // clip to size of sample table -- min(max(e<i>, 0), size<i> - 1)
             encoded[i] = Math.max(encoded[i], 0);
@@ -163,7 +163,7 @@ public class FunctionType0 extends PDFFunction {
                                      0,
                                      (float) Math.pow(2, getBitsPerSample()) - 1,
                                      getDecode(2 * i),
-                                     getDecode((2 * i) + 1));
+                                     getDecode(2 * i + 1));
         }
     }
     
@@ -224,10 +224,10 @@ public class FunctionType0 extends PDFFunction {
     protected float getEncode(int i) {
         if (this.encode != null) {
             return this.encode[i];
-        } else if ((i % 2) == 0) {
+        } else if (i % 2 == 0) {
             return 0f;
         } else {
-            return (getSize(i / 2) - 1);
+            return getSize(i / 2) - 1;
         }  
     }
     
@@ -323,8 +323,8 @@ public class FunctionType0 extends PDFFunction {
                     byte curByte = buf.get(byteLoc);
                     
                     while (toRead > 0) {
-                        int nextBit = ((curByte >> (7 - bitLoc)) & 0x1);
-                        value |= nextBit << (toRead - 1);
+                        int nextBit = curByte >> 7 - bitLoc & 0x1;
+                        value |= nextBit << toRead - 1;
                         
                         if (++bitLoc == 8) {
                             bitLoc = 0;
@@ -390,7 +390,7 @@ public class FunctionType0 extends PDFFunction {
             }
             
             // now find the sample with that axis set to 1
-            map |= (0x1 << idx);
+            map |= 0x1 << idx;
             float cur = getSample(encoded, map, od);
             
             // calculate the value and remember it
@@ -431,7 +431,7 @@ public class FunctionType0 extends PDFFunction {
         
         // fill in the controls array with appropriate ints
         for (int i = 0; i < controls.length; i++) {
-            if ((map & (0x1 << i)) == 0) {
+            if ((map & 0x1 << i) == 0) {
                 controls[i] = (int) Math.floor(encoded[i]);
             } else {
                 controls[i] = (int) Math.ceil(encoded[i]);

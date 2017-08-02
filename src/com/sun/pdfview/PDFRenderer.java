@@ -334,7 +334,9 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
                }
         }
 		
-        if (isBlured) bi.flush();
+        if (isBlured) {
+			bi.flush();
+		}
 
         // get the total transform that was executed
         AffineTransform bt = new AffineTransform(this.g.getTransform());
@@ -363,7 +365,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
 
         	BufferedImageOp op;
         	// indexed colored images need to be converted for the convolveOp
-        	boolean colorConversion = (bi.getColorModel() instanceof IndexColorModel);
+        	boolean colorConversion = bi.getColorModel() instanceof IndexColorModel;
         	final float maxFactor = 3.5f;
         	final boolean RESIZE = true;
         	if (image.getWidth() > maxFactor*r.getWidth() && image.getHeight() > maxFactor*r.getHeight()){
@@ -447,7 +449,9 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
                }
         }
 
-        if (isBlured) bi.flush();
+        if (isBlured) {
+			bi.flush();
+		}
 
         // get the total transform that was executed
         AffineTransform bt = new AffineTransform(this.g.getTransform());
@@ -659,7 +663,9 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
      * @return a BufferedImage or null
      */
     public BufferedImage getImage() {
-    	if (this.imageRef == null) return null;
+    	if (this.imageRef == null) {
+			return null;
+		}
     	return this.imageRef.get();
     }
     
@@ -801,7 +807,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
             return true;
         }
 
-        return (this.page.isFinished() && this.currentCommand == this.page.getCommandCount());
+        return this.page.isFinished() && this.currentCommand == this.page.getCommandCount();
     }
 
     /**
@@ -816,7 +822,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         int flags = 0;
 
         // don't do anything if nothing is there or no one is listening
-        if ((region == null && !rendererFinished()) || this.observers == null ||
+        if (region == null && !rendererFinished() || this.observers == null ||
                 this.observers.size() == 0) {
             return;
         }

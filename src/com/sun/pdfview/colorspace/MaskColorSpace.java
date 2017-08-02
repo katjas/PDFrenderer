@@ -30,7 +30,11 @@ import com.sun.pdfview.PDFPaint;
  * painting itself is done in a pre-specified PDF Paint.
  */
 public class MaskColorSpace extends ColorSpace {
-    /** The paint to paint in.  Note this cannot be a pattern or gradient. */
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	/** The paint to paint in.  Note this cannot be a pattern or gradient. */
     private final PDFPaint paint;
     
     /** Creates a new instance of PaintColorSpace */

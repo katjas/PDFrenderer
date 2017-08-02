@@ -99,7 +99,7 @@ public abstract class BaseWatchable implements Watchable, Runnable {
                             // keep going until the status is no longer running,
                             // our gate tells us to stop, or no-one is watching
                             int laststatus = Watchable.RUNNING;
-                            while ((getStatus() == Watchable.RUNNING) && (this.gate == null || !this.gate.iterate())) {
+                            while (getStatus() == Watchable.RUNNING && (this.gate == null || !this.gate.iterate())) {
                                 // update the status based on this iteration
                                 int status = iterate();
                                 if (status != laststatus) {
@@ -159,16 +159,16 @@ public abstract class BaseWatchable implements Watchable, Runnable {
      */
     public boolean isFinished() {
         int s = getStatus();
-        return (s == Watchable.COMPLETED ||
-                s == Watchable.ERROR);
+        return s == Watchable.COMPLETED ||
+                s == Watchable.ERROR;
     }
 
     /**
      * return true if this watchable is ready to be executed
      */
     public boolean isExecutable() {
-        return ((this.status == Watchable.PAUSED || this.status == Watchable.RUNNING) &&
-                (this.gate == null || !this.gate.stop()));
+        return (this.status == Watchable.PAUSED || this.status == Watchable.RUNNING) &&
+                (this.gate == null || !this.gate.stop());
     }
 
     /**
@@ -178,7 +178,9 @@ public abstract class BaseWatchable implements Watchable, Runnable {
      */
     @Override
 	public void stop() {
-    	if (!isFinished()) setStatus(Watchable.STOPPED);
+    	if (!isFinished()) {
+			setStatus(Watchable.STOPPED);
+		}
     }
 
     /**
@@ -367,9 +369,9 @@ public abstract class BaseWatchable implements Watchable, Runnable {
          */
         public boolean stop() {
             if (this.timeBased) {
-                return (System.currentTimeMillis() >= this.nextGate);
+                return System.currentTimeMillis() >= this.nextGate;
             } else {
-                return (this.nextGate < 0);
+                return this.nextGate < 0;
             }
         }
 

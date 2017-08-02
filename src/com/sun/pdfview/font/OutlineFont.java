@@ -80,7 +80,7 @@ public abstract class OutlineFont extends PDFFont {
 
     /** Get the number of characters */
     public int getCharCount() {
-        return (getLastChar() - getFirstChar()) + 1;
+        return getLastChar() - getFirstChar() + 1;
     }
 
     /** Get the width of a given character */

@@ -50,7 +50,6 @@ import com.sun.pdfview.pattern.PDFShader;
 * @author Mike Wessler
 */
 public class PDFParser extends BaseWatchable {
-    private int mDebugCommandIndex;
     // ---- parsing variables
     private Stack<Object> stack; // stack of Object
     private Stack<ParserState> parserStates; // stack of RenderState
@@ -236,11 +235,11 @@ public class PDFParser extends BaseWatchable {
         } else if (c == '/') {
             this.tok.type = Tok.NAME;
             this.tok.name = readName();
-        } else if (c == '.' || c == '-' || (c >= '0' && c <= '9')) {
+        } else if (c == '.' || c == '-' || c >= '0' && c <= '9') {
             this.loc--;
             this.tok.type = Tok.NUM;
             this.tok.value = readNum();
-        } else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '\'' || c == '"') {
+        } else if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '\'' || c == '"') {
             this.loc--;
             this.tok.type = Tok.CMD;
             this.tok.name = readName();
@@ -271,7 +270,7 @@ public class PDFParser extends BaseWatchable {
         boolean neg = c == '-';
         boolean sawdot = c == '.';
         double dotmult = sawdot ? 0.1 : 1;
-        double value = (c >= '0' && c <= '9') ? c - '0' : 0;
+        double value = c >= '0' && c <= '9' ? c - '0' : 0;
         while (true) {
             c = this.stream[this.loc++];
             if (c == '.') {
@@ -375,22 +374,22 @@ public class PDFParser extends BaseWatchable {
         int count = 0;
         char w = (char) 0;
         // read individual bytes and format into a character array
-        while ((this.loc < this.stream.length) && (this.stream[this.loc] != '>')) {
+        while (this.loc < this.stream.length && this.stream[this.loc] != '>') {
             char c = (char) this.stream[this.loc];
             byte b = (byte) 0;
             if (c >= '0' && c <= '9') {
                 b = (byte) (c - '0');
             } else if (c >= 'a' && c <= 'f') {
-                b = (byte) (10 + (c - 'a'));
+                b = (byte) (10 + c - 'a');
             } else if (c >= 'A' && c <= 'F') {
-                b = (byte) (10 + (c - 'A'));
+                b = (byte) (10 + c - 'A');
             } else {
                 this.loc++;
                 continue;
             }
             // calculate where in the current byte this character goes
-            int offset = 1 - (count % 2);
-            w |= (0xf & b) << (offset * 4);
+            int offset = 1 - count % 2;
+            w |= (0xf & b) << offset * 4;
             // increment to the next char if we've written four bytes
             if (offset == 0) {
                 buf.append(w);
@@ -555,7 +554,7 @@ public class PDFParser extends BaseWatchable {
                 PDFDebugger.logPath(path, "closed");
             } else if (cmd.equals("S")) {
                 // stroke the path
-                if (!PDFDebugger.DISABLE_PATH_STROKE || (!PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                if (!PDFDebugger.DISABLE_PATH_STROKE || !PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP) {
                     if(autoAdjustStroke || strokeOverprint || fillOverprint) {
                         path.closePath();
                         PDFDebugger.logPath(path, "closed");
@@ -568,7 +567,7 @@ public class PDFParser extends BaseWatchable {
             } else if (cmd.equals("s")) {
                 tryClosingPath();
                 PDFDebugger.logPath(path, "closed");
-                if (!PDFDebugger.DISABLE_PATH_STROKE || (!PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                if (!PDFDebugger.DISABLE_PATH_STROKE || !PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP) {
                     this.cmds.addPath(this.path, PDFShapeCmd.STROKE | this.clip, this.autoAdjustStroke);
                 }
                 this.clip = 0;
@@ -577,7 +576,7 @@ public class PDFParser extends BaseWatchable {
             } else if (cmd.equals("f") || cmd.equals("F")) {
                  tryClosingPath();
                 // fill the path (close/not close identical)
-                if (!PDFDebugger.DISABLE_PATH_FILL || (!PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                if (!PDFDebugger.DISABLE_PATH_FILL || !PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP) {
                     this.cmds.addPath(this.path, PDFShapeCmd.FILL | this.clip, this.autoAdjustStroke);
                 }
                 this.clip = 0;
@@ -587,7 +586,7 @@ public class PDFParser extends BaseWatchable {
                 // fill the path using even/odd rule
                 this.path.setWindingRule(WIND_EVEN_ODD);
                 PDFDebugger.logPath(path, "set winding rule" + WIND_EVEN_ODD);
-                if (!PDFDebugger.DISABLE_PATH_FILL || (!PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                if (!PDFDebugger.DISABLE_PATH_FILL || !PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP) {
                     this.cmds.addPath(this.path, PDFShapeCmd.FILL | this.clip, this.autoAdjustStroke);
                 }
                 this.clip = 0;
@@ -595,7 +594,7 @@ public class PDFParser extends BaseWatchable {
                 PDFDebugger.logPath(path, "new path");
             } else if (cmd.equals("B")) {
                 // fill and stroke the path
-                if (!PDFDebugger.DISABLE_PATH_STROKE_FILL || (!PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                if (!PDFDebugger.DISABLE_PATH_STROKE_FILL || !PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP) {
                     this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip, this.autoAdjustStroke);
                 }
                 this.clip = 0;
@@ -605,7 +604,7 @@ public class PDFParser extends BaseWatchable {
                 // fill path using even/odd rule and stroke it
                 this.path.setWindingRule(WIND_EVEN_ODD);
                 PDFDebugger.logPath(path, "set winding rule" + WIND_EVEN_ODD);
-                if (!PDFDebugger.DISABLE_PATH_STROKE_FILL || (!PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                if (!PDFDebugger.DISABLE_PATH_STROKE_FILL || !PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP) {
                     this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip, this.autoAdjustStroke);
                 }
                 this.clip = 0;
@@ -614,7 +613,7 @@ public class PDFParser extends BaseWatchable {
             } else if (cmd.equals("b")) {
                 tryClosingPath();
                 PDFDebugger.logPath(path, "close");
-                if (!PDFDebugger.DISABLE_PATH_STROKE_FILL || (!PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                if (!PDFDebugger.DISABLE_PATH_STROKE_FILL || !PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP) {
                     this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip, this.autoAdjustStroke);
                 }
                 this.clip = 0;
@@ -625,7 +624,7 @@ public class PDFParser extends BaseWatchable {
                 PDFDebugger.logPath(path, "close");
                 this.path.setWindingRule(WIND_EVEN_ODD);
                 PDFDebugger.logPath(path, "set winding rule " + WIND_EVEN_ODD);
-                if (!PDFDebugger.DISABLE_PATH_STROKE_FILL || (!PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP)) {
+                if (!PDFDebugger.DISABLE_PATH_STROKE_FILL || !PDFDebugger.DISABLE_CLIP && this.clip == PDFShapeCmd.CLIP) {
                     this.cmds.addPath(this.path, PDFShapeCmd.BOTH | this.clip, this.autoAdjustStroke);
                 }
                 this.clip = 0;
@@ -891,36 +890,10 @@ public class PDFParser extends BaseWatchable {
         }
     }
 
-    @SuppressWarnings("unused")
     private void onNextObject(Tok obj) throws DebugStopException {
-        String progress;
-        if (true) {
-            double percent = (100d * this.loc) / this.stream.length;
-            NumberFormat nf = NumberFormat.getInstance();
-            nf.setMinimumFractionDigits(1);
-            nf.setMaximumFractionDigits(1);
-            progress = nf.format(percent) + "%";
-        } else {
-            progress = this.loc + " of " + this.stream.length;
-        }
-        String operators = "";
-        for (Object operator : this.stack) {
-            operators += operator + " ";
-        }
-        if (PDFDebugger.DEBUG_OPERATORS) {
-            PDFDebugger.debug("parser{" + hashCode() + "} " + progress + ": #" + mDebugCommandIndex + " \t" + operators + obj.name);
-        }
-        mDebugCommandIndex++;
-        if (PDFDebugger.DEBUG_STOP_AT_INDEX > 0 && mDebugCommandIndex > PDFDebugger.DEBUG_STOP_AT_INDEX) {
-            System.err.println("Debugging: stopped at instruction #" + mDebugCommandIndex);
-            throw new DebugStopException();
-        }
-        if (PDFDebugger.DRAW_DELAY > 0) {
-            try {
-                Thread.sleep(PDFDebugger.DRAW_DELAY);
-            } catch (InterruptedException e) {
-            }
-        }
+        NumberFormat nf = NumberFormat.getInstance();
+        nf.setMinimumFractionDigits(1);
+        nf.setMaximumFractionDigits(1);
     }
 
     /**
@@ -1066,7 +1039,7 @@ public class PDFParser extends BaseWatchable {
             } else {
                 float elts[] = new float[6];
                 for (int i = 0; i < elts.length; i++) {
-                    elts[i] = (matrix.getAt(i)).getFloatValue();
+                    elts[i] = matrix.getAt(i).getFloatValue();
                 }
                 at = new AffineTransform(elts);
             }

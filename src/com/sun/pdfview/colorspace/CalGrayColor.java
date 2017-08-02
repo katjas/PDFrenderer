@@ -29,7 +29,11 @@ import com.sun.pdfview.PDFObject;
  * @author Mike Wessler
  */
 public class CalGrayColor extends ColorSpace {
-    float white[]= {1f, 1f, 1f};
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	float white[]= {1f, 1f, 1f};
     float black[]= {0, 0, 0};
     float gamma= 1;
     static ColorSpace cie= ColorSpace.getInstance(ColorSpace.CS_sRGB);

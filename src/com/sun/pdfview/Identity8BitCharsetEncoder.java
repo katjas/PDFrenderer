@@ -19,10 +19,10 @@
 
 package com.sun.pdfview;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
-import java.nio.CharBuffer;
-import java.nio.ByteBuffer;
 
 /**
  * A {@link CharsetEncoder} that attempts to write out the lower 8 bits

@@ -463,12 +463,12 @@ public class PostTable extends TrueTypeTable {
 		/** get the length of this class's data */
         int getLength() {
             // the size of the header plus the table of mappings
-            int size = 2 + (2 * this.glyphNameIndex.length);
+            int size = 2 + 2 * this.glyphNameIndex.length;
             
             // the size of each string -- note the extra byte for a pascal
             // string
-            for (int i = 0; i < this.glyphNames.length; i++) {
-                size += this.glyphNames[i].length() + 1;
+            for (String glyphName : this.glyphNames) {
+                size += glyphName.length() + 1;
             }
             
             return size;
@@ -483,14 +483,14 @@ public class PostTable extends TrueTypeTable {
             buf.putShort((short) this.glyphNameIndex.length);
             
             // write the name indices
-            for (int i = 0; i < this.glyphNameIndex.length; i++) {
-                buf.putShort(this.glyphNameIndex[i]);
+            for (short element : this.glyphNameIndex) {
+                buf.putShort(element);
             }
             
             // write the names as pascal strings
-            for (int i = 0; i < this.glyphNames.length; i++) {
-                buf.put((byte) this.glyphNames[i].length());
-                buf.put(this.glyphNames[i].getBytes());
+            for (String glyphName : this.glyphNames) {
+                buf.put((byte) glyphName.length());
+                buf.put(glyphName.getBytes());
             }
             
             // reset the start pointer

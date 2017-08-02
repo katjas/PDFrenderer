@@ -204,7 +204,7 @@ public abstract class PDFFunction {
      * @return the number of input values expected by this function
      */
     public int getNumInputs () {
-        return (this.domain.length / 2);
+        return this.domain.length / 2;
     }
 
     /**
@@ -216,7 +216,7 @@ public abstract class PDFFunction {
         if (this.range == null) {
             return 0;
         }
-        return (this.range.length / 2);
+        return this.range.length / 2;
     }
 
     /**
@@ -248,7 +248,7 @@ public abstract class PDFFunction {
      */
     protected float getRange (int i) {
         if (this.range == null) {
-            if ((i % 2) == 0) {
+            if (i % 2 == 0) {
                 return Float.MIN_VALUE;
             } else {
                 return Float.MAX_VALUE;
@@ -310,7 +310,7 @@ public abstract class PDFFunction {
         for (int i = 0; i < inputs.length; i++) {
             // clip to the domain -- min(max(x<i>, domain<2i>), domain<2i+1>)
             inputs[i] = Math.max (inputs[i], getDomain (2 * i));
-            inputs[i] = Math.min (inputs[i], getDomain ((2 * i) + 1));
+            inputs[i] = Math.min (inputs[i], getDomain (2 * i + 1));
         }
 
         // do the actual calculation
@@ -320,7 +320,7 @@ public abstract class PDFFunction {
         for (int i = 0; this.range != null && i < outputs.length; i++) {
             // clip to range -- min(max(r<i>, range<2i>), range<2i + 1>)
             outputs[i] = Math.max (outputs[i], getRange (2 * i));
-            outputs[i] = Math.min (outputs[i], getRange ((2 * i) + 1));
+            outputs[i] = Math.min (outputs[i], getRange (2 * i + 1));
         }
 
         return outputs;

@@ -67,15 +67,14 @@ public class CIDFontType2 extends TTFFont {
 
         parseWidths(fontObj);
 
-        // read the CIDSystemInfo dictionary (required)
-        PDFObject systemInfoObj = fontObj.getDictRef("CIDSystemInfo");
+        fontObj.getDictRef("CIDSystemInfo");
         // read the cid to gid map (optional)
         PDFObject mapObj = fontObj.getDictRef("CIDToGIDMap");
 
 
         // only read the map if it is a stream (if it is a name, it
         // is "Identity" and can be ignored
-        if (mapObj != null && (mapObj.getType() == PDFObject.STREAM)) {
+        if (mapObj != null && mapObj.getType() == PDFObject.STREAM) {
             this.cidToGidMap = mapObj.getStreamBuffer();
         }
     }
@@ -111,15 +110,15 @@ public class CIDFontType2 extends TTFFont {
              *   <startIndex> [ array of values ]
              * we use the entryIdx to differentitate between them
              */
-            for (int i = 0; i < widthArray.length; i++) {
+            for (PDFObject element : widthArray) {
                 if (entryIdx == 0) {
                     // first value in an entry.  Just store it
-                    first = widthArray[i].getIntValue();
+                    first = element.getIntValue();
                 } else if (entryIdx == 1) {
                     // second value -- is it an int or array?
-                    if (widthArray[i].getType() == PDFObject.ARRAY) {
+                    if (element.getType() == PDFObject.ARRAY) {
                         // add all the entries in the array to the width array
-                        PDFObject[] entries = widthArray[i].getArray();
+                        PDFObject[] entries = element.getArray();
                         for (int c = 0; c < entries.length; c++) {
                             Character key = Character.valueOf((char) (c + first));
 
@@ -130,11 +129,11 @@ public class CIDFontType2 extends TTFFont {
                         // all done
                         entryIdx = -1;
                     } else {
-                        last = widthArray[i].getIntValue();
+                        last = element.getIntValue();
                     }
                 } else {
                     // third value.  Set a range
-                    int value = widthArray[i].getIntValue();
+                    int value = element.getIntValue();
 
                     // set the range
                     for (int c = first; c <= last; c++) {
@@ -174,15 +173,15 @@ public class CIDFontType2 extends TTFFont {
             first = 0;
             last = 0;
 
-            for (int i = 0; i < widthArray.length; i++) {
+            for (PDFObject element : widthArray) {
                 if (entryIdx == 0) {
                     // first value in an entry.  Just store it
-                    first = widthArray[i].getIntValue();
+                    first = element.getIntValue();
                 } else if (entryIdx == 1) {
                     // second value -- is it an int or array?
-                    if (widthArray[i].getType() == PDFObject.ARRAY) {
+                    if (element.getType() == PDFObject.ARRAY) {
                         // add all the entries in the array to the width array
-                        PDFObject[] entries = widthArray[i].getArray();
+                        PDFObject[] entries = element.getArray();
                         for (int c = 0; c < entries.length; c++) {
                             Character key = Character.valueOf((char) (c + first));
 
@@ -193,11 +192,11 @@ public class CIDFontType2 extends TTFFont {
                         // all done
                         entryIdx = -1;
                     } else {
-                        last = widthArray[i].getIntValue();
+                        last = element.getIntValue();
                     }
                 } else {
                     // third value.  Set a range
-                    int value = widthArray[i].getIntValue();
+                    int value = element.getIntValue();
 
                     // set the range
                     for (int c = first; c <= last; c++) {
@@ -258,7 +257,7 @@ public class CIDFontType2 extends TTFFont {
      */
     @Override
     protected synchronized GeneralPath getOutline(char src, float width) {
-        int glyphId = (src & 0xffff);
+        int glyphId = src & 0xffff;
 
         // check if there is a cidToGidMap
         if (this.cidToGidMap != null) {

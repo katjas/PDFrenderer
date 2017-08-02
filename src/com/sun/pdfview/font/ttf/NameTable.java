@@ -23,7 +23,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -121,8 +120,8 @@ public class NameTable extends TrueTypeTable {
      * Determine if we have any records with a given platform ID
      */
     public boolean hasRecords(short platformID) {
-        for (Iterator i = this.records.keySet().iterator(); i.hasNext(); ) {
-            NameRecord rec = (NameRecord) i.next();
+        for (Object element : this.records.keySet()) {
+            NameRecord rec = (NameRecord) element;
             
             if (rec.platformID == platformID) {
                 return true;
@@ -137,8 +136,8 @@ public class NameTable extends TrueTypeTable {
      * platform-specific ID
      */
     public boolean hasRecords(short platformID, short platformSpecificID) {
-        for (Iterator i = this.records.keySet().iterator(); i.hasNext(); ) {
-            NameRecord rec = (NameRecord) i.next();
+        for (Object element : this.records.keySet()) {
+            NameRecord rec = (NameRecord) element;
             
             if (rec.platformID == platformID && 
                     rec.platformSpecificID == platformSpecificID) {
@@ -199,7 +198,7 @@ public class NameTable extends TrueTypeTable {
         ByteBuffer buf = ByteBuffer.allocate(getLength());
         
         // the start of string data
-        short headerLength = (short) (6 + (12 * getCount()));
+        short headerLength = (short) (6 + 12 * getCount());
         
         // write the header
         buf.putShort(getFormat());
@@ -210,8 +209,8 @@ public class NameTable extends TrueTypeTable {
         short curOffset = 0;
         
         // add the size of each record
-        for (Iterator i = this.records.keySet().iterator(); i.hasNext();) {
-            NameRecord rec = (NameRecord) i.next();
+        for (Object element : this.records.keySet()) {
+            NameRecord rec = (NameRecord) element;
             String value = this.records.get(rec);
         
             // choose the charset
@@ -261,11 +260,11 @@ public class NameTable extends TrueTypeTable {
 	public int getLength() {
         // start with the size of the fixed header plus the size of the
         // records
-        int length = 6 + (12 * getCount());
+        int length = 6 + 12 * getCount();
         
         // add the size of each record
-        for (Iterator i = this.records.keySet().iterator(); i.hasNext();) {
-            NameRecord rec = (NameRecord) i.next();
+        for (Object element : this.records.keySet()) {
+            NameRecord rec = (NameRecord) element;
             String value = this.records.get(rec);
         
             // choose the charset
@@ -331,8 +330,8 @@ public class NameTable extends TrueTypeTable {
         buf.append(indent + "Format: " + getFormat() + "\n");
         buf.append(indent + "Count : " + getCount() + "\n");
         
-        for (Iterator i = this.records.keySet().iterator(); i.hasNext();) {
-            NameRecord rec = (NameRecord) i.next();
+        for (Object element : this.records.keySet()) {
+            NameRecord rec = (NameRecord) element;
             
             buf.append(indent + " platformID: " + rec.platformID);
             buf.append(" platformSpecificID: " + rec.platformSpecificID);
@@ -390,7 +389,7 @@ public class NameTable extends TrueTypeTable {
          */
         @Override
 		public boolean equals(Object o) {
-            return (compareTo(o) == 0);
+            return compareTo(o) == 0;
         }
         
         /**

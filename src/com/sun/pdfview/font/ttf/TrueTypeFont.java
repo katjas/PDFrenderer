@@ -25,8 +25,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -66,12 +65,9 @@ public class TrueTypeFont {
     public static TrueTypeFont parseFont (ByteBuffer inBuf) {
         int type = inBuf.getInt ();
         short numTables = inBuf.getShort ();
-        @SuppressWarnings("unused")
-        short searchRange = inBuf.getShort ();
-        @SuppressWarnings("unused")
-        short entrySelector = inBuf.getShort ();
-        @SuppressWarnings("unused")
-        short rangeShift = inBuf.getShort ();
+        inBuf.getShort ();
+        inBuf.getShort ();
+        inBuf.getShort ();
 
         TrueTypeFont font = new TrueTypeFont (type);
         parseDirectories (inBuf, numTables, font);
@@ -178,7 +174,7 @@ public class TrueTypeFont {
         double pow2 = Math.floor (Math.log (getNumTables ()) / Math.log (2));
         double maxPower = Math.pow (2, pow2);
 
-        return (short) ((maxPower * 16) - getSearchRange ());
+        return (short) (maxPower * 16 - getSearchRange ());
     }
 
     /**
@@ -196,11 +192,10 @@ public class TrueTypeFont {
         buf.putShort (getRangeShift ());
 
         // first offset is the end of the table directory entries
-        int curOffset = 12 + (getNumTables () * 16);
+        int curOffset = 12 + getNumTables () * 16;
 
         // write the tables
-        for (Iterator<String> i = this.tables.keySet ().iterator (); i.hasNext ();) {
-            String tagString = i.next ();
+        for (String tagString : this.tables.keySet ()) {
             int tag = TrueTypeTable.stringToTag (tagString);
 
             ByteBuffer data = null;
@@ -237,7 +232,7 @@ public class TrueTypeFont {
             curOffset += dataLen;
 
             // don't forget the padding
-            while ((curOffset % 4) > 0) {
+            while (curOffset % 4 > 0) {
                 curOffset++;
             }
         }
@@ -279,12 +274,12 @@ public class TrueTypeFont {
             if (data.remaining () > 3) {
                 sum += data.getInt ();
             } else {
-                byte b0 = (data.remaining () > 0) ? data.get () : 0;
-                byte b1 = (data.remaining () > 0) ? data.get () : 0;
-                byte b2 = (data.remaining () > 0) ? data.get () : 0;
+                byte b0 = data.remaining () > 0 ? data.get () : 0;
+                byte b1 = data.remaining () > 0 ? data.get () : 0;
+                byte b2 = data.remaining () > 0 ? data.get () : 0;
 
-                sum += ((0xff & b0) << 24) | ((0xff & b1) << 16) |
-                        ((0xff & b2) << 8);
+                sum += (0xff & b0) << 24 | (0xff & b1) << 16 |
+                        (0xff & b2) << 8;
             }
         }
 
@@ -336,13 +331,11 @@ public class TrueTypeFont {
      */
     private int getLength () {
         // the size of all the table directory entries
-        int length = 12 + (getNumTables () * 16);
+        int length = 12 + getNumTables () * 16;
 
         // for each directory entry, get the size,
         // and don't forget the padding!
-        for (Iterator<Object> i = this.tables.values ().iterator (); i.hasNext ();) {
-            Object tableObj = i.next ();
-
+        for (Object tableObj : this.tables.values ()) {
             // add the length of the entry
             if (tableObj instanceof TrueTypeTable) {
                 length += ((TrueTypeTable) tableObj).getLength ();
@@ -351,8 +344,8 @@ public class TrueTypeFont {
             }
 
             // pad
-            if ((length % 4) != 0) {
-                length += (4 - (length % 4));
+            if (length % 4 != 0) {
+                length += 4 - length % 4;
             }
         }
 
@@ -367,12 +360,10 @@ public class TrueTypeFont {
         int checksumAdj = 0xb1b0afba - checksum;
 
         // find the head table
-        int offset = 12 + (getNumTables () * 16);
+        int offset = 12 + getNumTables () * 16;
 
         // find the head table
-        for (Iterator<String> i = this.tables.keySet ().iterator (); i.hasNext ();) {
-            String tagString = i.next ();
-
+        for (String tagString : this.tables.keySet ()) {
             // adjust the checksum
             if (tagString.equals ("head")) {
                 fontData.putInt (offset + 8, checksumAdj);
@@ -388,8 +379,8 @@ public class TrueTypeFont {
             }
 
             // pad
-            if ((offset % 4) != 0) {
-                offset += (4 - (offset % 4));
+            if (offset % 4 != 0) {
+                offset += 4 - offset % 4;
             }
         }
     }
@@ -407,9 +398,7 @@ public class TrueTypeFont {
         System.out.println ("EntrySelector: " + getEntrySelector ());
         System.out.println ("RangeShift   : " + getRangeShift ());
 
-        for (Iterator<Map.Entry<String, Object>> i = this.tables.entrySet ().iterator (); i.hasNext ();) {
-            Map.Entry<String, Object> e = i.next ();
-
+        for (Entry<String, Object> e : this.tables.entrySet ()) {
             TrueTypeTable table = null;
             if (e.getValue () instanceof ByteBuffer) {
                 table = getTable (e.getKey ());
@@ -456,8 +445,7 @@ public class TrueTypeFont {
 
             InputStream fontStream = new ByteArrayInputStream (ttp.writeFont ());
 
-            @SuppressWarnings("unused")
-            Font f = Font.createFont (Font.TRUETYPE_FONT, fontStream);
+            Font.createFont (Font.TRUETYPE_FONT, fontStream);
             raf.close();
         } catch (Exception e) {
             BaseWatchable.getErrorHandler().publishException(e);

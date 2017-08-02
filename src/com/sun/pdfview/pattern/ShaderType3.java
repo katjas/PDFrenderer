@@ -311,21 +311,24 @@ public class ShaderType3 extends PDFShader {
             		float[] s = calculateInputValues(c1[0], c1[1]);
             		//s[0] <= s[1] holds
             		//if (s[0] >= 0 && s[1] <= 1) s[1] = s[1];
-            		if (s[1] >= 0 && s[1] <= 1) s[1] = s[1];
-            		else if (extendEnd == true && s[1] >= 0 && radius1 + s[1]*dr1r0 >= 0) {
+            		if (s[1] >= 0 && s[1] <= 1) {
+						s[1] = s[1];
+					} else if (extendEnd == true && s[1] >= 0 && radius1 + s[1]*dr1r0 >= 0) {
             			s[1] = s[1];
             		}
-            		else if (s[0] >= 0 && s[0] <= 1) s[1] = s[0];
-            		else if (extendStart == true && s[1] <= 0 && radius1 + s[1]*dr1r0 >= 0) {
+            		else if (s[0] >= 0 && s[0] <= 1) {
+						s[1] = s[0];
+					} else if (extendStart == true && s[1] <= 0 && radius1 + s[1]*dr1r0 >= 0) {
             			s[1] = s[1];
             		}
             		else if (extendStart == true && s[0] <= 1 && radius1 + s[0]*dr1r0 >= 0) {
             			s[1] = s[0];
-            		}
-            		else render = false;
+            		} else {
+						render = false;
+					}
             		
             		if (render) {
-            			float t = (getMinT() + s[1]*(getMaxT() - getMinT()));
+            			float t = getMinT() + s[1]*(getMaxT() - getMinT());
             			// calculate the pixel values at t
             			inputs[0] = t;
             			if (Math.abs(lastInput - t) > tol) {
@@ -341,8 +344,9 @@ public class ShaderType3 extends PDFShader {
         					if (!shadeCSpace.getColorSpace().isCS_sRGB()) {
         						//Can be quite slow
         						outputRBG = shadeCSpace.getColorSpace().toRGB(outputs);
-        					}
-        					else outputRBG = outputs;
+        					} else {
+								outputRBG = outputs;
+							}
 
         					lastInput = t;
             			}
@@ -378,12 +382,15 @@ public class ShaderType3 extends PDFShader {
          */                 
         private float[] calculateInputValues(float x, float y) {
         	double p = -(x - center1.getX())*dx1x0 -(y - center1.getY())*dy1y0 - radius1*dr1r0;
-            double q = (Math.pow(x - center1.getX(), 2) + Math.pow(y - center1.getY(), 2) - sqr0);
+            double q = Math.pow(x - center1.getX(), 2) + Math.pow(y - center1.getY(), 2) - sqr0;
             double root = Math.sqrt(p*p - denom*q);
             float root1 = (float) ((-p + root)/denom);
             float root2 = (float) ((-p - root)/denom);
-            if (denom < 0) return new float[]{root1, root2};
-            else return new float[]{root2, root1};
+            if (denom < 0) {
+				return new float[]{root1, root2};
+			} else {
+				return new float[]{root2, root1};
+			}
         }
     }        
 }

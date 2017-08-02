@@ -32,7 +32,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -644,8 +643,7 @@ public class PDFPage {
     * Notify all images we know about that a command has been added
     */
     public void updateImages() {
-        for (Iterator<WeakReference<?>> i = this.renderers.values().iterator(); i.hasNext();) {
-            WeakReference<?> ref = i.next();
+        for (WeakReference<?> ref : this.renderers.values()) {
             PDFRenderer renderer = (PDFRenderer) ref.get();
             if (renderer != null) {
                 if (renderer.getStatus() == Watchable.NEEDS_DATA) {
@@ -832,7 +830,7 @@ class PDFShadeCommand extends PDFCmd {
         }
         state.setFillAlpha(1);
         state.setFillPaint(p);
-        return (new PDFShapeCmd(new GeneralPath(s), PDFShapeCmd.FILL, false)).execute(state);
+        return new PDFShapeCmd(new GeneralPath(s), PDFShapeCmd.FILL, false).execute(state);
     }
 }
 

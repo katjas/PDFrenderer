@@ -18,8 +18,8 @@
  */
 package com.sun.pdfview;
 
-import java.awt.geom.Rectangle2D;
 import java.awt.Color;
+import java.awt.geom.Rectangle2D;
 
 public class ImageInfo {
 
@@ -42,11 +42,11 @@ public class ImageInfo {
     // a hashcode that uses width, height and clip to generate its number
     @Override
     public int hashCode() {
-        int code = (this.width ^ this.height << 16);
+        int code = this.width ^ this.height << 16;
 
         if (this.clip != null) {
             code ^= ((int) this.clip.getWidth() | (int) this.clip.getHeight()) << 8;
-            code ^= ((int) this.clip.getMinX() | (int) this.clip.getMinY());
+            code ^= (int) this.clip.getMinX() | (int) this.clip.getMinY();
         }
 
         return code;

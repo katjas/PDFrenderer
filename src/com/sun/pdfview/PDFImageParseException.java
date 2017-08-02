@@ -7,7 +7,12 @@ import java.io.IOException;
  * @author Katja Sondermann
  */
 public class PDFImageParseException extends IOException {
-    public PDFImageParseException(String msg) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public PDFImageParseException(String msg) {
         super(msg);
     }
 

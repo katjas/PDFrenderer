@@ -122,8 +122,8 @@ public class TTFFont extends OutlineFont {
         CMap[] maps = cmap.getCMaps ();
 
         // try the maps in order
-        for (int i = 0; i < maps.length; i++) {
-            int idx = maps[i].map (src);
+        for (CMap map : maps) {
+            int idx = map.map (src);
             if (idx != 0) {
                 return getOutline (idx, width);
             }
@@ -133,8 +133,8 @@ public class TTFFont extends OutlineFont {
         if (src >= 0 && src <= 0xFF) {
         	int[] symbolPages = new int[]{0xF000, 0xF100, 0xF200};        	
         	for (int codePage : symbolPages) {
-                for (int i = 0; i < maps.length; i++) {
-                    int idx = maps[i].map ( (char)(src | codePage));
+                for (CMap map : maps) {
+                    int idx = map.map ( (char)(src | codePage));
                     if (idx != 0) {
                         return getOutline (idx, width);
                     }

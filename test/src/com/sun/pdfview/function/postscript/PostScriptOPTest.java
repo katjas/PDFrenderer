@@ -1,8 +1,8 @@
 package com.sun.pdfview.function.postscript;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
@@ -17,8 +17,7 @@ public class PostScriptOPTest {
 		Stack<Object> stack = new Stack<Object>();
 		PostScriptParser p = new PostScriptParser();
 		List<String> tokens = p.parse(text);
-		for (Iterator<String> iterator = tokens.iterator(); iterator.hasNext(); ) {
-			String token = iterator.next();
+		for (String token : tokens) {
 			PostScriptOperation op = OperationSet.getInstance().getOperation(token);
 			op.eval(stack);
 		}

@@ -18,16 +18,19 @@
 
 package com.sun.pdfview.decrypt;
 
-import com.sun.pdfview.PDFDocCharsetEncoder;
-import com.sun.pdfview.Identity8BitCharsetEncoder;
-import com.sun.pdfview.PDFStringUtil;
-
-import java.util.*;
-import java.nio.charset.CodingErrorAction;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetEncoder;
-import java.nio.CharBuffer;
-import java.nio.ByteBuffer;
+import java.nio.charset.CodingErrorAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import com.sun.pdfview.Identity8BitCharsetEncoder;
+import com.sun.pdfview.PDFDocCharsetEncoder;
+import com.sun.pdfview.PDFStringUtil;
 
 /**
  * <p>Identifies a PDF Password, expressible either as a string or a

@@ -29,7 +29,11 @@ import com.sun.pdfview.PDFObject;
  * @author Mike Wessler
  */
 public class LabColor extends ColorSpace {
-    float white[]= {1f, 1f, 1f};
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	float white[]= {1f, 1f, 1f};
     float black[]= {0, 0, 0};
     float range[]= {-100f, 100f, -100f, 100f};
     static ColorSpace cie= ColorSpace.getInstance(ColorSpace.CS_sRGB);
@@ -79,7 +83,7 @@ public class LabColor extends ColorSpace {
      * it gets invoked for each component
      */
     public final float stage2(float s1) {
-	return (s1>=6f/29f)?s1*s1*s1:108f/841f*(s1-4f/29f);
+	return s1>=6f/29f?s1*s1*s1:108f/841f*(s1-4f/29f);
     }
 
     /**

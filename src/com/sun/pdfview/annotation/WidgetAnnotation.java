@@ -52,8 +52,9 @@ public class WidgetAnnotation extends PDFAnnotation {
 		static FieldType getByCode(String typeCode) {
 			FieldType[] values = values();
 			for (FieldType value : values) {
-				if (value.typeCode.equals(typeCode))
+				if (value.typeCode.equals(typeCode)) {
 					return value;
+				}
 			}
 			return null;
 		}
@@ -205,7 +206,7 @@ public class WidgetAnnotation extends PDFAnnotation {
             } else {
                 float elts[] = new float[6];
                 for (int i = 0; i < elts.length; i++) {
-                    elts[i] = (matrix.getAt(i)).getFloatValue();
+                    elts[i] = matrix.getAt(i).getFloatValue();
                 }
                 at = new AffineTransform(elts);
             }

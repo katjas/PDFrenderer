@@ -117,6 +117,6 @@ public class HmtxTable extends TrueTypeTable {
      */
     @Override
 	public int getLength() {
-        return (this.advanceWidths.length * 2) + (this.leftSideBearings.length * 2);
+        return this.advanceWidths.length * 2 + this.leftSideBearings.length * 2;
     }
 }

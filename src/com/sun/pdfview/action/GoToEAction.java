@@ -252,7 +252,7 @@ public class GoToEAction extends PDFAction {
 
 		@Override
 		public boolean equals(Object obj) {
-			if((obj instanceof GoToETarget) == false){
+			if(obj instanceof GoToETarget == false){
 				return false;
 			}
 			if(super.equals(obj)){

@@ -7,7 +7,6 @@ import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 import com.sun.pdfview.action.GoToAction;
 import com.sun.pdfview.action.PDFAction;
-import com.sun.pdfview.annotation.PDFAnnotation.ANNOTATION_TYPE;
 
 /*****************************************************************************
  * PDF annotation describing a link to either a location within the current

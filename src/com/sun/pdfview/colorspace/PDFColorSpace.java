@@ -67,11 +67,11 @@ public class PDFColorSpace {
         boolean useSGray = true;
 
         try {
-            graySpace = new PDFColorSpace((!useSGray)
+            graySpace = new PDFColorSpace(!useSGray
                     ? ColorSpace.getInstance(ColorSpace.CS_GRAY)
                     : new ICC_ColorSpace(ICC_Profile.getInstance(
                             PDFColorSpace.class.getResourceAsStream(
-                                ("sGray.icc")))));
+                                "sGray.icc"))));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

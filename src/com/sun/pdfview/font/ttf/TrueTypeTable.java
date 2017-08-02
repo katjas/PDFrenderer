@@ -157,10 +157,10 @@ public class TrueTypeTable {
      */
     public static String tagToString(int tag) {
         char[] c = new char[4];
-        c[0] = (char) (0xff & (tag >> 24));
-        c[1] = (char) (0xff & (tag >> 16));
-        c[2] = (char) (0xff & (tag >> 8));
-        c[3] = (char) (0xff & (tag));
+        c[0] = (char) (0xff & tag >> 24);
+        c[1] = (char) (0xff & tag >> 16);
+        c[2] = (char) (0xff & tag >> 8);
+        c[3] = (char) (0xff & tag);
 
         return new String(c);
     }

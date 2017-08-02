@@ -85,7 +85,7 @@ public class GlyfSimple extends Glyf {
             // check for repeats
             if ((flags[i] & 0x8) != 0) {
                 byte f = flags[i];
-                int n = (data.get() & 0xff);
+                int n = data.get() & 0xff;
                 for (int c = 0; c < n; c++) {
                     flags[++i] =  f;
                 }
@@ -102,7 +102,7 @@ public class GlyfSimple extends Glyf {
 
              // read this value
             if (xIsByte(i)) {
-                int val = (data.get() & 0xff);
+                int val = data.get() & 0xff;
                 if (!xIsSame(i)) {
                     // the xIsSame bit controls the sign
                     val = -val;
@@ -122,7 +122,7 @@ public class GlyfSimple extends Glyf {
             } 
             // read this value
             if (yIsByte(i)) {   
-                int val = (data.get() & 0xff);
+                int val = data.get() & 0xff;
                 if (!yIsSame(i)) {
                     // the xIsSame bit controls the sign
                     val = -val;
@@ -160,7 +160,7 @@ public class GlyfSimple extends Glyf {
         for (int i = 0; i < getNumPoints(); i++) {
             // check for repeats
             byte r = 0;
-            while (i > 0 && (getFlag(i) == getFlag(i - 1))) {
+            while (i > 0 && getFlag(i) == getFlag(i - 1)) {
                 r++;
                 i++;
             }
@@ -210,7 +210,9 @@ public class GlyfSimple extends Glyf {
         // add the length of the flags, avoiding repeats
         for (int i = 0; i < getNumPoints(); i++) {
             // check for repeats
-            while (i > 0 && (getFlag(i) == getFlag(i - 1)));
+            while (i > 0 && getFlag(i) == getFlag(i - 1)) {
+				;
+			}
             length++;
         }
         
@@ -285,7 +287,7 @@ public class GlyfSimple extends Glyf {
      * Determine whether the given point is on the curve
      */ 
     public boolean onCurve(int pointIndex) {
-        return ((getFlag(pointIndex) & 0x1) != 0);
+        return (getFlag(pointIndex) & 0x1) != 0;
     }
     
     /**
@@ -293,7 +295,7 @@ public class GlyfSimple extends Glyf {
      * If true, it is a byte, if false it is a short
      */ 
     protected boolean xIsByte(int pointIndex) {
-        return ((getFlag(pointIndex) & 0x2) != 0);
+        return (getFlag(pointIndex) & 0x2) != 0;
     }
     
     /**
@@ -301,14 +303,14 @@ public class GlyfSimple extends Glyf {
      * If true, it is a byte, if false it is a short
      */ 
     protected boolean yIsByte(int pointIndex) {
-        return ((getFlag(pointIndex) & 0x4) != 0);
+        return (getFlag(pointIndex) & 0x4) != 0;
     }
     
     /**
      * Determine whether this flag repeats
      */ 
     protected boolean repeat(int pointIndex) {
-        return ((getFlag(pointIndex) & 0x8) != 0);
+        return (getFlag(pointIndex) & 0x8) != 0;
     }
     
     /**
@@ -316,7 +318,7 @@ public class GlyfSimple extends Glyf {
      * the previous value.
      */ 
     protected boolean xIsSame(int pointIndex) {
-        return ((getFlag(pointIndex) & 0x10) != 0);
+        return (getFlag(pointIndex) & 0x10) != 0;
     }
     
     /**
@@ -324,7 +326,7 @@ public class GlyfSimple extends Glyf {
      * the previous value.
      */ 
     protected boolean yIsSame(int pointIndex) {
-        return ((getFlag(pointIndex) & 0x20) != 0);
+        return (getFlag(pointIndex) & 0x20) != 0;
     }
     
     /**

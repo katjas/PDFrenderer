@@ -18,7 +18,7 @@
  */
 package com.sun.pdfview;
 
-import java.io.*;
+import java.io.UnsupportedEncodingException;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 
@@ -86,8 +86,8 @@ public class PDFStringUtil {
         }
 
         if (basicString.length() >= 2) {
-            if ((basicString.charAt(0) == (char) 0xFE
-                    && basicString.charAt(1) == (char) 0xFF)) {
+            if (basicString.charAt(0) == (char) 0xFE
+                    && basicString.charAt(1) == (char) 0xFF) {
                 // found the BOM!
                 return asUTF16BEEncoded(basicString);
             }

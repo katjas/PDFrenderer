@@ -98,8 +98,8 @@ public class BuiltinFont extends Type1Font {
         String fontName = descriptor.getFontName();
 
         // check if it's one of the 14 base fonts
-        for (int i = 0; i < baseFonts.length; i++) {
-            if (fontName.equalsIgnoreCase(baseFonts[i])) {
+        for (String baseFont2 : baseFonts) {
+            if (fontName.equalsIgnoreCase(baseFont2)) {
                 parseFont(fontName);
                 return;
             }
@@ -114,19 +114,19 @@ public class BuiltinFont extends Type1Font {
         }
 
         int flags = descriptor.getFlags();
-        int style = ((flags & PDFFontDescriptor.FORCEBOLD) != 0) ? Font.BOLD : Font.PLAIN;
+        int style = (flags & PDFFontDescriptor.FORCEBOLD) != 0 ? Font.BOLD : Font.PLAIN;
 
         if (fontName.indexOf("Bold") > 0) {
             style |= Font.BOLD;
         }
-        if ((descriptor.getItalicAngle() != 0) ||
-        		((flags & (PDFFontDescriptor.SCRIPT | PDFFontDescriptor.ITALIC)) != 0)) {
+        if (descriptor.getItalicAngle() != 0 ||
+        		(flags & (PDFFontDescriptor.SCRIPT | PDFFontDescriptor.ITALIC)) != 0) {
         	style |= Font.ITALIC;
         }
         String name = null;
 
         if ((flags & PDFFontDescriptor.FIXED_PITCH) != 0) { // fixed width
-            if (((style & Font.BOLD) > 0) && ((style & Font.ITALIC) > 0)) {
+            if ((style & Font.BOLD) > 0 && (style & Font.ITALIC) > 0) {
                 name = "Courier-BoldOblique";
             } else if ((style & Font.BOLD) > 0) {
                 name = "Courier-Bold";
@@ -136,7 +136,7 @@ public class BuiltinFont extends Type1Font {
                 name = "Courier";
             }
         } else if ((flags & PDFFontDescriptor.SERIF) != 0) {  // serif font
-            if (((style & Font.BOLD) > 0) && ((style & Font.ITALIC) > 0)) {
+            if ((style & Font.BOLD) > 0 && (style & Font.ITALIC) > 0) {
                 name = "Times-BoldItalic";
             } else if ((style & Font.BOLD) > 0) {
                 name = "Times-Bold";
@@ -146,7 +146,7 @@ public class BuiltinFont extends Type1Font {
                 name = "Times-Roman";
             }
         } else {
-            if (((style & Font.BOLD) > 0) && ((style & Font.ITALIC) > 0)) {
+            if ((style & Font.BOLD) > 0 && (style & Font.ITALIC) > 0) {
                 name = "Helvetica-BoldOblique";
             } else if ((style & Font.BOLD) > 0) {
                 name = "Helvetica-Bold";
@@ -197,13 +197,13 @@ public class BuiltinFont extends Type1Font {
         // are we a pfb file?
         if ((data[0] & 0xff) == 0x80) {
             // read lengths from the file
-            length1 = (data[2] & 0xff);
+            length1 = data[2] & 0xff;
             length1 |= (data[3] & 0xff) << 8;
             length1 |= (data[4] & 0xff) << 16;
             length1 |= (data[5] & 0xff) << 24;
             length1 += 6;
 
-            length2 = (data[length1 + 2] & 0xff);
+            length2 = data[length1 + 2] & 0xff;
             length2 |= (data[length1 + 3] & 0xff) << 8;
             length2 |= (data[length1 + 4] & 0xff) << 16;
             length2 |= (data[length1 + 5] & 0xff) << 24;

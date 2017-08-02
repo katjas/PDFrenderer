@@ -36,6 +36,10 @@ import com.sun.pdfview.BaseWatchable;
  */
 public class CMYKColorSpace extends ColorSpace {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private ICC_Profile icc;
 	private ICC_ColorSpace icc_cs;
 	
@@ -174,8 +178,11 @@ public class CMYKColorSpace extends ColorSpace {
 	 */
 	public float[] normalize(float[] p_colors) {
 		for (int l_i = 0; l_i < p_colors.length; l_i++) {
-			if (p_colors[l_i] > (float)1.0) p_colors[l_i] = (float)1.0;
-			else if (p_colors[l_i] < (float)0.0) p_colors[l_i] = (float)0.0;
+			if (p_colors[l_i] > (float)1.0) {
+				p_colors[l_i] = (float)1.0;
+			} else if (p_colors[l_i] < (float)0.0) {
+				p_colors[l_i] = (float)0.0;
+			}
 		}		
 		return p_colors;
 	}

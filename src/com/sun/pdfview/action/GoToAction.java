@@ -2,8 +2,8 @@ package com.sun.pdfview.action;
 
 import java.io.IOException;
 
-import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFDestination;
+import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 
 /**

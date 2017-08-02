@@ -22,7 +22,6 @@ import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
-import java.util.Iterator;
 import java.util.List;
 
 import com.sun.pdfview.font.PDFFont;
@@ -194,7 +193,7 @@ public class PDFTextFormat implements Cloneable {
         if ((m & 0x4) != 0) {
             mode |= PDFShapeCmd.CLIP;
         }
-        if (((m & 0x1) ^ ((m & 0x2) >> 1)) != 0) {
+        if ((m & 0x1 ^ (m & 0x2) >> 1) != 0) {
             mode |= PDFShapeCmd.STROKE;
         }
         this.tm = mode;
@@ -276,8 +275,7 @@ public class PDFTextFormat implements Cloneable {
                 PDFDebugger.debug("POINT count: " + l.size());
             }
         }
-        for (Iterator<PDFGlyph> i = l.iterator(); i.hasNext();) {
-            PDFGlyph glyph = i.next();
+        for (PDFGlyph glyph : l) {
             at.setTransform(this.cur);
             at.concatenate(scale);
             if (PDFDebugger.SHOW_TEXT_REGIONS) {
@@ -306,8 +304,8 @@ public class PDFTextFormat implements Cloneable {
             if (!PDFDebugger.DISABLE_TEXT) {
                 advance = glyph.addCommands(cmds, at, this.tm);
             }
-            double advanceX = (advance.getX() * this.fsize) + this.tc;
-            double advanceY = advance.getY() + this.fsize;
+            double advanceX = advance.getX() * this.fsize + this.tc;
+            advance.getY();
             if (glyph.getChar() == ' ') {
                 advanceX += this.tw;
             }
@@ -349,11 +347,11 @@ public class PDFTextFormat implements Cloneable {
     * amounts.
     */
     public void doText(PDFPage cmds, Object ary[], boolean autoAdjustStroke) throws PDFParseException {
-        for (int i = 0; i < ary.length; i++) {
-            if (ary[i] instanceof String) {
-                doText(cmds, (String) ary[i], autoAdjustStroke);
-            } else if (ary[i] instanceof Double) {
-                float val = ((Double) ary[i]).floatValue() / 1000f;
+        for (Object element : ary) {
+            if (element instanceof String) {
+                doText(cmds, (String) element, autoAdjustStroke);
+            } else if (element instanceof Double) {
+                float val = ((Double) element).floatValue() / 1000f;
                 this.cur.translate(-val * this.fsize * this.th, 0);
             } else {
                 throw new PDFParseException("Bad element in TJ array");

@@ -78,7 +78,9 @@ public class AlternateColorSpace extends PDFColorSpace {
      * get the original Java ColorSpace.
      */
     @Override public ColorSpace getColorSpace() {
-    	if (altcolorspace == null) altcolorspace = new AltColorSpace(function, alternate.getColorSpace());
+    	if (altcolorspace == null) {
+			altcolorspace = new AltColorSpace(function, alternate.getColorSpace());
+		}
     	return altcolorspace;
     	//return this.alternate.getColorSpace();
     }

@@ -141,13 +141,13 @@ public class PDFXref {
     
     @Override
 	public boolean equals(Object obj) {
-        return (obj instanceof PDFXref) &&
+        return obj instanceof PDFXref &&
                 ((PDFXref)obj).id == id &&
                 ((PDFXref)obj).generation == generation;
     }
 
     @Override
     public int hashCode() {
-        return id ^ (generation << 8);
+        return id ^ generation << 8;
     }
 }
