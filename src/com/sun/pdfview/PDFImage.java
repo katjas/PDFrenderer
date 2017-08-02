@@ -91,12 +91,16 @@ public class PDFImage {
 	private float[] decode;
 	/** the actual image data */
 	private final PDFObject imageObj;
+	/** true if the image is in encoded in JPEG*/
+	private final boolean jpegDecode;
 
 	/**
 	 * Create an instance of a PDFImage
+	 * @throws IOException if {@link PDFDecoder} throws one while evaluating if the image is a Jpeg 
 	 */
-	protected PDFImage(PDFObject imageObj) {
+	protected PDFImage(PDFObject imageObj) throws IOException {
 		this.imageObj = imageObj;
+		this.jpegDecode = PDFDecoder.isLastFilter(imageObj, PDFDecoder.DCT_FILTERS);
 	}
 
 	/**
@@ -243,8 +247,7 @@ public class PDFImage {
 			if (bi == null) {
 				byte[] data = imageObj.getStream();
 				ByteBuffer jpegBytes = null;
-				final boolean jpegDecode = PDFDecoder.isLastFilter(imageObj, PDFDecoder.DCT_FILTERS);
-				if (jpegDecode) {
+				if (this.jpegDecode) {
 					// if we're lucky, the stream will have just the DCT
 					// filter applied to it, and we'll have a reference to
 					// an underlying mapped file, so we'll manage to avoid
@@ -878,8 +881,8 @@ public class PDFImage {
 			}
 			return new DecodeComponentColorModel(altCS, bits);
 		} else {
-			// CMYK color space has been converted to RGB in DCTDecode
-			if (cs.getColorSpace().getType() == ColorSpace.TYPE_CMYK) {
+			// If the image is a JPEG, then CMYK color space has been converted to RGB in DCTDecode
+			if (this.jpegDecode && cs.getColorSpace().getType() == ColorSpace.TYPE_CMYK) {
 				ColorSpace rgbCS = ColorSpace.getInstance(ColorSpace.CS_sRGB);
 				int[] bits = new int[rgbCS.getNumComponents()];
 				for (int i = 0; i < bits.length; i++) {
