@@ -67,7 +67,7 @@ public class JPXDecode {
 			byte[] input = new byte[buf.remaining()];
 			buf.get(input);
 			Iterator<ImageReader> readers = ImageIO.getImageReadersByMIMEType("image/jpeg2000");
-			if (readers.hasNext() == false) {
+			if (!readers.hasNext()) {
 				throw new PDFParseException("JPXDecode failed. No reader available");
 			}
 			reader = readers.next();

@@ -449,7 +449,12 @@ public class Type1Font extends OutlineFont {
 	 */
 	private void parse(byte[] cs, GeneralPath gp, FlPoint pt, FlPoint wid) {
 		int loc = 0;
-		float x1, x2, x3, y1, y2, y3;
+		float x1;
+		float x2;
+		float x3;
+		float y1;
+		float y2;
+		float y3;
 		boolean flexMode = false;
 		float[] flexArray = new float[16];
 		int flexPt = 0;
@@ -545,7 +550,7 @@ public class Type1Font extends OutlineFont {
 						}
 					}
 					if (n == 2) {
-						if (flexMode == false) {
+						if (!flexMode) {
 							PDFDebugger.debug("Flex mode assumed");
 						} else {
 							this.sloc = 0;

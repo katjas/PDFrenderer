@@ -48,7 +48,7 @@ public class PDFShapeCmd extends PDFCmd {
 	/** the bounding box of the path */
 	// private Rectangle2D bounds;
 	/** the stroke style for the anti-antialias stroke */
-	BasicStroke againstroke = new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
+	private BasicStroke againstroke = new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
 	private boolean autoAdjustStroke = false;
 
 	/**

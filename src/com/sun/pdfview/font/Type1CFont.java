@@ -63,16 +63,7 @@ public class Type1CFont extends OutlineFont {
 	private int num;
 
 	private float fnum;
-
-	// Top DICT: NAME CODE DEFAULT
-	// charstringtype 12 6 2
-	// fontmatrix 12 7 0.001 0 0 0.001
-	// charset 15 - (offset) names of glyphs (ref to name idx)
-	// encoding 16 - (offset) array of codes
-	// CharStrings 17 - (offset)
-	// Private 18 - (size, offset)
-	// glyph at position i in CharStrings has name charset[i]
-	// and code encoding[i]
+	
 	int charstringtype = 2;
 
 	float temps[] = new float[32];
@@ -90,6 +81,7 @@ public class Type1CFont extends OutlineFont {
 	int gsubrbase = 0;
 
 	int lsubrbase = 0;
+	
 	int gsubrsoffset = 0;
 
 	int lsubrsoffset = 0;
@@ -425,7 +417,7 @@ public class Type1CFont extends OutlineFont {
 	 * @param pt
 	 *            a FlPoint representing the end of the current path
 	 */
-	void parseGlyph(Range r, GeneralPath gp, FlPoint pt) {
+	public void parseGlyph(Range r, GeneralPath gp, FlPoint pt) {
 		this.pos = r.getStart();
 		int i;
 		float x1, y1, x2, y2, ybase;

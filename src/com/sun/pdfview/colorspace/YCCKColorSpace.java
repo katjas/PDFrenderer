@@ -103,7 +103,10 @@ public class YCCKColorSpace extends ColorSpace {
 	}
 
 	private float[] toCmyk(float[] colorvalue) {
-		float y = colorvalue[0], cb = colorvalue[1], cr = colorvalue[2], k = colorvalue[3];
+		float y = colorvalue[0];
+		float cb = colorvalue[1];
+		float cr = colorvalue[2];
+		float k = colorvalue[3];
 		float[] cmyk = new float[4];
 		float v;
 		v = (float) (1.0 - (y + 1.402 * (cr - 0.5)));

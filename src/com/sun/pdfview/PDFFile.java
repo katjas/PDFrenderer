@@ -102,16 +102,7 @@ public class PDFFile {
 	 * Spec 32000-1:2008 - Table 1
 	 */
 	public static boolean isWhiteSpace(int c) {
-		if (c == ' ' || c == NUL_CHAR || c == '\t' || c == '\n' || c == '\r' || c == FF_CHAR) {
-			return true;
-		}
-		return false;
-		/*
-		 * switch (c) { case NUL_CHAR: // Null (NULL) case '\t': // Horizontal
-		 * Tab (HT) case '\n': // Line Feed (LF) case FF_CHAR: // Form Feed (FF)
-		 * case '\r': // Carriage Return (CR) case ' ': // Space (SP) return
-		 * true; default: return false; }
-		 */
+		return c == ' ' || c == NUL_CHAR || c == '\t' || c == '\n' || c == '\r' || c == FF_CHAR;
 	}
 
 	public static Rectangle2D parseNormalisedRectangle(PDFObject obj) throws IOException {

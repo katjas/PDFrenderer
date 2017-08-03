@@ -52,10 +52,8 @@ public class ImageInfo {
 			return false;
 		} else if (this.clip != null && ii.clip != null) {
 			return this.clip.equals(ii.clip);
-		} else if (this.clip == null && ii.clip == null) {
-			return true;
 		} else {
-			return false;
+			return this.clip == null && ii.clip == null;
 		}
 	}
 

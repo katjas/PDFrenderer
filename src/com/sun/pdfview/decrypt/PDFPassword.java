@@ -259,7 +259,7 @@ public class PDFPassword {
 	 *            present for version 5 encryption, should be used
 	 * @return a list of possible password bytes
 	 */
-	List<byte[]> getPasswordBytes(boolean unicodeConversion) {
+	public List<byte[]> getPasswordBytes(boolean unicodeConversion) {
 		// TODO - handle unicodeConversion when we support version 5
 		if (this.passwordBytes != null || this.passwordString == null) {
 			return Collections.singletonList(this.passwordBytes);

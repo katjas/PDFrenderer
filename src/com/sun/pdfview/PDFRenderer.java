@@ -628,7 +628,10 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
 			return;
 		}
 
-		int startx, starty, width, height;
+		int startx;
+		int starty;
+		int width;
+		int height;
 		int flags = 0;
 
 		// don't do anything if nothing is there or no one is listening

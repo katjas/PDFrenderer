@@ -42,8 +42,8 @@ public class PDFDecoder {
 	 * stream
 	 */
 	private static class FilterSpec {
-		PDFObject ary[];
-		PDFObject params[];
+		public PDFObject ary[];
+		public PDFObject params[];
 
 		private FilterSpec(PDFObject dict, PDFObject filter) throws IOException {
 			if (filter.getType() == PDFObject.NAME) {

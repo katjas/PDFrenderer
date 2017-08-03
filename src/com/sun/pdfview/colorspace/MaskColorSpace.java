@@ -30,18 +30,17 @@ import com.sun.pdfview.PDFPaint;
  * painting itself is done in a pre-specified PDF Paint.
  */
 public class MaskColorSpace extends ColorSpace {
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 1L;
+	
 	/** The paint to paint in. Note this cannot be a pattern or gradient. */
 	private final PDFPaint paint;
 
-	ColorSpace cie = ColorSpace.getInstance(ColorSpace.CS_CIEXYZ);
+	private ColorSpace cie = ColorSpace.getInstance(ColorSpace.CS_CIEXYZ);
 
-	float[] prev1 = this.cie.fromRGB(toRGB(new float[] { 1.0f }));
+	private float[] prev1 = this.cie.fromRGB(toRGB(new float[] { 1.0f }));
 
-	float[] prev0 = this.cie.fromRGB(toRGB(new float[] { 0.0f }));
+	private float[] prev0 = this.cie.fromRGB(toRGB(new float[] { 0.0f }));
 
 	/** Creates a new instance of PaintColorSpace */
 	public MaskColorSpace(PDFPaint paint) {

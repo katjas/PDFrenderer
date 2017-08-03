@@ -183,10 +183,10 @@ public class PDFObject {
 		this.type = type;
 		if (type == NAME) {
 			value = ((String) value).intern();
-		} else if (type == KEYWORD && value.equals("true")) {
+		} else if (type == KEYWORD && "true".equals(value)) {
 			this.type = BOOLEAN;
 			value = Boolean.TRUE;
-		} else if (type == KEYWORD && value.equals("false")) {
+		} else if (type == KEYWORD && "false".equals(value)) {
 			this.type = BOOLEAN;
 			value = Boolean.FALSE;
 		}

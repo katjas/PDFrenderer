@@ -50,6 +50,38 @@ import com.sun.pdfview.pattern.PDFShader;
  * @author Mike Wessler
  */
 public class PDFParser extends BaseWatchable {
+
+	// ---- parsing variables
+	private Stack<Object> stack; // stack of Object
+	private Stack<ParserState> parserStates; // stack of RenderState
+	// the current render state
+	private ParserState state;
+	private GeneralPath path;
+	private int clip;
+	private int loc;
+	private boolean resend = false;
+	private Tok tok;
+	private boolean catchexceptions = true; // Indicates state of BX...EX
+	/**
+	 * a weak reference to the page we render into. For the page to remain
+	 * available, some other code must retain a strong reference to it.
+	 */
+	private final WeakReference<PDFPage> pageRef;
+	/**
+	 * the actual command, for use within a singe iteration. Note that this must
+	 * be released at the end of each iteration to assure the page can be
+	 * collected if not in use
+	 */
+	private PDFPage cmds;
+
+	// ---- result variables
+	byte[] stream;
+	HashMap<String, PDFObject> resources;
+	boolean errorwritten = false;
+	private boolean autoAdjustStroke = false;
+	private boolean strokeOverprint;
+	private boolean fillOverprint;
+
 	/**
 	 * A class to store state needed whiel rendering. This includes the stroke
 	 * and fill color spaces, as well as the text formatting parameters.
@@ -150,41 +182,6 @@ public class PDFParser extends BaseWatchable {
 			}
 		}
 	}
-
-	// ---- parsing variables
-	private Stack<Object> stack; // stack of Object
-	private Stack<ParserState> parserStates; // stack of RenderState
-	// the current render state
-	private ParserState state;
-	private GeneralPath path;
-	private int clip;
-	private int loc;
-	private boolean resend = false;
-	private Tok tok;
-	private boolean catchexceptions = true; // Indicates state of BX...EX
-	/**
-	 * a weak reference to the page we render into. For the page to remain
-	 * available, some other code must retain a strong reference to it.
-	 */
-	private final WeakReference<PDFPage> pageRef;
-	/**
-	 * the actual command, for use within a singe iteration. Note that this must
-	 * be released at the end of each iteration to assure the page can be
-	 * collected if not in use
-	 */
-	private PDFPage cmds;
-
-	// ---- result variables
-	byte[] stream;
-	HashMap<String, PDFObject> resources;
-	boolean errorwritten = false;
-	private boolean autoAdjustStroke = false;
-	private boolean strokeOverprint;
-	private int strokeOverprintMode;
-
-	private boolean fillOverprint;
-
-	private int fillOverprintMode;
 
 	/**
 	 * Don't call this constructor directly. Instead, use PDFFile.getPage(int
@@ -1103,7 +1100,7 @@ public class PDFParser extends BaseWatchable {
 	 *             if the value on the top of the stack isn't a number
 	 */
 	private float popFloat() throws PDFParseException {
-		if (this.stack.isEmpty() == false) {
+		if (!this.stack.isEmpty()) {
 			Object obj = this.stack.pop();
 			if (obj instanceof Double) {
 				return ((Double) obj).floatValue();
@@ -1208,7 +1205,7 @@ public class PDFParser extends BaseWatchable {
 		// pop graphics state ('Q')
 		this.cmds.addPop();
 		// pop the parser state
-		if (this.parserStates.isEmpty() == false) {
+		if (!this.parserStates.isEmpty()) {
 			this.state = this.parserStates.pop();
 		}
 	}
@@ -1427,7 +1424,7 @@ public class PDFParser extends BaseWatchable {
 			this.strokeOverprint = d.getBooleanValue();
 			PDFObject x = gsobj.getDictRef("OPM");
 			if (x != null) {
-				this.strokeOverprintMode = x.getIntValue();
+				x.getIntValue();
 			}
 			handled = true;
 		}
@@ -1435,7 +1432,7 @@ public class PDFParser extends BaseWatchable {
 			this.fillOverprint = d.getBooleanValue();
 			PDFObject x = gsobj.getDictRef("OPM");
 			if (x != null) {
-				this.fillOverprintMode = x.getIntValue();
+				x.getIntValue();
 			}
 			handled = true;
 		}

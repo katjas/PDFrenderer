@@ -723,7 +723,7 @@ public class CCITTFaxDecoder {
 				break;
 			}
 
-			while (isWhite == false) {
+			while (!isWhite) {
 				// Black run
 				current = nextLesserThan8Bits(4);
 				entry = initBlack[current];
@@ -1397,17 +1397,12 @@ public class CCITTFaxDecoder {
 
 		if (!this.fillBits) {
 			int next12Bits = nextNBits(12);
-			if (isFirstEOL && next12Bits == 0) {
-				// Might have the case of EOL padding being used even
-				// though it was not flagged.
-				// This was observed to be the case in TIFFs produced
-				// by a well known vendor who shall remain nameless.
-				if (nextNBits(4) == 1) {
-					// EOL must be padded: reset the fillBits flag.
-					this.fillBits = true;
-					return 1;
-				}
+			if (isFirstEOL && next12Bits == 0 && nextNBits(4) == 1) {
+				// EOL must be padded: reset the fillBits flag.
+				this.fillBits = true;
+				return 1;
 			}
+			
 			if (next12Bits != 1) {
 				throw new RuntimeException("Scanline must begin with EOL code word."); //$NON-NLS-1$
 			}
@@ -1425,10 +1420,9 @@ public class CCITTFaxDecoder {
 			// bit EOL sequence, two more bytes are certainly going to be
 			// required. The first of them has to be all zeros, so ensure
 			// that.
-			if (bitsLeft < 4) {
-				if (nextNBits(8) != 0) {
-					throw new RuntimeException("All fill bits preceding EOL code must be 0."); //$NON-NLS-1$
-				}
+			if (bitsLeft < 4 && nextNBits(8) != 0) {
+				throw new RuntimeException("All fill bits preceding EOL code must be 0."); //$NON-NLS-1$
+
 			}
 
 			//

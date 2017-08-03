@@ -43,9 +43,10 @@ import com.sun.pdfview.annotation.PDFAnnotation.ANNOTATION_TYPE;
  * change the stroke style
  */
 class PDFChangeStrokeCmd extends PDFCmd {
-	float w, limit, phase;
-	int cap, join;
-	float[] ary;
+	private float w, limit, phase;
+	private int cap;
+	private int join;
+	private float[] ary;
 
 	public PDFChangeStrokeCmd() {
 		this.w = PDFRenderer.NOWIDTH;
@@ -856,8 +857,8 @@ class PDFPushCmd extends PDFCmd {
  * set the shade paint
  */
 class PDFShadeCommand extends PDFCmd {
-	PDFPaint p;
-	Rectangle2D box;
+	public PDFPaint p;
+	public Rectangle2D box;
 
 	PDFShadeCommand(PDFPaint p) {
 		this.p = p;

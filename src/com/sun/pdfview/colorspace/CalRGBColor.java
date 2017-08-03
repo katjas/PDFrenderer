@@ -184,7 +184,7 @@ public class CalRGBColor extends ColorSpace {
 	 *            the size of each row. All matrix lengths must be a multiple of
 	 *            len.
 	 */
-	float[] matrixMult(float[] a, float[] b, int len) {
+	public float[] matrixMult(float[] a, float[] b, int len) {
 		int rows = a.length / len;
 		int cols = b.length / len;
 
