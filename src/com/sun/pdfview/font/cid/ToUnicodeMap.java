@@ -22,6 +22,10 @@ import com.sun.pdfview.PDFObject;
  ****************************************************************************/
 
 public class ToUnicodeMap extends PDFCMap {
+	
+	private final Map<Character, Character> singleCharMappings;
+	private final List<CharRangeMapping> charRangeMappings;
+	private final List<CodeRangeMapping> codeRangeMappings;
 
 	/*****************************************************************************
 	 * Small helper class to define a char range.
@@ -66,10 +70,6 @@ public class ToUnicodeMap extends PDFCMap {
 		}
 
 	}
-
-	private final Map<Character, Character> singleCharMappings;
-	private final List<CharRangeMapping> charRangeMappings;
-	private final List<CodeRangeMapping> codeRangeMappings;
 
 	/*************************************************************************
 	 * Constructor

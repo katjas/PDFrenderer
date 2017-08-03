@@ -141,12 +141,7 @@ public class CIDFontType2 extends TTFFont {
 	private void parseWidths(PDFObject fontObj) throws IOException {
 		// read the default width (otpional)
 		PDFObject defaultWidthObj = fontObj.getDictRef("DW");
-		if (defaultWidthObj != null && defaultWidthObj.getIntValue() != 0) {
-			// XOND: commented out the setting of new default width, as several
-			// PDFs are displayed in a wrong format due to this:
-			// this.defaultWidth = defaultWidthObj.getIntValue();
-		}
-
+		
 		int entryIdx = 0;
 		int first = 0;
 		int last = 0;

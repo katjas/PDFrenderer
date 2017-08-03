@@ -73,7 +73,20 @@ import com.sun.pdfview.PDFParseException;
 public class LZWDecode {
 
 	private static int STOP = 257;
+	
 	private static int CLEARDICT = 256;
+	
+	private ByteBuffer buf;
+	
+	private int bytepos;
+	
+	private int bitpos;
+	
+	private byte[] dict[] = new byte[4096][];
+	
+	private int dictlen = 0;
+
+	private int bitspercode = 9;
 
 	/**
 	 * decode an array of LZW-encoded bytes to a byte array.
@@ -99,14 +112,6 @@ public class LZWDecode {
 
 		return outBytes;
 	}
-
-	private ByteBuffer buf;
-	private int bytepos;
-	private int bitpos;
-	private byte[] dict[] = new byte[4096][];
-	private int dictlen = 0;
-
-	private int bitspercode = 9;
 
 	/**
 	 * initialize this decoder with an array of encoded bytes

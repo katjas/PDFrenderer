@@ -41,6 +41,25 @@ import com.sun.pdfview.font.ttf.TrueTypeFont;
  * @author Mike Wessler
  */
 public abstract class PDFFont {
+	
+	/** the font SubType of this font */
+	private String subtype;
+
+	/** the postscript name of this font */
+	private String baseFont;
+
+	/** the font encoding (maps character ids to glyphs) */
+	private PDFFontEncoding encoding;
+
+	/** the font descriptor */
+	private PDFFontDescriptor descriptor;
+
+	/** the CMap that maps this font to unicode values */
+	private PDFCMap unicodeMap;
+
+	/** a cache of glyphs indexed by character */
+	private Map<Character, PDFGlyph> charCache;
+
 
 	private static final FilenameFilter TTF_FILTER = new FilenameFilter() {
 		@Override
@@ -312,24 +331,6 @@ public abstract class PDFFont {
 			return getDefaultFontSearchPath();
 		}
 	}
-
-	/** the font SubType of this font */
-	private String subtype;
-
-	/** the postscript name of this font */
-	private String baseFont;
-
-	/** the font encoding (maps character ids to glyphs) */
-	private PDFFontEncoding encoding;
-
-	/** the font descriptor */
-	private PDFFontDescriptor descriptor;
-
-	/** the CMap that maps this font to unicode values */
-	private PDFCMap unicodeMap;
-
-	/** a cache of glyphs indexed by character */
-	private Map<Character, PDFGlyph> charCache;
 
 	/**
 	 * Create a PDFFont given the base font name and the font descriptor

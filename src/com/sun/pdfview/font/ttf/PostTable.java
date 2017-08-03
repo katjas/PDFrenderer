@@ -64,29 +64,28 @@ public class PostTable extends TrueTypeTable {
 	/** An empty post map */
 	class PostMap {
 		/** map a name to a character index */
-		short getCharIndex(String charName) {
+		public short getCharIndex(String charName) {
 			return (short) 0;
 		}
 
 		/** name a character index to a name */
-		String getCharName(char charIndex) {
+		public String getCharName(char charIndex) {
 			return null;
 		}
 
 		/** get the data in this map as a ByteBuffer */
-		ByteBuffer getData() {
+		public ByteBuffer getData() {
 			return ByteBuffer.allocate(0);
 		}
 
 		/** get the length of the data in this map */
-		int getLength() {
+		public int getLength() {
 			return 0;
 		}
 
 		/** set the data in this map from a ByteBuffer */
-		void setData(ByteBuffer data) {
+		public void setData(ByteBuffer data) {
 			// do nothing
-			return;
 		}
 	}
 

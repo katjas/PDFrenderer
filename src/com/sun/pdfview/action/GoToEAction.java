@@ -14,6 +14,16 @@ import com.sun.pdfview.PDFParseException;
  * @since 07.07.2009
  ****************************************************************************/
 public class GoToEAction extends PDFAction {
+	
+	/** the destination within the remote PDF file */
+	private PDFDestination destination;
+	/** the remote file this action refers to (optional) */
+	private String file = null;
+	/** Should the remote file be opened in a new window? (optional) */
+	private boolean newWindow = false;
+
+	/** The target dictionary */
+	private GoToETarget target;
 
 	/*****************************************************************************
 	 * Inner class for holding the target dictionary's information
@@ -149,17 +159,7 @@ public class GoToEAction extends PDFAction {
 			this.targetDictionary = targetDictionary;
 		}
 	}
-
-	/** the destination within the remote PDF file */
-	private PDFDestination destination;
-	/** the remote file this action refers to (optional) */
-	private String file = null;
-	/** Should the remote file be opened in a new window? (optional) */
-	private boolean newWindow = false;
-
-	/** The target dictionary */
-	private GoToETarget target;
-
+	
 	/*************************************************************************
 	 * Create a new GoToEAction from the given attributes
 	 * 
@@ -273,15 +273,10 @@ public class GoToEAction extends PDFAction {
 
 			// find target dictionary and parse it
 			PDFObject subTargetObj = targetObj.getDictRef("T");
-			if (subTargetObj != null) {
-				// call this method recursive, in case the target was not
-				// already contained in the
-				// list (this is checked for not getting into an infinite loop)
-				if (!list.contains(target)) {
-					list.add(target);
-					GoToETarget subTargetDictionary = parseTargetDistionary(subTargetObj, list);
-					target.setTargetDictionary(subTargetDictionary);
-				}
+			if (subTargetObj != null && !list.contains(target)) {
+				list.add(target);
+				GoToETarget subTargetDictionary = parseTargetDistionary(subTargetObj, list);
+				target.setTargetDictionary(subTargetDictionary);
 			}
 		} else {
 			if (this.file == null) {

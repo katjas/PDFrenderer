@@ -28,6 +28,13 @@ import com.sun.pdfview.PDFParseException;
  * The common super-class of all PDF actions.
  */
 public class PDFAction {
+	
+	/** the type of this action */
+	private String type;
+
+	/** the next action or array of actions */
+	private PDFObject next;
+	
 	/**
 	 * Get an action of the appropriate type from a PDFObject
 	 *
@@ -53,9 +60,9 @@ public class PDFAction {
 		} else if (type.equals("GoToR")) {
 			action = new GoToRAction(obj, root);
 		} else if (type.equals("URI")) {
-			action = new UriAction(obj, root);
+			action = new UriAction(obj);
 		} else if (type.equals("Launch")) {
-			action = new LaunchAction(obj, root);
+			action = new LaunchAction(obj);
 		} else {
 			/** [JK FIXME: Implement other action types! ] */
 			throw new PDFParseException("Unknown Action type: " + type);
@@ -70,12 +77,6 @@ public class PDFAction {
 		// return the action
 		return action;
 	}
-
-	/** the type of this action */
-	private String type;
-
-	/** the next action or array of actions */
-	private PDFObject next;
 
 	/** Creates a new instance of PDFAction */
 	public PDFAction(String type) {

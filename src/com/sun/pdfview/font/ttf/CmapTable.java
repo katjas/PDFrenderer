@@ -140,9 +140,8 @@ public class CmapTable extends TrueTypeTable {
 				c.add(cmap);
 			}
 		}
-		;
+		
 		CMap[] maps = new CMap[c.size()];
-
 		c.toArray(maps);
 
 		return maps;

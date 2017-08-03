@@ -53,12 +53,8 @@ public class PDFTextFormat implements Cloneable {
 	private PDFFont font;
 	/** font size */
 	private float fsize = 1;
-	// private Object array[]= new Object[1];
 	/** build text rep of word */
 	private final StringBuffer word = new StringBuffer();
-	// this is where we build and keep the word list for this page.
-	/** start location of the hunk of text */
-	private final Point2D.Float wordStart;
 	/** location of the end of the previous hunk of text */
 	private final Point2D.Float prevEnd;
 
@@ -68,7 +64,7 @@ public class PDFTextFormat implements Cloneable {
 	public PDFTextFormat() {
 		this.cur = new AffineTransform();
 		this.line = new AffineTransform();
-		this.wordStart = new Point2D.Float(-100, -100);
+		new Point2D.Float(-100, -100);
 		this.prevEnd = new Point2D.Float(-100, -100);
 		this.tc = this.tw = this.tr = 0;
 		this.tm = PDFShapeCmd.FILL;
@@ -148,11 +144,7 @@ public class PDFTextFormat implements Cloneable {
 				0, this.tr /* 1 */);
 		AffineTransform at = new AffineTransform();
 		List<PDFGlyph> l = this.font.getGlyphs(text);
-		if (PDFDebugger.SHOW_TEXT_ANCHOR) {
-			if (PDFDebugger.DEBUG_TEXT) {
-				PDFDebugger.debug("POINT count: " + l.size());
-			}
-		}
+		
 		for (PDFGlyph glyph : l) {
 			at.setTransform(this.cur);
 			at.concatenate(scale);

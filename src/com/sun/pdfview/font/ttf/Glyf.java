@@ -165,7 +165,6 @@ public class Glyf {
 	 * no glyf data.
 	 */
 	public void setData(ByteBuffer data) {
-		return;
 	}
 
 	/**

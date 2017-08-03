@@ -22,7 +22,7 @@ public class UriAction extends PDFAction {
 	 * @throws IOException
 	 *             - in case the action can not be parsed
 	 ************************************************************************/
-	public UriAction(PDFObject obj, PDFObject root) throws IOException {
+	public UriAction(PDFObject obj) throws IOException {
 		super("URI");
 		this.uri = PdfObjectParseUtil.parseStringFromDict("URI", obj, true);
 	}

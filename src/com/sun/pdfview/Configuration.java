@@ -10,14 +10,7 @@ package com.sun.pdfview;
  */
 public class Configuration {
 	private static Configuration INSTANCE;
-
-	public static synchronized Configuration getInstance() {
-		if (INSTANCE == null) {
-			INSTANCE = new Configuration();
-		}
-		return INSTANCE;
-	}
-
+	
 	/** whether grey scale images will be converted to ARGB */
 	private boolean convertGreyscaleImagesToArgb = true;
 	/**
@@ -30,6 +23,13 @@ public class Configuration {
 
 	/** Use blur before image resize to enhance the result (Antialias) **/
 	private boolean useBlurResizingForImages = true;
+
+	public static synchronized Configuration getInstance() {
+		if (INSTANCE == null) {
+			INSTANCE = new Configuration();
+		}
+		return INSTANCE;
+	}
 
 	/**
 	 * Returns the image height threshold at which to enable banded image

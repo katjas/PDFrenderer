@@ -53,7 +53,53 @@ import com.sun.pdfview.decrypt.UnsupportedEncryptionException;
 public class PDFFile {
 
 	public final static int NUL_CHAR = 0;
+	
 	public final static int FF_CHAR = 12;
+	
+	private String versionString = "1.1";
+
+	private int majorVersion = 1;
+
+	private int minorVersion = 1;
+
+	/**
+	 * A ByteBuffer containing the file data
+	 */
+	private ByteBuffer buf;
+
+	/**
+	 * the cross reference table mapping object numbers to locations in the PDF
+	 * file
+	 */
+	private PDFXref[] objIdx;
+	
+	/** the root PDFObject, as specified in the PDF file */
+	private PDFObject root = null;
+	
+	/** the Encrypt PDFObject, from the trailer */
+	private PDFObject encrypt = null;
+
+	/** The Info PDFPbject, from the trailer, for simple metadata */
+	private PDFObject info = null;
+
+	/** a mapping of page numbers to parsed PDF commands */
+	private Cache cache;
+
+	/**
+	 * whether the file is printable or not (trailer -> Encrypt -> P & 0x4)
+	 */
+	private boolean printable = true;
+
+	/**
+	 * whether the file is saveable or not (trailer -> Encrypt -> P & 0x10)
+	 */
+	private boolean saveable = true;
+
+	/**
+	 * The default decrypter for streams and strings. By default, no encryption
+	 * is expected, and thus the IdentityDecrypter is used.
+	 */
+	private PDFDecrypter defaultDecrypter = IdentityDecrypter.getInstance();
 
 	/** the end of line character */
 	/** the comment text to begin the file to determine it's version */
@@ -150,49 +196,6 @@ public class PDFFile {
 
 	}
 
-	private String versionString = "1.1";
-
-	private int majorVersion = 1;
-
-	private int minorVersion = 1;
-
-	/**
-	 * A ByteBuffer containing the file data
-	 */
-	private ByteBuffer buf;
-
-	/**
-	 * the cross reference table mapping object numbers to locations in the PDF
-	 * file
-	 */
-	private PDFXref[] objIdx;
-	/** the root PDFObject, as specified in the PDF file */
-	private PDFObject root = null;
-	/** the Encrypt PDFObject, from the trailer */
-	private PDFObject encrypt = null;
-
-	/** The Info PDFPbject, from the trailer, for simple metadata */
-	private PDFObject info = null;
-
-	/** a mapping of page numbers to parsed PDF commands */
-	private Cache cache;
-
-	/**
-	 * whether the file is printable or not (trailer -> Encrypt -> P & 0x4)
-	 */
-	private boolean printable = true;
-
-	/**
-	 * whether the file is saveable or not (trailer -> Encrypt -> P & 0x10)
-	 */
-	private boolean saveable = true;
-
-	/**
-	 * The default decrypter for streams and strings. By default, no encryption
-	 * is expected, and thus the IdentityDecrypter is used.
-	 */
-	private PDFDecrypter defaultDecrypter = IdentityDecrypter.getInstance();
-
 	/**
 	 * get a PDFFile from a .pdf file. The file must me a random access file at
 	 * the moment. It should really be a file mapping from the nio package.
@@ -214,10 +217,6 @@ public class PDFFile {
 	 */
 	public PDFFile(ByteBuffer buf) throws IOException {
 		this(buf, null);
-	}
-
-	public PDFFile(ByteBuffer buf, boolean doNotParse) throws IOException {
-		this.buf = buf;
 	}
 
 	/**

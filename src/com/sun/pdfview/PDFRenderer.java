@@ -54,8 +54,67 @@ import java.util.Stack;
  * ImageConsumers with the drawn data.
  */
 public class PDFRenderer extends BaseWatchable implements Runnable {
+	
+	/** how long (in milliseconds) to wait between image updates */
+	public static final long UPDATE_DURATION = 200;
+	
+	public static final float NOPHASE = -1000;
+	
+	public static final float NOWIDTH = -1000;
+	
+	public static final float NOLIMIT = -1000;
+	
+	public static final int NOCAP = -1000;
+	
+	public static final float[] NODASH = null;
+	
+	public static final int NOJOIN = -1000;
+	
+	/** the page we were generate from */
+	private PDFPage page;
+	
+	/** where we are in the page's command list */
+	private int currentCommand;
+	
+	/**
+	 * a weak reference to the image we render into. For the image to remain
+	 * available, some other code must retain a strong reference to it.
+	 */
+	private WeakReference<BufferedImage> imageRef;
+	
+	/**
+	 * the graphics object for use within an iteration. Note this must be set to
+	 * null at the end of each iteration, or the image will not be collected
+	 */
+	private Graphics2D g;
+	
+	/** the current graphics state */
+	private GraphicsState state;
 
-	class GraphicsState implements Cloneable {
+	/** the stack of push()ed graphics states */
+	private Stack<GraphicsState> stack;
+	
+	/** the total region of this image that has been written to */
+	private Rectangle2D globalDirtyRegion;
+	
+	/** the image observers that will be updated when this image changes */
+	private final List<ImageObserver> observers;
+	
+	/** the last shape we drew (to check for overlaps) */
+	private GeneralPath lastShape;
+	
+	private AffineTransform lastTransform;
+	
+	/** the info about the image, if we need to recreate it */
+	private final ImageInfo imageinfo;
+	
+	/** the next time the image should be notified about updates */
+	private long then = 0;
+
+	/** the sum of all the individual dirty regions since the last update */
+	private Rectangle2D unupdatedRegion;
+
+	public class GraphicsState implements Cloneable {
 
 		/** the clip region */
 		public Shape cliprgn;
@@ -98,49 +157,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
 			return cState;
 		}
 	}
-
-	/** how long (in milliseconds) to wait between image updates */
-	public static final long UPDATE_DURATION = 200;
-	public static final float NOPHASE = -1000;
-	public static final float NOWIDTH = -1000;
-	public static final float NOLIMIT = -1000;
-	public static final int NOCAP = -1000;
-	public static final float[] NODASH = null;
-	public static final int NOJOIN = -1000;
-	/** the page we were generate from */
-	private PDFPage page;
-	/** where we are in the page's command list */
-	private int currentCommand;
-	/**
-	 * a weak reference to the image we render into. For the image to remain
-	 * available, some other code must retain a strong reference to it.
-	 */
-	private WeakReference<BufferedImage> imageRef;
-	/**
-	 * the graphics object for use within an iteration. Note this must be set to
-	 * null at the end of each iteration, or the image will not be collected
-	 */
-	private Graphics2D g;
-	/** the current graphics state */
-	private GraphicsState state;
-
-	/** the stack of push()ed graphics states */
-	private Stack<GraphicsState> stack;
-	/** the total region of this image that has been written to */
-	private Rectangle2D globalDirtyRegion;
-	/** the image observers that will be updated when this image changes */
-	private final List<ImageObserver> observers;
-	/** the last shape we drew (to check for overlaps) */
-	private GeneralPath lastShape;
-	private AffineTransform lastTransform;
-	/** the info about the image, if we need to recreate it */
-	private final ImageInfo imageinfo;
-	/** the next time the image should be notified about updates */
-	private long then = 0;
-
-	/** the sum of all the individual dirty regions since the last update */
-	private Rectangle2D unupdatedRegion;
-
+	
 	/**
 	 * create a new PDFGraphics state, given a Graphics2D. This version will
 	 * <b>not</b> create an image, and you will get a NullPointerException if

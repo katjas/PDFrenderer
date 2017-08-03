@@ -30,6 +30,8 @@ import com.sun.pdfview.PDFParseException;
  * @author Mike Wessler
  */
 public class ASCII85Decode {
+	
+	private ByteBuffer buf;
 
 	/**
 	 * decode an array of bytes in ASCII85 format.
@@ -48,8 +50,6 @@ public class ASCII85Decode {
 		ASCII85Decode me = new ASCII85Decode(buf);
 		return me.decode();
 	}
-
-	private ByteBuffer buf;
 
 	/**
 	 * initialize the decoder with byte buffer in ASCII85 format

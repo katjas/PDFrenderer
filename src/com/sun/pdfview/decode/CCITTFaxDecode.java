@@ -35,7 +35,7 @@ public class CCITTFaxDecode {
 
 		boolean align = getOptionFieldBoolean(dict, "EncodedByteAlign", false);
 
-		CCITTFaxDecoder decoder = new CCITTFaxDecoder(1, columns, rows);
+		CCITTFaxDecoder decoder = new CCITTFaxDecoder(1, columns);
 		decoder.setAlign(align);
 		try {
 			if (k == 0) {

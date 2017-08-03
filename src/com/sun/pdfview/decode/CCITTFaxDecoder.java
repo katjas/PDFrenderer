@@ -557,7 +557,7 @@ public class CCITTFaxDecoder {
 	 * @param w
 	 * @param h
 	 */
-	public CCITTFaxDecoder(int fillOrder, int w, int h) {
+	public CCITTFaxDecoder(int fillOrder, int w) {
 		this.fillOrder = fillOrder;
 		// Some of the decode methods assume prevChangingElms
 		// and currChaningElems are at least of length 2.

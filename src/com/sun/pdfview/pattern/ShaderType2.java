@@ -71,9 +71,7 @@ public class ShaderType2 extends PDFShader {
 	 * A subclass of paint that uses this shader to generate a paint
 	 */
 	class Type2Paint implements Paint {
-		public Type2Paint() {
-		}
-
+		
 		/** create a paint context */
 		@Override
 		public PaintContext createContext(ColorModel cm, Rectangle deviceBounds, Rectangle2D userBounds,

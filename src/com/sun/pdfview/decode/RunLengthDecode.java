@@ -30,8 +30,11 @@ import com.sun.pdfview.PDFParseException;
  * @author Mike Wessler
  */
 public class RunLengthDecode {
+	
 	/** the end of data in the RunLength encoding. */
 	private static final int RUN_LENGTH_EOD = 128;
+	
+	private ByteBuffer buf;
 
 	/**
 	 * decode an array of bytes in RunLength format.
@@ -54,8 +57,6 @@ public class RunLengthDecode {
 		RunLengthDecode me = new RunLengthDecode(buf);
 		return me.decode();
 	}
-
-	private ByteBuffer buf;
 
 	/**
 	 * initialize the decoder with an array of bytes in RunLength format

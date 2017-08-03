@@ -28,6 +28,9 @@ import java.util.Map;
  * A cache of PDF pages and images.
  */
 public class Cache {
+	
+	/** the pages in the cache, mapped by page number */
+	private final Map<Integer, SoftReference<PageRecord>> pages;
 
 	/** the record stored for each page in the cache */
 	class PageRecord extends Record {
@@ -42,16 +45,14 @@ public class Cache {
 	}
 
 	/** the basic information about a page or image */
-	class Record {
+	public class Record {
 
 		/** the page or image itself */
-		Object value;
+		public Object value;
+		
 		/** the thing generating the page, or null if done/not provided */
-		BaseWatchable generator;
+		public BaseWatchable generator;
 	}
-
-	/** the pages in the cache, mapped by page number */
-	private final Map<Integer, SoftReference<PageRecord>> pages;
 
 	/** Creates a new instance of a Cache */
 	public Cache() {

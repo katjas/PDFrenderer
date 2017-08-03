@@ -79,8 +79,6 @@ public class ShaderType3 extends PDFShader {
 	 * A subclass of paint that uses this shader to generate a paint
 	 */
 	class Type3Paint implements Paint {
-		public Type3Paint() {
-		}
 
 		/** create a paint context */
 		@Override

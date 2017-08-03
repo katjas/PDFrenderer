@@ -60,6 +60,12 @@ import com.sun.pdfview.PDFStringUtil;
  * @author Luke Kirby
  */
 public class PDFPassword {
+	
+	/** the password in bytes, if specified as such */
+	private byte[] passwordBytes = null;
+
+	/** the passwird as a string, if specified as such */
+	private String passwordString = null;
 
 	/**
 	 * Converts strings to byte by employing a {@link CharsetEncoder} and a
@@ -224,12 +230,6 @@ public class PDFPassword {
 	public static PDFPassword nonNullPassword(PDFPassword password) {
 		return password != null ? password : EMPTY_PASSWORD;
 	}
-
-	/** the password in bytes, if specified as such */
-	private byte[] passwordBytes = null;
-
-	/** the passwird as a string, if specified as such */
-	private String passwordString = null;
 
 	/**
 	 * Construct a byte-based password

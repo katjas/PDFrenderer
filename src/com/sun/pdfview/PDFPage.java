@@ -129,7 +129,7 @@ class PDFFillAlphaCmd extends PDFCmd {
  * set the fill paint
  */
 class PDFFillPaintCmd extends PDFCmd {
-	PDFPaint p;
+	public PDFPaint p;
 
 	public PDFFillPaintCmd(PDFPaint p) {
 		this.p = p;
@@ -913,7 +913,7 @@ class PDFStrokeAlphaCmd extends PDFCmd {
  * set the stroke paint
  */
 class PDFStrokePaintCmd extends PDFCmd {
-	PDFPaint p;
+	public PDFPaint p;
 
 	public PDFStrokePaintCmd(PDFPaint p) {
 		this.p = p;

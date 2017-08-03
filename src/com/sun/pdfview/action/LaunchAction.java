@@ -12,6 +12,21 @@ import com.sun.pdfview.PDFParseException;
  * @since 08.07.2009
  ****************************************************************************/
 public class LaunchAction extends PDFAction {
+	
+	// file separator according to PDF spec
+	public final static String SOLIDUS = "/";
+
+	/** the file/application to be opened (optional) */
+	private FileSpec file;
+	/** should a new window be opened (optional) */
+	private boolean newWindow = false;
+
+	private PDFObject unixParam;
+
+	private PDFObject macParam;
+
+	private WinLaunchParam winParam;
+
 	/*****************************************************************************
 	 * Inner class for storing a file specification
 	 *
@@ -359,9 +374,6 @@ public class LaunchAction extends PDFAction {
 		}
 	}
 
-	// file separator according to PDF spec
-	public final static String SOLIDUS = "/";
-
 	/*************************************************************************
 	 * Is the file name absolute (if not, it is relative to the path of the
 	 * currently opened PDF file). If the file name starts with a "/", it is
@@ -372,18 +384,7 @@ public class LaunchAction extends PDFAction {
 	public static boolean isAbsolute(String fileName) {
 		return fileName.startsWith(SOLIDUS);
 	}
-
-	/** the file/application to be opened (optional) */
-	private FileSpec file;
-	/** should a new window be opened (optional) */
-	private boolean newWindow = false;
-
-	private PDFObject unixParam;
-
-	private PDFObject macParam;
-
-	private WinLaunchParam winParam;
-
+	
 	/**
 	 * Creates a new instance of LaunchAction from an object
 	 *
@@ -392,7 +393,7 @@ public class LaunchAction extends PDFAction {
 	 * @param root
 	 *            - the root object
 	 */
-	public LaunchAction(PDFObject obj, PDFObject root) throws IOException {
+	public LaunchAction(PDFObject obj) throws IOException {
 		super("Launch");
 		// find the file/application and parse it
 		PDFObject fileObj = obj.getDictRef("F");

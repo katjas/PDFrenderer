@@ -201,11 +201,10 @@ public class PDFStringUtil {
 			return null;
 		}
 
-		if (basicString.length() >= 2) {
-			if (basicString.charAt(0) == (char) 0xFE && basicString.charAt(1) == (char) 0xFF) {
-				// found the BOM!
-				return asUTF16BEEncoded(basicString);
-			}
+		
+		if (basicString.length() >= 2 && basicString.charAt(0) == (char) 0xFE && basicString.charAt(1) == (char) 0xFF) {
+			// found the BOM!
+			return asUTF16BEEncoded(basicString);
 		}
 
 		// it's not UTF16-BE encoded, so it must be

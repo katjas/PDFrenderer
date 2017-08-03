@@ -50,13 +50,13 @@ public class AdobeGlyphList {
 	/**
 	 * provide a translation from a glyph name to the possible unicode values.
 	 */
-	private static HashMap<String, int[]> glyphToUnicodes;
+	public static HashMap<String, int[]> glyphToUnicodes;
 	
 	/** provide a translation from a unicode value to a glyph name. */
-	private static HashMap<Integer, String> unicodeToGlyph;
+	public static HashMap<Integer, String> unicodeToGlyph;
 	
 	/** the loader thread we are reading through. */
-	private static Thread glyphLoaderThread = null;
+	public static Thread glyphLoaderThread = null;
 
 	static {
 		new AdobeGlyphList();

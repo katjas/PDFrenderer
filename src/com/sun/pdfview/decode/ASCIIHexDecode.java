@@ -32,6 +32,9 @@ import com.sun.pdfview.PDFParseException;
  * @author Mike Wessler
  */
 public class ASCIIHexDecode {
+	
+	private ByteBuffer buf;
+	
 	/**
 	 * decode an array of bytes in ASCIIHex format.
 	 * <p>
@@ -49,7 +52,6 @@ public class ASCIIHexDecode {
 		return me.decode();
 	}
 
-	private ByteBuffer buf;
 
 	/**
 	 * initialize the decoder with an array of bytes in ASCIIHex format

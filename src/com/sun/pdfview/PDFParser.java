@@ -53,20 +53,30 @@ public class PDFParser extends BaseWatchable {
 
 	// ---- parsing variables
 	private Stack<Object> stack; // stack of Object
+	
 	private Stack<ParserState> parserStates; // stack of RenderState
+	
 	// the current render state
 	private ParserState state;
+	
 	private GeneralPath path;
+	
 	private int clip;
+	
 	private int loc;
+	
 	private boolean resend = false;
+	
 	private Tok tok;
+	
 	private boolean catchexceptions = true; // Indicates state of BX...EX
+	
 	/**
 	 * a weak reference to the page we render into. For the page to remain
 	 * available, some other code must retain a strong reference to it.
 	 */
 	private final WeakReference<PDFPage> pageRef;
+	
 	/**
 	 * the actual command, for use within a singe iteration. Note that this must
 	 * be released at the end of each iteration to assure the page can be
@@ -75,11 +85,16 @@ public class PDFParser extends BaseWatchable {
 	private PDFPage cmds;
 
 	// ---- result variables
-	byte[] stream;
-	HashMap<String, PDFObject> resources;
-	boolean errorwritten = false;
+	private byte[] stream;
+	
+	private HashMap<String, PDFObject> resources;
+	
+	private boolean errorwritten = false;
+	
 	private boolean autoAdjustStroke = false;
+	
 	private boolean strokeOverprint;
+	
 	private boolean fillOverprint;
 
 	/**
@@ -88,11 +103,13 @@ public class PDFParser extends BaseWatchable {
 	 */
 	class ParserState implements Cloneable {
 		/** the fill color space */
-		PDFColorSpace fillCS;
+		public PDFColorSpace fillCS;
+		
 		/** the stroke color space */
-		PDFColorSpace strokeCS;
+		public PDFColorSpace strokeCS;
+		
 		/** the text paramters */
-		PDFTextFormat textFormat;
+		public PDFTextFormat textFormat;
 
 		/**
 		 * Clone the render state.
@@ -610,10 +627,8 @@ public class PDFParser extends BaseWatchable {
 					PDFDebugger.logPath(path, "closed");
 				}
 				// clip with the path and discard it
-				if (!PDFDebugger.DISABLE_CLIP) {
-					if (this.clip != 0) {
-						this.cmds.addPath(this.path, this.clip, this.autoAdjustStroke);
-					}
+				if (!PDFDebugger.DISABLE_CLIP && this.clip != 0) {
+					this.cmds.addPath(this.path, this.clip, this.autoAdjustStroke);
 				}
 				this.clip = 0;
 				this.path = new GeneralPath();

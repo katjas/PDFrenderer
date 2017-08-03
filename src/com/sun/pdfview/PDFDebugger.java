@@ -12,37 +12,49 @@ import java.util.HashMap;
 import javax.imageio.ImageIO;
 
 public class PDFDebugger {
-	@SuppressWarnings("serial")
-	public static class DebugStopException extends Exception {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		// nothing to do
-	}
-
+	
 	public final static String DEBUG_DCTDECODE_DATA = "debugdctdecode";
+	
 	public static final boolean DEBUG_TEXT = false;
+	
 	public static final boolean DEBUG_IMAGES = false;
+	
 	public static final boolean DEBUG_OPERATORS = false;
+	
 	public static final boolean DEBUG_PATH = false;
+	
 	public static final int DEBUG_STOP_AT_INDEX = 0;
+	
 	public static final boolean DISABLE_TEXT = false;
+	
 	public static final boolean DISABLE_IMAGES = false;
+	
 	public static final boolean DISABLE_PATH_STROKE = false;
+	
 	public static final boolean DISABLE_PATH_FILL = false;
+	
 	public static final boolean DISABLE_PATH_STROKE_FILL = false;
+	
 	public static final boolean DISABLE_CLIP = false;
+	
 	public static final boolean DISABLE_FORMS = false;
+	
 	public static final boolean DISABLE_SHADER = false;
+	
 	public static final boolean SHOW_TEXT_REGIONS = false;
+	
 	public static final boolean SHOW_TEXT_ANCHOR = false;
+	
 	public static final boolean DISABLE_THUMBNAILS = false;
 
 	public static final long DRAW_DELAY = 0;
 
 	public static int debuglevel = 4000;
+	
+	public static class DebugStopException extends Exception {
+		private static final long serialVersionUID = 1L;
+		// nothing to do
+	}
 
 	// TODO: add debug level and print it?
 	public static void debug(String msg) {

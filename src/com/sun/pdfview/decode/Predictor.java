@@ -30,9 +30,22 @@ import com.sun.pdfview.PDFParseException;
  * prediction algorithms.
  */
 public abstract class Predictor {
+	
 	/** well known algorithms */
 	public static final int TIFF = 0;
 	public static final int PNG = 1;
+	
+	/** the algorithm to use */
+	private final int algorithm;
+
+	/** the number of colors per sample */
+	private int colors = 1;
+
+	/** the number of bits per color component */
+	private int bpc = 8;
+
+	/** the number of columns per row */
+	private int columns = 1;
 
 	/**
 	 * Get an instance of a predictor
@@ -91,18 +104,6 @@ public abstract class Predictor {
 		// all set
 		return predictor;
 	}
-
-	/** the algorithm to use */
-	private final int algorithm;
-
-	/** the number of colors per sample */
-	private int colors = 1;
-
-	/** the number of bits per color component */
-	private int bpc = 8;
-
-	/** the number of columns per row */
-	private int columns = 1;
 
 	/**
 	 * Create an instance of a predictor. Use <code>getPredictor()</code>

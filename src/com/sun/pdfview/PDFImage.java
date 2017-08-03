@@ -67,6 +67,39 @@ import com.sun.pdfview.function.PDFFunction;
  * Encapsulates a PDF Image
  */
 public class PDFImage {
+	
+	/**
+	 * color key mask. Array of start/end pairs of ranges of color components to
+	 * mask out. If a component falls within any of the ranges it is clear.
+	 */
+	private int[] colorKeyMask = null;
+	
+	/** the width of this image in pixels */
+	private int width;
+	
+	/** the height of this image in pixels */
+	private int height;
+	
+	/** the colorspace to interpret the samples in */
+	private PDFColorSpace colorSpace;
+
+	/** the number of bits per sample component */
+	private int bpc;
+
+	/** whether this image is a mask or not */
+	private boolean imageMask = false;
+
+	/** the SMask image, if any */
+	private PDFImage sMask;
+
+	/** the decode array */
+	private float[] decode;
+
+	/** the actual image data */
+	private final PDFObject imageObj;
+
+	/** true if the image is in encoded in JPEG */
+	private final boolean jpegDecode;
 
 	/**
 	 * A wrapper for ComponentColorSpace which normalizes based on the decode
@@ -173,21 +206,9 @@ public class PDFImage {
 							false);
 					try {
 						return readImage(jpegReader, readParam);
+					} catch (IIOException e) {
+						throw new IIOException("Internal reader error?", e);
 					} catch (Exception e) {
-						if (e instanceof IIOException) {
-							throw (IIOException) e;
-						}
-						// Any other exceptions here are probably due to
-						// internal
-						// problems with the image reader.
-						// A concrete example of this happening is described
-						// here:
-						// http://java.net/jira/browse/PDF_RENDERER-132 where
-						// JAI imageio extension throws an
-						// IndexOutOfBoundsException on progressive JPEGs.
-						// We'll just treat it as an IIOException for
-						// convenience
-						// and hopefully a subsequent reader can handle it
 						throw new IIOException("Internal reader error?", e);
 					} finally {
 						jpegReader.dispose();
@@ -570,36 +591,6 @@ public class PDFImage {
 		}
 		return argbVals;
 	}
-
-	/**
-	 * color key mask. Array of start/end pairs of ranges of color components to
-	 * mask out. If a component falls within any of the ranges it is clear.
-	 */
-	private int[] colorKeyMask = null;
-	/** the width of this image in pixels */
-	private int width;
-	/** the height of this image in pixels */
-	private int height;
-	/** the colorspace to interpret the samples in */
-	private PDFColorSpace colorSpace;
-
-	/** the number of bits per sample component */
-	private int bpc;
-
-	/** whether this image is a mask or not */
-	private boolean imageMask = false;
-
-	/** the SMask image, if any */
-	private PDFImage sMask;
-
-	/** the decode array */
-	private float[] decode;
-
-	/** the actual image data */
-	private final PDFObject imageObj;
-
-	/** true if the image is in encoded in JPEG */
-	private final boolean jpegDecode;
 
 	/**
 	 * Create an instance of a PDFImage

@@ -64,29 +64,29 @@ public class Type1CFont extends OutlineFont {
 
 	private float fnum;
 	
-	int charstringtype = 2;
+	private int charstringtype = 2;
 
-	float temps[] = new float[32];
+	private float temps[] = new float[32];
 
-	int charsetbase = 0;
+	private int charsetbase = 0;
 
-	int encodingbase = 0;
+	private int encodingbase = 0;
 
-	int charstringbase = 0;
+	private int charstringbase = 0;
 
-	int privatebase = 0;
+	private int privatebase = 0;
 
-	int privatesize = 0;
+	private int privatesize = 0;
 
-	int gsubrbase = 0;
+	private int gsubrbase = 0;
 
-	int lsubrbase = 0;
+	private int lsubrbase = 0;
 	
-	int gsubrsoffset = 0;
+	private int gsubrsoffset = 0;
 
-	int lsubrsoffset = 0;
+	private int lsubrsoffset = 0;
 
-	int nglyphs = 1;
+	private int nglyphs = 1;
 
 	/**
 	 * A range. There's probably a version of this class floating around

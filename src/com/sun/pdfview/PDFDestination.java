@@ -34,15 +34,43 @@ import java.io.IOException;
  * All three of these cases are handled by the getDestination() method.
  */
 public class PDFDestination {
+	
+	/** the type of this destination (from the list above) */
+	private int type;
+	
+	/** the page we refer to */
+	private PDFObject pageObj;
+	
+	/** the left coordinate of the fit area, if applicable */
+	private float left;
+	
+	/** the right coordinate of the fit area, if applicable */
+	private float right;
+
+	/** the top coordinate of the fit area, if applicable */
+	private float top;
+
+	/** the bottom coordinate of the fit area, if applicable */
+	private float bottom;
+
+	/** the zoom, if applicable */
+	private float zoom;
 
 	/** The known types of destination */
 	public static final int XYZ = 0;
+	
 	public static final int FIT = 1;
+	
 	public static final int FITH = 2;
+	
 	public static final int FITV = 3;
+	
 	public static final int FITR = 4;
+	
 	public static final int FITB = 5;
+	
 	public static final int FITBH = 6;
+	
 	public static final int FITBV = 7;
 
 	/**
@@ -185,24 +213,6 @@ public class PDFDestination {
 
 		return dest;
 	}
-
-	/** the type of this destination (from the list above) */
-	private int type;
-	/** the page we refer to */
-	private PDFObject pageObj;
-	/** the left coordinate of the fit area, if applicable */
-	private float left;
-	/** the right coordinate of the fit area, if applicable */
-	private float right;
-
-	/** the top coordinate of the fit area, if applicable */
-	private float top;
-
-	/** the bottom coordinate of the fit area, if applicable */
-	private float bottom;
-
-	/** the zoom, if applicable */
-	private float zoom;
 
 	/**
 	 * Creates a new instance of PDFDestination
