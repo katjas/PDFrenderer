@@ -23,42 +23,43 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import com.sun.pdfview.action.PDFAction;
 
 public class OutlineNode extends DefaultMutableTreeNode {
-    // the name of this node
+	// the name of this node
 
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private String title;
 
-    /** 
-     * Create a new outline node
-     *
-     * @param title the node's visible name in the tree
-     */
-    public OutlineNode(String title) {
-        this.title = title;
-    }
+	/**
+	 * Create a new outline node
+	 *
+	 * @param title
+	 *            the node's visible name in the tree
+	 */
+	public OutlineNode(String title) {
+		this.title = title;
+	}
 
-    /**
-     * Get the PDF action associated with this node
-     */
-    public PDFAction getAction() {
-        return (PDFAction) getUserObject();
-    }
+	/**
+	 * Get the PDF action associated with this node
+	 */
+	public PDFAction getAction() {
+		return (PDFAction) getUserObject();
+	}
 
-    /**
-     * Set the PDF action associated with this node
-     */
-    public void setAction(PDFAction action) {
-        setUserObject(action);
-    }
+	/**
+	 * Set the PDF action associated with this node
+	 */
+	public void setAction(PDFAction action) {
+		setUserObject(action);
+	}
 
-    /**
-     * Return the node's visible name in the tree
-     */
-    @Override
-    public String toString() {
-        return this.title;
-    }
+	/**
+	 * Return the node's visible name in the tree
+	 */
+	@Override
+	public String toString() {
+		return this.title;
+	}
 }

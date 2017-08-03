@@ -61,6 +61,62 @@ public class AdobeGlyphList {
 	}
 
 	/**
+	 * translate a unicode value into a glyph name. It is possible for different
+	 * unicode values to translate into the same glyph name.
+	 *
+	 * @param unicode
+	 * @return String
+	 */
+	public static String getGlyphName(int unicode) {
+		while (glyphLoaderThread != null && glyphLoaderThread.isAlive()) {
+			synchronized (glyphToUnicodes) {
+				try {
+					glyphToUnicodes.wait(250);
+				} catch (InterruptedException ex) {
+					// ignore
+				}
+			}
+		}
+		return unicodeToGlyph.get(Integer.valueOf(unicode));
+	}
+
+	/**
+	 * return a single index for a glyph, though there may be multiples.
+	 * 
+	 * @param glyphName
+	 * @return Integer
+	 */
+	public static Integer getGlyphNameIndex(String glyphName) {
+		int[] unicodes = getUnicodeValues(glyphName);
+		if (unicodes == null) {
+			return null;
+		} else {
+			return Integer.valueOf(unicodes[0]);
+		}
+	}
+
+	/**
+	 * translate a glyph name into the possible unicode values that it might
+	 * represent. It is possible to have more than one unicode value for a
+	 * single glyph name.
+	 *
+	 * @param glyphName
+	 * @return int[]
+	 */
+	public static int[] getUnicodeValues(String glyphName) {
+		while (glyphLoaderThread != null && glyphLoaderThread.isAlive()) {
+			synchronized (glyphToUnicodes) {
+				try {
+					glyphToUnicodes.wait(250);
+				} catch (InterruptedException ex) {
+					// ignore
+				}
+			}
+		}
+		return glyphToUnicodes.get(glyphName);
+	}
+
+	/**
 	 * <p>
 	 * private constructor to restrict creation to a singleton.
 	 * </p>
@@ -120,61 +176,5 @@ public class AdobeGlyphList {
 		glyphLoaderThread.setDaemon(true);
 		glyphLoaderThread.setPriority(Thread.MIN_PRIORITY);
 		glyphLoaderThread.start();
-	}
-
-	/**
-	 * translate a glyph name into the possible unicode values that it might
-	 * represent. It is possible to have more than one unicode value for a
-	 * single glyph name.
-	 *
-	 * @param glyphName
-	 * @return int[]
-	 */
-	public static int[] getUnicodeValues(String glyphName) {
-		while (glyphLoaderThread != null && glyphLoaderThread.isAlive()) {
-			synchronized (glyphToUnicodes) {
-				try {
-					glyphToUnicodes.wait(250);
-				} catch (InterruptedException ex) {
-					// ignore
-				}
-			}
-		}
-		return glyphToUnicodes.get(glyphName);
-	}
-
-	/**
-	 * return a single index for a glyph, though there may be multiples.
-	 * 
-	 * @param glyphName
-	 * @return Integer
-	 */
-	public static Integer getGlyphNameIndex(String glyphName) {
-		int[] unicodes = getUnicodeValues(glyphName);
-		if (unicodes == null) {
-			return null;
-		} else {
-			return Integer.valueOf(unicodes[0]);
-		}
-	}
-
-	/**
-	 * translate a unicode value into a glyph name. It is possible for different
-	 * unicode values to translate into the same glyph name.
-	 *
-	 * @param unicode
-	 * @return String
-	 */
-	public static String getGlyphName(int unicode) {
-		while (glyphLoaderThread != null && glyphLoaderThread.isAlive()) {
-			synchronized (glyphToUnicodes) {
-				try {
-					glyphToUnicodes.wait(250);
-				} catch (InterruptedException ex) {
-					// ignore
-				}
-			}
-		}
-		return unicodeToGlyph.get(Integer.valueOf(unicode));
 	}
 }

@@ -19,7 +19,6 @@
 
 package com.sun.pdfview.pattern;
 
-
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.Map;
@@ -33,104 +32,102 @@ import com.sun.pdfview.PDFParseException;
  *
  */
 public abstract class PDFPattern {
- 
-    /** the pattern type (1 or 2) */
-    private int type;
-    
-    /** the matrix to transform from pattern space to PDF space */
-    private AffineTransform xform;
- 
-    /** Creates a new instance of PDFPattern */
-    protected PDFPattern(int type) 
-    {
-        this.type = type;
-    }
- 
-    /**
-     * Read a pattern from the given pattern stream
-     */
-    public static PDFPattern getPattern(PDFObject patternObj, Map resources)
-        throws IOException
-    {
-        // see if the pattern is already cached
-        PDFPattern pattern = (PDFPattern) patternObj.getCache();
-        if (pattern != null) {
-            return pattern;
-        }
-        
-        // get the pattern type
-        int type = patternObj.getDictRef("PatternType").getIntValue();
-         
-        // read the pattern transform matrix
-        PDFObject matrix = patternObj.getDictRef("Matrix");
-        AffineTransform xform = null;
-        if (matrix == null) {
-            xform = new AffineTransform();
-        } else {
-            float elts[]= new float[6];
-            for (int i = 0; i < elts.length; i++) {
-            	elts[i] = matrix.getAt(i).getFloatValue();
-            }
-        
-            xform = new AffineTransform(elts); 
-        }    
-        
-        switch (type) {
-            case 1:
-                pattern = new PatternType1();
-                break;
-            case 2:
-            	pattern = new PatternType2();
-            	break;
-            default:
-                throw new PDFParseException("Unknown pattern type " + type);
-        }       
-        
-        // set the transform
-        pattern.setTransform(xform);
-        
-        // parse the pattern-specific data
-        pattern.parse(patternObj, resources);
-        
-        // set the cache
-        patternObj.setCache(pattern);
-        
-        return pattern;
-    }
-    
-    /**
-     * Get the type of this pattern
-     */
-    public int getPatternType() {
-        return this.type;
-    }
-    
-    /**
-     * Get the transform associated with this pattern
-     */
-    public AffineTransform getTransform() {
-        return this.xform;
-    }
-    
-    /**
-     * Set the transform associated with this pattern
-     */
-    protected void setTransform(AffineTransform xform) {
-        this.xform = xform;
-    }
-    
-    /**
-     * Parse the pattern-specific information from the pdf object
-     *
-     * @param patternObj the pdfobject with data for this pattern
-     */
-    protected abstract void parse(PDFObject patternObj, Map resources) 
-        throws IOException;
-    
-    /**
-     * Returns paint that represents the selected pattern
-     *
-     * @param basePaint the background paint color, or null for none
-     */
-    public abstract PDFPaint getPaint(PDFPaint basePaint);
+
+	/**
+	 * Read a pattern from the given pattern stream
+	 */
+	public static PDFPattern getPattern(PDFObject patternObj, Map resources) throws IOException {
+		// see if the pattern is already cached
+		PDFPattern pattern = (PDFPattern) patternObj.getCache();
+		if (pattern != null) {
+			return pattern;
+		}
+
+		// get the pattern type
+		int type = patternObj.getDictRef("PatternType").getIntValue();
+
+		// read the pattern transform matrix
+		PDFObject matrix = patternObj.getDictRef("Matrix");
+		AffineTransform xform = null;
+		if (matrix == null) {
+			xform = new AffineTransform();
+		} else {
+			float elts[] = new float[6];
+			for (int i = 0; i < elts.length; i++) {
+				elts[i] = matrix.getAt(i).getFloatValue();
+			}
+
+			xform = new AffineTransform(elts);
+		}
+
+		switch (type) {
+		case 1:
+			pattern = new PatternType1();
+			break;
+		case 2:
+			pattern = new PatternType2();
+			break;
+		default:
+			throw new PDFParseException("Unknown pattern type " + type);
+		}
+
+		// set the transform
+		pattern.setTransform(xform);
+
+		// parse the pattern-specific data
+		pattern.parse(patternObj, resources);
+
+		// set the cache
+		patternObj.setCache(pattern);
+
+		return pattern;
+	}
+
+	/** the pattern type (1 or 2) */
+	private int type;
+
+	/** the matrix to transform from pattern space to PDF space */
+	private AffineTransform xform;
+
+	/** Creates a new instance of PDFPattern */
+	protected PDFPattern(int type) {
+		this.type = type;
+	}
+
+	/**
+	 * Returns paint that represents the selected pattern
+	 *
+	 * @param basePaint
+	 *            the background paint color, or null for none
+	 */
+	public abstract PDFPaint getPaint(PDFPaint basePaint);
+
+	/**
+	 * Get the type of this pattern
+	 */
+	public int getPatternType() {
+		return this.type;
+	}
+
+	/**
+	 * Get the transform associated with this pattern
+	 */
+	public AffineTransform getTransform() {
+		return this.xform;
+	}
+
+	/**
+	 * Parse the pattern-specific information from the pdf object
+	 *
+	 * @param patternObj
+	 *            the pdfobject with data for this pattern
+	 */
+	protected abstract void parse(PDFObject patternObj, Map resources) throws IOException;
+
+	/**
+	 * Set the transform associated with this pattern
+	 */
+	protected void setTransform(AffineTransform xform) {
+		this.xform = xform;
+	}
 }

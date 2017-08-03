@@ -24,48 +24,47 @@ import java.io.IOException;
 import com.sun.pdfview.PDFObject;
 
 /**
- * Type 0 fonts are composite fonts with a CMAP to map between
- * source character codes and destination fonts/codes
+ * Type 0 fonts are composite fonts with a CMAP to map between source character
+ * codes and destination fonts/codes
  *
- * @author  Jonathan Kaplan
+ * @author Jonathan Kaplan
  */
 public class Type0Font extends PDFFont {
-   
-    /**
-     * The decendant fonts, indexed by font number from the CMAP
-     */
-    PDFFont[] fonts;
-        
-    /** Creates a new instance of Type0Font */
-    public Type0Font(String baseFont, PDFObject fontObj,
-                     PDFFontDescriptor descriptor) throws IOException {
-        super (baseFont, descriptor);
-                         
-        PDFObject[] descendantFonts = fontObj.getDictRef("DescendantFonts").getArray();
-        
-        this.fonts = new PDFFont[descendantFonts.length];
-        
-        for (int i = 0; i < descendantFonts.length; i++) {
-            PDFFont descFont = PDFFont.getFont(descendantFonts[i], null);
-            if (descFont instanceof CIDFontType0) {
-            	((CIDFontType0)descFont).parseToUnicodeMap(fontObj);
-            }
+
+	/**
+	 * The decendant fonts, indexed by font number from the CMAP
+	 */
+	PDFFont[] fonts;
+
+	/** Creates a new instance of Type0Font */
+	public Type0Font(String baseFont, PDFObject fontObj, PDFFontDescriptor descriptor) throws IOException {
+		super(baseFont, descriptor);
+
+		PDFObject[] descendantFonts = fontObj.getDictRef("DescendantFonts").getArray();
+
+		this.fonts = new PDFFont[descendantFonts.length];
+
+		for (int i = 0; i < descendantFonts.length; i++) {
+			PDFFont descFont = PDFFont.getFont(descendantFonts[i], null);
+			if (descFont instanceof CIDFontType0) {
+				((CIDFontType0) descFont).parseToUnicodeMap(fontObj);
+			}
 			this.fonts[i] = descFont;
-        }
-    }
-    
-    /** 
-     * Get a descendant font of this font by fontId
-     */
-    public PDFFont getDescendantFont(int fontID) {
-        return this.fonts[fontID];
-    }
-    
-    /**
-     * Get a character from the first font in the descendant fonts array
-     */
-    @Override
+		}
+	}
+
+	/**
+	 * Get a descendant font of this font by fontId
+	 */
+	public PDFFont getDescendantFont(int fontID) {
+		return this.fonts[fontID];
+	}
+
+	/**
+	 * Get a character from the first font in the descendant fonts array
+	 */
+	@Override
 	protected PDFGlyph getGlyph(char src, String name) {
-        return getDescendantFont(0).getGlyph(src, name);
-    }
+		return getDescendantFont(0).getGlyph(src, name);
+	}
 }

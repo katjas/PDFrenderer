@@ -29,59 +29,91 @@ import com.sun.pdfview.function.postscript.operation.OperationSet;
 import com.sun.pdfview.function.postscript.operation.PostScriptOperation;
 
 /**
- * <p>A PostScript function is represented as a stream containing code
- * written in a small subset of the PostScript language. 
- * This reference is taken from the (3200-1:2008:7.10.5)<p>
+ * <p>
+ * A PostScript function is represented as a stream containing code written in a
+ * small subset of the PostScript language. This reference is taken from the
+ * (3200-1:2008:7.10.5)
+ * <p>
  *
  * http://www.adobe.com/devnet/acrobat/pdfs/adobe_supplement_iso32000.pdf
  * </p>
  */
 public class FunctionType4 extends PDFFunction {
 
-    /** the list of tokens and sub-expressions. */
-    private List<String> tokens;
-    
-    /** the stack of operations. The stack contents should all be Comparable. */
-    private Stack<Object> stack;
+	/** the list of tokens and sub-expressions. */
+	private List<String> tokens;
 
-    /** Creates a new instance of FunctionType4 */
-    protected FunctionType4() {
-        super(TYPE_4);
-    }
+	/** the stack of operations. The stack contents should all be Comparable. */
+	private Stack<Object> stack;
 
-    /** Read the function information from a PDF Object */
-    @Override
-	protected void parse(PDFObject obj) throws IOException {
-    	ByteBuffer buf = obj.getStreamBuffer();
-    	
-    	byte[] byteA = new byte[buf.remaining()];
-    	buf.get(byteA);
-    	String scriptContent = new String(byteA, "UTF-8");
-    	this.tokens = new PostScriptParser().parse(scriptContent);
-    }
+	/** Creates a new instance of FunctionType4 */
+	protected FunctionType4() {
+		super(TYPE_4);
+	}
 
-    /**
-     * Map from <i>m</i> input values to <i>n</i> output values.
-     * The number of inputs <i>m</i> must be exactly one half the size of the
-     * domain.  The number of outputs should match one half the size of the
-     * range.
-     *
-     * @param inputs an array of <i>m</i> input values
-     * @param inputOffset the offset into the input array to read from
-     * @param outputs an array of size >= <i>n</i> which will be filled
-     *                with the output values
-     * @param outputOffset the offset into the output array to write to
-     */
-    @Override
+	/*************************************************************************
+	 * @param outputs
+	 * @param outputOffset
+	 ************************************************************************/
+
+	private void assertResultIsCorrect(float[] outputs, int outputOffset) {
+		int expectedResults = outputs.length - outputOffset;
+		if (this.stack.size() != expectedResults) {
+			throw new IllegalStateException("Output does not match result " + expectedResults + "/" + this.stack);
+		}
+	}
+
+	/**
+	 * Map from <i>m</i> input values to <i>n</i> output values. The number of
+	 * inputs <i>m</i> must be exactly one half the size of the domain. The
+	 * number of outputs should match one half the size of the range.
+	 *
+	 * @param inputs
+	 *            an array of <i>m</i> input values
+	 * @param inputOffset
+	 *            the offset into the input array to read from
+	 * @param outputs
+	 *            an array of size >= <i>n</i> which will be filled with the
+	 *            output values
+	 * @param outputOffset
+	 *            the offset into the output array to write to
+	 */
+	@Override
 	protected void doFunction(float[] inputs, int inputOffset, float[] outputs, int outputOffset) {
-    	prepareInitialStack(inputs, inputOffset);
-    	for (String token : this.tokens) {
+		prepareInitialStack(inputs, inputOffset);
+		for (String token : this.tokens) {
 			PostScriptOperation op = OperationSet.getInstance().getOperation(token);
 			op.eval(this.stack);
 		}
-    	assertResultIsCorrect(outputs, outputOffset);
-    	prepareResult(outputs, outputOffset);
-    }
+		assertResultIsCorrect(outputs, outputOffset);
+		prepareResult(outputs, outputOffset);
+	}
+
+	/** Read the function information from a PDF Object */
+	@Override
+	protected void parse(PDFObject obj) throws IOException {
+		ByteBuffer buf = obj.getStreamBuffer();
+
+		byte[] byteA = new byte[buf.remaining()];
+		buf.get(byteA);
+		String scriptContent = new String(byteA, "UTF-8");
+		this.tokens = new PostScriptParser().parse(scriptContent);
+	}
+
+	/*************************************************************************
+	 * Put all input values on the initial stack. All values are pushed as
+	 * Double because we calculate internally with double.
+	 * 
+	 * @param inputs
+	 * @param inputOffset
+	 ************************************************************************/
+
+	private void prepareInitialStack(float[] inputs, int inputOffset) {
+		this.stack = new Stack<Object>();
+		for (int i = inputOffset; i < inputs.length; i++) {
+			this.stack.push(new Double(inputs[i]));
+		}
+	}
 
 	/*************************************************************************
 	 * @param outputs
@@ -89,33 +121,7 @@ public class FunctionType4 extends PDFFunction {
 	 ************************************************************************/
 	private void prepareResult(float[] outputs, int outputOffset) {
 		for (int i = outputOffset; i < outputs.length; i++) {
-    		outputs[outputs.length-i-1] = ((Double)this.stack.pop()).floatValue();
+			outputs[outputs.length - i - 1] = ((Double) this.stack.pop()).floatValue();
 		}
-	}
-
-	/*************************************************************************
-	 * Put all input values on the initial stack.
-	 * All values are pushed as Double because we calculate internally with double.
-	 * @param inputs
-	 * @param inputOffset
-	 ************************************************************************/
-	
-	private void prepareInitialStack(float[] inputs, int inputOffset) {
-		this.stack = new Stack<Object>();
-    	for (int i = inputOffset; i < inputs.length; i++) {
-    		this.stack.push(new Double(inputs[i]));
-		}
-	}
-
-	/*************************************************************************
-	 * @param outputs
-	 * @param outputOffset
-	 ************************************************************************/
-	
-	private void assertResultIsCorrect(float[] outputs, int outputOffset) {
-		int expectedResults = outputs.length-outputOffset;
-		if (this.stack.size() != expectedResults) {
-        	throw new IllegalStateException("Output does not match result "+expectedResults+"/"+this.stack);
-    	}
 	}
 }

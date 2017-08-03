@@ -50,18 +50,104 @@ public abstract class PDFFont {
 	};
 	private static Map<String, File> namedFontsToLocalTtfFiles = null;
 
-	/** the font SubType of this font */
-	private String subtype;
-	/** the postscript name of this font */
-	private String baseFont;
-	/** the font encoding (maps character ids to glyphs) */
-	private PDFFontEncoding encoding;
-	/** the font descriptor */
-	private PDFFontDescriptor descriptor;
-	/** the CMap that maps this font to unicode values */
-	private PDFCMap unicodeMap;
-	/** a cache of glyphs indexed by character */
-	private Map<Character, PDFGlyph> charCache;
+	private synchronized static void ensureNamedTtfFontFiles() {
+		if (namedFontsToLocalTtfFiles == null) {
+			namedFontsToLocalTtfFiles = new HashMap<String, File>();
+
+			if (Boolean.getBoolean("PDFRenderer.avoidExternalTtf")) {
+				return;
+			}
+
+			for (final String fontDirName : getFontSearchPath()) {
+
+				final File fontDir = new File(fontDirName);
+				if (fontDir.exists()) {
+					for (final File ttfFile : fontDir.listFiles(TTF_FILTER)) {
+						if (ttfFile.canRead()) {
+							try {
+								byte[] fontBytes;
+								RandomAccessFile fontRa = null;
+								try {
+									fontRa = new RandomAccessFile(ttfFile, "r");
+									int size = (int) fontRa.length();
+									fontBytes = new byte[size];
+									fontRa.readFully(fontBytes);
+								} finally {
+									if (fontRa != null) {
+										fontRa.close();
+									}
+								}
+
+								TrueTypeFont ttf = TrueTypeFont.parseFont(fontBytes);
+								for (final String fontName : ttf.getNames()) {
+									if (!namedFontsToLocalTtfFiles.containsKey(fontName)) {
+										namedFontsToLocalTtfFiles.put(fontName, ttfFile);
+									}
+								}
+							} catch (Throwable t) {
+								// I'm not sure how much confidence we should
+								// have
+								// in the font parsing, so we'll avoid relying
+								// on
+								// this not to fail
+								System.err.println("Problem parsing " + ttfFile);
+								BaseWatchable.getErrorHandler().publishException(t);
+							}
+						}
+					}
+				}
+			}
+		}
+
+	}
+
+	private static File findExternalTtf(String fontName) {
+		ensureNamedTtfFontFiles();
+		return namedFontsToLocalTtfFiles.get(fontName);
+	}
+
+	private static String[] getDefaultFontSearchPath() {
+		String osName = null;
+		try {
+			osName = System.getProperty("os.name");
+		} catch (SecurityException e) {
+			// preserve null osName
+		}
+
+		if (osName == null) {
+			// Makes it a bit tricky to figure out a nice default
+			return new String[0];
+		}
+
+		osName = osName != null ? osName.toLowerCase() : "";
+		if (osName.startsWith("windows")) {
+			// start with some reasonable default
+			String path = "C:/WINDOWS/Fonts";
+			try {
+				String windir = System.getenv("WINDIR");
+				if (windir != null) {
+					path = windir + "/Fonts/";
+				}
+			} catch (SecurityException secEx) {
+				// drop through and accept default path
+			}
+			return new String[] { path };
+		} else if (osName != null && osName.startsWith("mac")) {
+			List<String> paths = new ArrayList<String>(Arrays.asList("/Library/Fonts", "/Network/Library/Fonts",
+					"/System/Library/Fonts", "/System Folder/Fonts"));
+			// try and add the user font dir at the front
+			try {
+				paths.add(0, System.getProperty("user.home") + "/Library/Fonts");
+			} catch (SecurityException e) {
+				// I suppose we just won't use the user fonts
+			}
+			return paths.toArray(new String[paths.size()]);
+		} else {
+			// Feel free to insert some reasonable defaults for other
+			// (UNIX, most likely) platforms here
+			return new String[0];
+		}
+	}
 
 	/**
 	 * get the PDFFont corresponding to the font described in a PDFObject. The
@@ -218,62 +304,6 @@ public abstract class PDFFont {
 		return font;
 	}
 
-	private static File findExternalTtf(String fontName) {
-		ensureNamedTtfFontFiles();
-		return namedFontsToLocalTtfFiles.get(fontName);
-	}
-
-	private synchronized static void ensureNamedTtfFontFiles() {
-		if (namedFontsToLocalTtfFiles == null) {
-			namedFontsToLocalTtfFiles = new HashMap<String, File>();
-
-			if (Boolean.getBoolean("PDFRenderer.avoidExternalTtf")) {
-				return;
-			}
-
-			for (final String fontDirName : getFontSearchPath()) {
-
-				final File fontDir = new File(fontDirName);
-				if (fontDir.exists()) {
-					for (final File ttfFile : fontDir.listFiles(TTF_FILTER)) {
-						if (ttfFile.canRead()) {
-							try {
-								byte[] fontBytes;
-								RandomAccessFile fontRa = null;
-								try {
-									fontRa = new RandomAccessFile(ttfFile, "r");
-									int size = (int) fontRa.length();
-									fontBytes = new byte[size];
-									fontRa.readFully(fontBytes);
-								} finally {
-									if (fontRa != null) {
-										fontRa.close();
-									}
-								}
-
-								TrueTypeFont ttf = TrueTypeFont.parseFont(fontBytes);
-								for (final String fontName : ttf.getNames()) {
-									if (!namedFontsToLocalTtfFiles.containsKey(fontName)) {
-										namedFontsToLocalTtfFiles.put(fontName, ttfFile);
-									}
-								}
-							} catch (Throwable t) {
-								// I'm not sure how much confidence we should
-								// have
-								// in the font parsing, so we'll avoid relying
-								// on
-								// this not to fail
-								System.err.println("Problem parsing " + ttfFile);
-								BaseWatchable.getErrorHandler().publishException(t);
-							}
-						}
-					}
-				}
-			}
-		}
-
-	}
-
 	private static String[] getFontSearchPath() {
 		String pathProperty = System.getProperty("PDFRenderer.fontSearchPath");
 		if (pathProperty != null) {
@@ -283,63 +313,47 @@ public abstract class PDFFont {
 		}
 	}
 
-	private static String[] getDefaultFontSearchPath() {
-		String osName = null;
-		try {
-			osName = System.getProperty("os.name");
-		} catch (SecurityException e) {
-			// preserve null osName
-		}
+	/** the font SubType of this font */
+	private String subtype;
 
-		if (osName == null) {
-			// Makes it a bit tricky to figure out a nice default
-			return new String[0];
-		}
+	/** the postscript name of this font */
+	private String baseFont;
 
-		osName = osName != null ? osName.toLowerCase() : "";
-		if (osName.startsWith("windows")) {
-			// start with some reasonable default
-			String path = "C:/WINDOWS/Fonts";
-			try {
-				String windir = System.getenv("WINDIR");
-				if (windir != null) {
-					path = windir + "/Fonts/";
-				}
-			} catch (SecurityException secEx) {
-				// drop through and accept default path
-			}
-			return new String[] { path };
-		} else if (osName != null && osName.startsWith("mac")) {
-			List<String> paths = new ArrayList<String>(Arrays.asList("/Library/Fonts", "/Network/Library/Fonts",
-					"/System/Library/Fonts", "/System Folder/Fonts"));
-			// try and add the user font dir at the front
-			try {
-				paths.add(0, System.getProperty("user.home") + "/Library/Fonts");
-			} catch (SecurityException e) {
-				// I suppose we just won't use the user fonts
-			}
-			return paths.toArray(new String[paths.size()]);
-		} else {
-			// Feel free to insert some reasonable defaults for other
-			// (UNIX, most likely) platforms here
-			return new String[0];
-		}
-	}
+	/** the font encoding (maps character ids to glyphs) */
+	private PDFFontEncoding encoding;
+
+	/** the font descriptor */
+	private PDFFontDescriptor descriptor;
+
+	/** the CMap that maps this font to unicode values */
+	private PDFCMap unicodeMap;
+
+	/** a cache of glyphs indexed by character */
+	private Map<Character, PDFGlyph> charCache;
 
 	/**
-	 * Get the subtype of this font.
+	 * Create a PDFFont given the base font name and the font descriptor
 	 * 
-	 * @return the subtype, one of: Type0, Type1, TrueType or Type3
+	 * @param baseFont
+	 *            the postscript name of this font
+	 * @param descriptor
+	 *            the descriptor for the font
 	 */
-	public String getSubtype() {
-		return this.subtype;
+	protected PDFFont(String baseFont, PDFFontDescriptor descriptor) {
+		setBaseFont(baseFont);
+		setDescriptor(descriptor);
 	}
 
 	/**
-	 * Set the font subtype
+	 * Compare two fonts base on the baseFont
 	 */
-	public void setSubtype(String subtype) {
-		this.subtype = subtype;
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof PDFFont)) {
+			return false;
+		}
+
+		return ((PDFFont) o).getBaseFont().equals(getBaseFont());
 	}
 
 	/**
@@ -349,89 +363,6 @@ public abstract class PDFFont {
 	 */
 	public String getBaseFont() {
 		return this.baseFont;
-	}
-
-	/**
-	 * Set the postscript name of this font
-	 * 
-	 * @param baseFont
-	 *            the postscript name of the font
-	 */
-	public void setBaseFont(String baseFont) {
-		this.baseFont = baseFont;
-	}
-
-	/**
-	 * Get the encoding for this font
-	 * 
-	 * @return the encoding which maps from this font to actual characters
-	 */
-	public PDFFontEncoding getEncoding() {
-		return this.encoding;
-	}
-
-	/**
-	 * Set the encoding for this font
-	 */
-	public void setEncoding(PDFFontEncoding encoding) {
-		this.encoding = encoding;
-	}
-
-	/**
-	 * Get the descriptor for this font
-	 * 
-	 * @return the font descriptor
-	 */
-	public PDFFontDescriptor getDescriptor() {
-		return this.descriptor;
-	}
-
-	/**
-	 * Set the descriptor font descriptor
-	 */
-	public void setDescriptor(PDFFontDescriptor descriptor) {
-		this.descriptor = descriptor;
-	}
-
-	/**
-	 * Get the CMap which maps the characters in this font to unicode names
-	 */
-	public PDFCMap getUnicodeMap() {
-		return this.unicodeMap;
-	}
-
-	/**
-	 * Set the CMap which maps the characters in this font to unicode names
-	 */
-	public void setUnicodeMap(PDFCMap unicodeMap) {
-		this.unicodeMap = unicodeMap;
-	}
-
-	/**
-	 * Get the glyphs associated with a given String in this font
-	 *
-	 * @param text
-	 *            the text to translate into glyphs
-	 */
-	public List<PDFGlyph> getGlyphs(String text) {
-		List<PDFGlyph> outList = null;
-
-		// if we have an encoding, use it to get the commands
-		if (this.encoding != null) {
-			outList = this.encoding.getGlyphs(this, text);
-		} else {
-			// use the default mapping
-			char[] arry = text.toCharArray();
-			outList = new ArrayList<PDFGlyph>(arry.length);
-
-			for (char element : arry) {
-				// only look at 2 bytes when there is no encoding
-				char src = (char) (element & 0xff);
-				outList.add(getCachedGlyph(src, null));
-			}
-		}
-
-		return outList;
 	}
 
 	/**
@@ -462,16 +393,21 @@ public abstract class PDFFont {
 	}
 
 	/**
-	 * Create a PDFFont given the base font name and the font descriptor
+	 * Get the descriptor for this font
 	 * 
-	 * @param baseFont
-	 *            the postscript name of this font
-	 * @param descriptor
-	 *            the descriptor for the font
+	 * @return the font descriptor
 	 */
-	protected PDFFont(String baseFont, PDFFontDescriptor descriptor) {
-		setBaseFont(baseFont);
-		setDescriptor(descriptor);
+	public PDFFontDescriptor getDescriptor() {
+		return this.descriptor;
+	}
+
+	/**
+	 * Get the encoding for this font
+	 * 
+	 * @return the encoding which maps from this font to actual characters
+	 */
+	public PDFFontEncoding getEncoding() {
+		return this.encoding;
 	}
 
 	/**
@@ -493,23 +429,46 @@ public abstract class PDFFont {
 	protected abstract PDFGlyph getGlyph(char src, String name);
 
 	/**
-	 * Turn this font into a pretty String
+	 * Get the glyphs associated with a given String in this font
+	 *
+	 * @param text
+	 *            the text to translate into glyphs
 	 */
-	@Override
-	public String toString() {
-		return getBaseFont();
+	public List<PDFGlyph> getGlyphs(String text) {
+		List<PDFGlyph> outList = null;
+
+		// if we have an encoding, use it to get the commands
+		if (this.encoding != null) {
+			outList = this.encoding.getGlyphs(this, text);
+		} else {
+			// use the default mapping
+			char[] arry = text.toCharArray();
+			outList = new ArrayList<PDFGlyph>(arry.length);
+
+			for (char element : arry) {
+				// only look at 2 bytes when there is no encoding
+				char src = (char) (element & 0xff);
+				outList.add(getCachedGlyph(src, null));
+			}
+		}
+
+		return outList;
 	}
 
 	/**
-	 * Compare two fonts base on the baseFont
+	 * Get the subtype of this font.
+	 * 
+	 * @return the subtype, one of: Type0, Type1, TrueType or Type3
 	 */
-	@Override
-	public boolean equals(Object o) {
-		if (!(o instanceof PDFFont)) {
-			return false;
-		}
+	public String getSubtype() {
+		return this.subtype;
+	}
 
-		return ((PDFFont) o).getBaseFont().equals(getBaseFont());
+	/**
+	 * Get the CMap which maps the characters in this font to unicode names
+	 */
+	public PDFCMap getUnicodeMap() {
+		return this.unicodeMap;
 	}
 
 	/**
@@ -518,5 +477,51 @@ public abstract class PDFFont {
 	@Override
 	public int hashCode() {
 		return getBaseFont().hashCode();
+	}
+
+	/**
+	 * Set the postscript name of this font
+	 * 
+	 * @param baseFont
+	 *            the postscript name of the font
+	 */
+	public void setBaseFont(String baseFont) {
+		this.baseFont = baseFont;
+	}
+
+	/**
+	 * Set the descriptor font descriptor
+	 */
+	public void setDescriptor(PDFFontDescriptor descriptor) {
+		this.descriptor = descriptor;
+	}
+
+	/**
+	 * Set the encoding for this font
+	 */
+	public void setEncoding(PDFFontEncoding encoding) {
+		this.encoding = encoding;
+	}
+
+	/**
+	 * Set the font subtype
+	 */
+	public void setSubtype(String subtype) {
+		this.subtype = subtype;
+	}
+
+	/**
+	 * Set the CMap which maps the characters in this font to unicode names
+	 */
+	public void setUnicodeMap(PDFCMap unicodeMap) {
+		this.unicodeMap = unicodeMap;
+	}
+
+	/**
+	 * Turn this font into a pretty String
+	 */
+	@Override
+	public String toString() {
+		return getBaseFont();
 	}
 }

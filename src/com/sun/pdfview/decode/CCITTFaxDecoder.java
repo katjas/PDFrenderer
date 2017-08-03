@@ -65,7 +65,8 @@
 package com.sun.pdfview.decode;
 
 public class CCITTFaxDecoder {
-	static int[] table1 = { 0x00, // 0 bits are left in first byte - SHOULD
+	public static int[] table1 = { 0x00, // 0 bits are left in first byte -
+											// SHOULD
 			// NOT HAPPEN
 			0x01, // 1 bits are left in first byte
 			0x03, // 2 bits are left in first byte
@@ -77,7 +78,7 @@ public class CCITTFaxDecoder {
 			0xff // 8 bits are left in first byte
 	};
 
-	static int[] table2 = { 0x00, // 0
+	public static int[] table2 = { 0x00, // 0
 			0x80, // 1
 			0xc0, // 2
 			0xe0, // 3
@@ -89,29 +90,22 @@ public class CCITTFaxDecoder {
 	};
 
 	// Table to be used when fillOrder = 2, for flipping bytes.
-	static byte[] flipTable = { 0, -128, 64, -64, 32, -96, 96, -32, 16, -112,
-			80, -48, 48, -80, 112, -16, 8, -120, 72, -56, 40, -88, 104, -24,
-			24, -104, 88, -40, 56, -72, 120, -8, 4, -124, 68, -60, 36, -92,
-			100, -28, 20, -108, 84, -44, 52, -76, 116, -12, 12, -116, 76, -52,
-			44, -84, 108, -20, 28, -100, 92, -36, 60, -68, 124, -4, 2, -126,
-			66, -62, 34, -94, 98, -30, 18, -110, 82, -46, 50, -78, 114, -14,
-			10, -118, 74, -54, 42, -86, 106, -22, 26, -102, 90, -38, 58, -70,
-			122, -6, 6, -122, 70, -58, 38, -90, 102, -26, 22, -106, 86, -42,
-			54, -74, 118, -10, 14, -114, 78, -50, 46, -82, 110, -18, 30, -98,
-			94, -34, 62, -66, 126, -2, 1, -127, 65, -63, 33, -95, 97, -31, 17,
-			-111, 81, -47, 49, -79, 113, -15, 9, -119, 73, -55, 41, -87, 105,
-			-23, 25, -103, 89, -39, 57, -71, 121, -7, 5, -123, 69, -59, 37,
-			-91, 101, -27, 21, -107, 85, -43, 53, -75, 117, -11, 13, -115, 77,
-			-51, 45, -83, 109, -19, 29, -99, 93, -35, 61, -67, 125, -3, 3,
-			-125, 67, -61, 35, -93, 99, -29, 19, -109, 83, -45, 51, -77, 115,
-			-13, 11, -117, 75, -53, 43, -85, 107, -21, 27, -101, 91, -37, 59,
-			-69, 123, -5, 7, -121, 71, -57, 39, -89, 103, -25, 23, -105, 87,
-			-41, 55, -73, 119, -9, 15, -113, 79, -49, 47, -81, 111, -17, 31,
-			-97, 95, -33, 63, -65, 127, -1, };
+	public static byte[] flipTable = { 0, -128, 64, -64, 32, -96, 96, -32, 16, -112, 80, -48, 48, -80, 112, -16, 8,
+			-120, 72, -56, 40, -88, 104, -24, 24, -104, 88, -40, 56, -72, 120, -8, 4, -124, 68, -60, 36, -92, 100, -28,
+			20, -108, 84, -44, 52, -76, 116, -12, 12, -116, 76, -52, 44, -84, 108, -20, 28, -100, 92, -36, 60, -68, 124,
+			-4, 2, -126, 66, -62, 34, -94, 98, -30, 18, -110, 82, -46, 50, -78, 114, -14, 10, -118, 74, -54, 42, -86,
+			106, -22, 26, -102, 90, -38, 58, -70, 122, -6, 6, -122, 70, -58, 38, -90, 102, -26, 22, -106, 86, -42, 54,
+			-74, 118, -10, 14, -114, 78, -50, 46, -82, 110, -18, 30, -98, 94, -34, 62, -66, 126, -2, 1, -127, 65, -63,
+			33, -95, 97, -31, 17, -111, 81, -47, 49, -79, 113, -15, 9, -119, 73, -55, 41, -87, 105, -23, 25, -103, 89,
+			-39, 57, -71, 121, -7, 5, -123, 69, -59, 37, -91, 101, -27, 21, -107, 85, -43, 53, -75, 117, -11, 13, -115,
+			77, -51, 45, -83, 109, -19, 29, -99, 93, -35, 61, -67, 125, -3, 3, -125, 67, -61, 35, -93, 99, -29, 19,
+			-109, 83, -45, 51, -77, 115, -13, 11, -117, 75, -53, 43, -85, 107, -21, 27, -101, 91, -37, 59, -69, 123, -5,
+			7, -121, 71, -57, 39, -89, 103, -25, 23, -105, 87, -41, 55, -73, 119, -9, 15, -113, 79, -49, 47, -81, 111,
+			-17, 31, -97, 95, -33, 63, -65, 127, -1, };
 
 	// The main 10 bit white runs lookup table
-	static short white[] = {
-	// 0 - 7
+	public static short white[] = {
+			// 0 - 7
 			6430, 6400, 6400, 6400, 3225, 3225, 3225, 3225,
 			// 8 - 15
 			944, 944, 944, 944, 976, 976, 976, 976,
@@ -369,23 +363,22 @@ public class CCITTFaxDecoder {
 			232, 232, 232, 232, 232, 232, 232, 232, };
 
 	// Additional make up codes for both White and Black runs
-	static short[] additionalMakeup = { 28679, 28679, 31752, (short) 32777,
-			(short) 33801, (short) 34825, (short) 35849, (short) 36873,
-			(short) 29703, (short) 29703, (short) 30727, (short) 30727,
-			(short) 37897, (short) 38921, (short) 39945, (short) 40969 };
+	public static short[] additionalMakeup = { 28679, 28679, 31752, (short) 32777, (short) 33801, (short) 34825,
+			(short) 35849, (short) 36873, (short) 29703, (short) 29703, (short) 30727, (short) 30727, (short) 37897,
+			(short) 38921, (short) 39945, (short) 40969 };
 
 	// Initial black run look up table, uses the first 4 bits of a code
-	static short[] initBlack = {
-	// 0 - 7
+	public static short[] initBlack = {
+			// 0 - 7
 			3226, 6412, 200, 168, 38, 38, 134, 134, // 8 - 15
 			100, 100, 100, 100, 68, 68, 68, 68 };
 
 	//
-	static short[] twoBitBlack = { 292, 260, 226, 226 }; // 0 - 3
+	public static short[] twoBitBlack = { 292, 260, 226, 226 }; // 0 - 3
 
 	// Main black run table, using the last 9 bits of possible 13 bit code
-	static short black[] = {
-	// 0 - 7
+	public static short black[] = {
+			// 0 - 7
 			62, 62, 30, 30, 0, 0, 0, 0,
 			// 8 - 15
 			0, 0, 0, 0, 0, 0, 0, 0,
@@ -514,8 +507,8 @@ public class CCITTFaxDecoder {
 			// 504 - 511
 			390, 390, 390, 390, 390, 390, 390, 390, };
 
-	static byte[] twoDCodes = {
-	// 0 - 7
+	public static byte[] twoDCodes = {
+			// 0 - 7
 			80, 88, 23, 71, 30, 30, 62, 62, // 8 - 15
 			4, 4, 4, 4, 4, 4, 4, 4, // 16 - 23
 			11, 11, 11, 11, 11, 11, 11, 11, // 24 - 31
@@ -566,10 +559,10 @@ public class CCITTFaxDecoder {
 	 */
 	public CCITTFaxDecoder(int fillOrder, int w, int h) {
 		this.fillOrder = fillOrder;
-		// Some of the decode methods assume prevChangingElms 
+		// Some of the decode methods assume prevChangingElms
 		// and currChaningElems are at least of length 2.
-		if(w<2) {
-		   w=2;
+		if (w < 2) {
+			w = 2;
 		}
 
 		this.w = w;
@@ -641,8 +634,7 @@ public class CCITTFaxDecoder {
 					updatePointer(4 - bits);
 				} else if (bits == 15) {
 					// EOL code
-					throw new RuntimeException(
-							"EOL code word encountered in Black run."); //$NON-NLS-1$
+					throw new RuntimeException("EOL code word encountered in Black run."); //$NON-NLS-1$
 				} else {
 					runLength += code;
 					updatePointer(9 - bits);
@@ -670,8 +662,7 @@ public class CCITTFaxDecoder {
 		return runLength;
 	}
 
-	protected void decodeNextScanline(byte[] buffer, int lineOffset,
-			int bitOffset) {
+	protected void decodeNextScanline(byte[] buffer, int lineOffset, int bitOffset) {
 		int bits = 0;
 		int code = 0;
 		int isT = 0;
@@ -813,8 +804,7 @@ public class CCITTFaxDecoder {
 	}
 
 	// One-dimensional decoding methods
-	public void decodeT41D(byte[] buffer, byte[] compData, int startX,
-			int height) {
+	public void decodeT41D(byte[] buffer, byte[] compData, int startX, int height) {
 		this.data = compData;
 		int scanlineStride = (this.w + 7) / 8;
 		this.bitPointer = 0;
@@ -829,8 +819,7 @@ public class CCITTFaxDecoder {
 	}
 
 	// Two-dimensional decoding methods
-	public void decodeT42D(byte[] buffer, byte[] compData, int startX,
-			int height) {
+	public void decodeT42D(byte[] buffer, byte[] compData, int startX, int height) {
 		this.data = compData;
 		int scanlineStride = (this.w + 7) / 8;
 		this.bitPointer = 0;
@@ -900,8 +889,7 @@ public class CCITTFaxDecoder {
 
 					if (code == 0) {
 						if (!isWhite) {
-							setToBlack(buffer, lineOffset, bitOffset, b2
-									- bitOffset);
+							setToBlack(buffer, lineOffset, bitOffset, b2 - bitOffset);
 						}
 						bitOffset = a0 = b2;
 
@@ -943,8 +931,7 @@ public class CCITTFaxDecoder {
 						// We write the current color till a1 - 1 pos,
 						// since a1 is where the next color starts
 						if (!isWhite) {
-							setToBlack(buffer, lineOffset, bitOffset, a1
-									- bitOffset);
+							setToBlack(buffer, lineOffset, bitOffset, a1 - bitOffset);
 						}
 						bitOffset = a0 = a1;
 						isWhite = !isWhite;
@@ -969,8 +956,7 @@ public class CCITTFaxDecoder {
 		}
 	}
 
-	public synchronized void decodeT6(byte[] buffer, byte[] compData,
-			int startX, int height) {
+	public synchronized void decodeT6(byte[] buffer, byte[] compData, int startX, int height) {
 		this.data = compData;
 		int scanlineStride = (this.w + 7) / 8;
 		this.bitPointer = 0;
@@ -1047,8 +1033,7 @@ public class CCITTFaxDecoder {
 						if (b2 > this.w) {
 							b2 = this.w;
 						}
-						setToBlack(buffer, lineOffset, bitOffset, b2
-								- bitOffset);
+						setToBlack(buffer, lineOffset, bitOffset, b2 - bitOffset);
 					}
 					bitOffset = a0 = b2;
 
@@ -1099,8 +1084,7 @@ public class CCITTFaxDecoder {
 						if (a1 > this.w) {
 							a1 = this.w;
 						}
-						setToBlack(buffer, lineOffset, bitOffset, a1
-								- bitOffset);
+						setToBlack(buffer, lineOffset, bitOffset, a1 - bitOffset);
 					}
 					bitOffset = a0 = a1;
 					isWhite = !isWhite;
@@ -1233,8 +1217,7 @@ public class CCITTFaxDecoder {
 			} else if (bits == 0) { // ERROR
 				throw new RuntimeException("Invalid code encountered."); //$NON-NLS-1$
 			} else if (bits == 15) { // EOL
-				throw new RuntimeException(
-						"EOL code word encountered in White run."); //$NON-NLS-1$
+				throw new RuntimeException("EOL code word encountered in White run."); //$NON-NLS-1$
 			} else {
 				// 11 bits - 0000 0111 1111 1111 = 0x07ff
 				code = entry >>> 5 & 0x07ff;
@@ -1426,8 +1409,7 @@ public class CCITTFaxDecoder {
 				}
 			}
 			if (next12Bits != 1) {
-				throw new RuntimeException(
-						"Scanline must begin with EOL code word."); //$NON-NLS-1$
+				throw new RuntimeException("Scanline must begin with EOL code word."); //$NON-NLS-1$
 			}
 		} else {
 			// First EOL code word xxxx 0000 0000 0001 will occur
@@ -1436,8 +1418,7 @@ public class CCITTFaxDecoder {
 			int bitsLeft = 8 - this.bitPointer;
 
 			if (nextNBits(bitsLeft) != 0) {
-				throw new RuntimeException(
-						"All fill bits preceding EOL code must be 0."); //$NON-NLS-1$
+				throw new RuntimeException("All fill bits preceding EOL code must be 0."); //$NON-NLS-1$
 			}
 
 			// If the number of bitsLeft is less than 8, then to have a 12
@@ -1446,8 +1427,7 @@ public class CCITTFaxDecoder {
 			// that.
 			if (bitsLeft < 4) {
 				if (nextNBits(8) != 0) {
-					throw new RuntimeException(
-							"All fill bits preceding EOL code must be 0."); //$NON-NLS-1$
+					throw new RuntimeException("All fill bits preceding EOL code must be 0."); //$NON-NLS-1$
 				}
 			}
 
@@ -1503,8 +1483,7 @@ public class CCITTFaxDecoder {
 			// Loop while the 12 bits are not unity, i.e., while the EOL
 			// has not been reached, and there is at least one bit left.
 			while (next12Bits != 1 && bitIndex < bitIndexMax) {
-				next12Bits = (next12Bits & 0x000007ff) << 1
-						| nextLesserThan8Bits(1) & 0x00000001;
+				next12Bits = (next12Bits & 0x000007ff) << 1 | nextLesserThan8Bits(1) & 0x00000001;
 				bitIndex++;
 			}
 
@@ -1527,8 +1506,7 @@ public class CCITTFaxDecoder {
 		this.fillBits = fillBits;
 	}
 
-	private void setToBlack(byte[] buffer, int lineOffset, int bitOffset,
-			int numBits) {
+	private void setToBlack(byte[] buffer, int lineOffset, int bitOffset, int numBits) {
 		int bitNum = 8 * lineOffset + bitOffset;
 		int lastBit = bitNum + numBits;
 

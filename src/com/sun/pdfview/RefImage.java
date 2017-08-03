@@ -22,32 +22,32 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 /**
- * A BufferedImage subclass that holds a strong reference to its graphics 
- * object.  This means that the graphics will never go away as long as 
- * someone holds a reference to this image, and createGraphics() and
- * getGraphics() can be called multiple times safely, and will always return
- * the same graphics object.
+ * A BufferedImage subclass that holds a strong reference to its graphics
+ * object. This means that the graphics will never go away as long as someone
+ * holds a reference to this image, and createGraphics() and getGraphics() can
+ * be called multiple times safely, and will always return the same graphics
+ * object.
  */
 public class RefImage extends BufferedImage {
 
-    /** a strong reference to the graphics object */
-    private Graphics2D g;
+	/** a strong reference to the graphics object */
+	private Graphics2D g;
 
-    /** Creates a new instance of RefImage */
-    public RefImage(int width, int height, int type) {
-        super(width, height, type);
-    }
+	/** Creates a new instance of RefImage */
+	public RefImage(int width, int height, int type) {
+		super(width, height, type);
+	}
 
-    /** 
-     * Create a graphics object only if it is currently null, otherwise
-     * return the existing graphics object.
-     */
-    @Override
+	/**
+	 * Create a graphics object only if it is currently null, otherwise return
+	 * the existing graphics object.
+	 */
+	@Override
 	public Graphics2D createGraphics() {
-        if (this.g == null) {
-            this.g = super.createGraphics();
-        }
+		if (this.g == null) {
+			this.g = super.createGraphics();
+		}
 
-        return this.g;
-    }
+		return this.g;
+	}
 }

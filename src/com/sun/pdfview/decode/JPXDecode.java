@@ -32,27 +32,27 @@ import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 
 /**
- * decode a JPX encoded imagestream into a byte array.  This class uses Java's
+ * decode a JPX encoded imagestream into a byte array. This class uses Java's
  * image_io JPEG2000 reader to do the decoding.
  *
  * @author Bernd Rosstauscher
  */
 
 public class JPXDecode {
-	
-    /*************************************************************************
-     * @param dict
-     * @param buf
-     * @param params
-     * @return
-     * @throws PDFParseException
-     ************************************************************************/
-	
-    protected static ByteBuffer decode(PDFObject dict, ByteBuffer buf, PDFObject params) throws PDFParseException {
-        BufferedImage bimg = loadImageData(buf);
-        byte[] output = ImageDataDecoder.decodeImageData(bimg);
+
+	/*************************************************************************
+	 * @param dict
+	 * @param buf
+	 * @param params
+	 * @return
+	 * @throws PDFParseException
+	 ************************************************************************/
+
+	protected static ByteBuffer decode(PDFObject dict, ByteBuffer buf, PDFObject params) throws PDFParseException {
+		BufferedImage bimg = loadImageData(buf);
+		byte[] output = ImageDataDecoder.decodeImageData(bimg);
 		return ByteBuffer.wrap(output);
-    }
+	}
 
 	/*************************************************************************
 	 * @param buf
@@ -60,9 +60,9 @@ public class JPXDecode {
 	 * @throws PDFParseException
 	 * @throws IOException
 	 ************************************************************************/
-    
+
 	private static BufferedImage loadImageData(ByteBuffer buf) throws PDFParseException {
-        ImageReader reader = null;
+		ImageReader reader = null;
 		try {
 			byte[] input = new byte[buf.remaining()];
 			buf.get(input);
@@ -75,11 +75,11 @@ public class JPXDecode {
 			BufferedImage bimg = reader.read(0);
 			return bimg;
 		} catch (IOException e) {
-            throw new PDFParseException("JPXDecode failed", e);
-        } finally {
-            if (reader != null) {
-                reader.dispose();
-            }
+			throw new PDFParseException("JPXDecode failed", e);
+		} finally {
+			if (reader != null) {
+				reader.dispose();
+			}
 		}
 
 	}

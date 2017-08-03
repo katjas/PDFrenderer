@@ -22,23 +22,23 @@ import java.io.IOException;
 
 /**
  * an exception class for recording parse errors in the PDF file
+ * 
  * @author Mike Wessler
  */
 public class PDFParseException extends IOException {
 
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
 	public PDFParseException(String msg) {
-        super(msg);
-    }
+		super(msg);
+	}
 
-    public PDFParseException(String msg, Throwable cause) {
-	this(msg);
-        initCause(cause);
-    }
+	public PDFParseException(String msg, Throwable cause) {
+		this(msg);
+		initCause(cause);
+	}
 
-    
 }

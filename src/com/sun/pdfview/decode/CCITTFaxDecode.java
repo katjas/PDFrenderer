@@ -8,13 +8,6 @@ import com.sun.pdfview.PDFObject;
 
 public class CCITTFaxDecode {
 
-	protected static ByteBuffer decode(PDFObject dict, ByteBuffer buf, PDFObject params) throws IOException {
-
-		byte[] bytes = new byte[buf.remaining()];
-		buf.get(bytes, 0, bytes.length);
-		return ByteBuffer.wrap(decode(dict, bytes));
-	}
-
 	protected static byte[] decode(PDFObject dict, byte[] source) throws IOException {
 		int width = 1728;
 		PDFObject widthDef = dict.getDictRef("Width");
@@ -76,18 +69,19 @@ public class CCITTFaxDecode {
 		return destination;
 	}
 
-	public static int getOptionFieldInt(PDFObject dict, String name, int defaultValue) throws IOException {
+	protected static ByteBuffer decode(PDFObject dict, ByteBuffer buf, PDFObject params) throws IOException {
 
-		PDFObject dictParams = getDecodeParams(dict);
+		byte[] bytes = new byte[buf.remaining()];
+		buf.get(bytes, 0, bytes.length);
+		return ByteBuffer.wrap(decode(dict, bytes));
+	}
 
-		if (dictParams == null) {
-			return defaultValue;
+	private static PDFObject getDecodeParams(PDFObject dict) throws IOException {
+		PDFObject decdParams = dict.getDictRef("DecodeParms");
+		if (decdParams != null && decdParams.getType() == PDFObject.ARRAY) {
+			return decdParams.getArray()[0];
 		}
-		PDFObject value = dictParams.getDictRef(name);
-		if (value == null) {
-			return defaultValue;
-		}
-		return value.getIntValue();
+		return decdParams;
 	}
 
 	public static boolean getOptionFieldBoolean(PDFObject dict, String name, boolean defaultValue) throws IOException {
@@ -104,11 +98,17 @@ public class CCITTFaxDecode {
 		return value.getBooleanValue();
 	}
 
-	private static PDFObject getDecodeParams(PDFObject dict) throws IOException {
-		PDFObject decdParams = dict.getDictRef("DecodeParms");
-		if (decdParams != null && decdParams.getType() == PDFObject.ARRAY) {
-			return decdParams.getArray()[0];
+	public static int getOptionFieldInt(PDFObject dict, String name, int defaultValue) throws IOException {
+
+		PDFObject dictParams = getDecodeParams(dict);
+
+		if (dictParams == null) {
+			return defaultValue;
 		}
-		return decdParams;
+		PDFObject value = dictParams.getDictRef(name);
+		if (value == null) {
+			return defaultValue;
+		}
+		return value.getIntValue();
 	}
 }

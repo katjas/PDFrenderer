@@ -20,175 +20,181 @@ package com.sun.pdfview.font.ttf;
 import java.nio.ByteBuffer;
 
 /**
- * The base class for TrueType tables.  Specific tables can extend this
- * to add more functionality
+ * The base class for TrueType tables. Specific tables can extend this to add
+ * more functionality
  */
 public class TrueTypeTable {
 
-    /**
-     * Well known tables
-     */
-    public static final int CMAP_TABLE = 0x636d6170;
-    public static final int GLYF_TABLE = 0x676c7966;
-    public static final int HEAD_TABLE = 0x68656164;
-    public static final int HHEA_TABLE = 0x68686561;
-    public static final int HMTX_TABLE = 0x686d7478;
-    public static final int MAXP_TABLE = 0x6d617870;
-    public static final int NAME_TABLE = 0x6e616d65;
-    public static final int POST_TABLE = 0x706f7374;
-    public static final int LOCA_TABLE = 0x6c6f6361;
-    /**
-     * This table's tag
-     */
-    private int tag;
-    /**
-     * The data in this table, in ByteBuffer form
-     */
-    private ByteBuffer data;
+	/**
+	 * Well known tables
+	 */
+	public static final int CMAP_TABLE = 0x636d6170;
+	public static final int GLYF_TABLE = 0x676c7966;
+	public static final int HEAD_TABLE = 0x68656164;
+	public static final int HHEA_TABLE = 0x68686561;
+	public static final int HMTX_TABLE = 0x686d7478;
+	public static final int MAXP_TABLE = 0x6d617870;
+	public static final int NAME_TABLE = 0x6e616d65;
+	public static final int POST_TABLE = 0x706f7374;
+	public static final int LOCA_TABLE = 0x6c6f6361;
 
-    /** 
-     * Creates a new instance of TrueTypeTable.
-     *
-     * This method is protected.  Use the <code>getTable()</code> methods
-     * to get new instances.
-     *
-     * @param tag the tag for this table
-     */
-    protected TrueTypeTable(int tag) {
-        this.tag = tag;
-    }
+	/**
+	 * Get a new instance of an empty table by tag string
+	 *
+	 * @param ttf
+	 *            the font that contains this table
+	 * @param tagString
+	 *            the tag for this table, as a 4 character string (e.g. head or
+	 *            cmap)
+	 */
+	public static TrueTypeTable createTable(TrueTypeFont ttf, String tagString) {
+		return createTable(ttf, tagString, null);
+	}
 
-    /**
-     * Get a new instance of an empty table by tag string
-     *
-     * @param ttf the font that contains this table
-     * @param tagString the tag for this table, as a 4 character string
-     *        (e.g. head or cmap)
-     */
-    public static TrueTypeTable createTable(TrueTypeFont ttf,
-            String tagString) {
-        return createTable(ttf, tagString, null);
-    }
+	/**
+	 * Get a new instance of a table with provided data
+	 *
+	 * @param ttf
+	 *            the font that contains this table
+	 * @param tagString
+	 *            the tag for this table, as a 4 character string (e.g. head or
+	 *            cmap)
+	 * @param data
+	 *            the table data
+	 */
+	public static TrueTypeTable createTable(TrueTypeFont ttf, String tagString, ByteBuffer data) {
+		TrueTypeTable outTable = null;
 
-    /**
-     * Get a new instance of a table with provided data
-     *
-     * @param ttf the font that contains this table
-     * @param tagString the tag for this table, as a 4 character string
-     *        (e.g. head or cmap)
-     * @param data the table data
-     */
-    public static TrueTypeTable createTable(TrueTypeFont ttf,
-            String tagString, ByteBuffer data) {
-        TrueTypeTable outTable = null;
+		int tag = stringToTag(tagString);
 
-        int tag = stringToTag(tagString);
+		switch (tag) {
+		case CMAP_TABLE: // cmap table
+			outTable = new CmapTable();
+			break;
+		case GLYF_TABLE:
+			outTable = new GlyfTable(ttf);
+			break;
+		case HEAD_TABLE: // head table
+			outTable = new HeadTable();
+			break;
+		case HHEA_TABLE: // hhea table
+			outTable = new HheaTable();
+			break;
+		case HMTX_TABLE:
+			outTable = new HmtxTable(ttf);
+			break;
+		case LOCA_TABLE:
+			outTable = new LocaTable(ttf);
+			break;
+		case MAXP_TABLE: // maxp table
+			outTable = new MaxpTable();
+			break;
+		case NAME_TABLE: // name table
+			outTable = new NameTable();
+			break;
+		case POST_TABLE: // post table
+			outTable = new PostTable();
+			break;
+		default:
+			outTable = new TrueTypeTable(tag);
+			break;
+		}
 
-        switch (tag) {
-            case CMAP_TABLE: // cmap table
-                outTable = new CmapTable();
-                break;
-            case GLYF_TABLE:
-                outTable = new GlyfTable(ttf);
-                break;
-            case HEAD_TABLE: // head table
-                outTable = new HeadTable();
-                break;
-            case HHEA_TABLE:  // hhea table
-                outTable = new HheaTable();
-                break;
-            case HMTX_TABLE:
-                outTable = new HmtxTable(ttf);
-                break;
-            case LOCA_TABLE:
-                outTable = new LocaTable(ttf);
-                break;
-            case MAXP_TABLE:  // maxp table
-                outTable = new MaxpTable();
-                break;
-            case NAME_TABLE: // name table
-                outTable = new NameTable();
-                break;
-            case POST_TABLE: // post table
-                outTable = new PostTable();
-                break;
-            default:
-                outTable = new TrueTypeTable(tag);
-                break;
-        }
+		if (data != null) {
+			outTable.setData(data);
+		}
 
-        if (data != null) {
-            outTable.setData(data);
-        }
+		return outTable;
+	}
 
-        return outTable;
-    }
+	/**
+	 * Turn a string into a tag
+	 */
+	public static int stringToTag(String tag) {
+		char[] c = tag.toCharArray();
 
-    /**
-     * Get the table's tag
-     */
-    public int getTag() {
-        return this.tag;
-    }
+		if (c.length != 4) {
+			throw new IllegalArgumentException("Bad tag length: " + tag);
+		}
 
-    /**
-     * Get the data in the table
-     */
-    public ByteBuffer getData() {
-        return this.data;
-    }
+		return c[0] << 24 | c[1] << 16 | c[2] << 8 | c[3];
+	}
 
-    /**
-     * Set the data in the table
-     */
-    public void setData(ByteBuffer data) {
-        this.data = data;
-    }
+	/**
+	 * Get the tag as a string
+	 */
+	public static String tagToString(int tag) {
+		char[] c = new char[4];
+		c[0] = (char) (0xff & tag >> 24);
+		c[1] = (char) (0xff & tag >> 16);
+		c[2] = (char) (0xff & tag >> 8);
+		c[3] = (char) (0xff & tag);
 
-    /**
-     * Get the size of the table, in bytes
-     */
-    public int getLength() {
-        return getData().remaining();
-    }
+		return new String(c);
+	}
 
-    /**
-     * Get the tag as a string
-     */
-    public static String tagToString(int tag) {
-        char[] c = new char[4];
-        c[0] = (char) (0xff & tag >> 24);
-        c[1] = (char) (0xff & tag >> 16);
-        c[2] = (char) (0xff & tag >> 8);
-        c[3] = (char) (0xff & tag);
+	/**
+	 * This table's tag
+	 */
+	private int tag;
 
-        return new String(c);
-    }
+	/**
+	 * The data in this table, in ByteBuffer form
+	 */
+	private ByteBuffer data;
 
-    /**
-     * Turn a string into a tag
-     */
-    public static int stringToTag(String tag) {
-        char[] c = tag.toCharArray();
+	/**
+	 * Creates a new instance of TrueTypeTable.
+	 *
+	 * This method is protected. Use the <code>getTable()</code> methods to get
+	 * new instances.
+	 *
+	 * @param tag
+	 *            the tag for this table
+	 */
+	protected TrueTypeTable(int tag) {
+		this.tag = tag;
+	}
 
-        if (c.length != 4) {
-            throw new IllegalArgumentException("Bad tag length: " + tag);
-        }
+	/**
+	 * Get the data in the table
+	 */
+	public ByteBuffer getData() {
+		return this.data;
+	}
 
-        return c[0] << 24 | c[1] << 16 | c[2] << 8 | c[3];
-    }
+	/**
+	 * Get the size of the table, in bytes
+	 */
+	public int getLength() {
+		return getData().remaining();
+	}
 
-    /**
-     * Put into a nice string
-     */
-    @Override
+	/**
+	 * Get the table's tag
+	 */
+	public int getTag() {
+		return this.tag;
+	}
+
+	/**
+	 * Set the data in the table
+	 */
+	public void setData(ByteBuffer data) {
+		this.data = data;
+	}
+
+	/**
+	 * Put into a nice string
+	 */
+	@Override
 	public String toString() {
-        String out = "    " + tagToString(getTag()) + " Table.  Data is: ";
-        if (getData() == null) {
-            out += "not set";
-        } else {
-            out += "set";
-        }
-        return out;
-    }
+		String out = "    " + tagToString(getTag()) + " Table.  Data is: ";
+		if (getData() == null) {
+			out += "not set";
+		} else {
+			out += "set";
+		}
+		return out;
+	}
 }

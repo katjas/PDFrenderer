@@ -22,38 +22,40 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * The abstract superclass of all drawing commands for a PDFPage.
+ * 
  * @author Mike Wessler
  */
 public abstract class PDFCmd {
 
-    /**
-     * mark the page or change the graphics state
-     * @param state the current graphics state;  may be modified during
-     * execution.
-     * @return the region of the page made dirty by executing this command
-     *         or null if no region was touched.  Note this value should be
-     *         in the coordinates of the image touched, not the page.
-     */
-    public abstract Rectangle2D execute(PDFRenderer state);
+	/**
+	 * mark the page or change the graphics state
+	 * 
+	 * @param state
+	 *            the current graphics state; may be modified during execution.
+	 * @return the region of the page made dirty by executing this command or
+	 *         null if no region was touched. Note this value should be in the
+	 *         coordinates of the image touched, not the page.
+	 */
+	public abstract Rectangle2D execute(PDFRenderer state);
 
-    /**
-     * a human readable representation of this command
-     */
-    @Override
-    public String toString() {
-        String name = getClass().getName();
-        int lastDot = name.lastIndexOf('.');
-        if (lastDot >= 0) {
-            return name.substring(lastDot + 1);
-        } else {
-            return name;
-        }
-    }
+	/**
+	 * the details of this command
+	 */
+	public String getDetails() {
+		return super.toString();
+	}
 
-    /**
-     * the details of this command
-     */
-    public String getDetails() {
-        return super.toString();
-    }
+	/**
+	 * a human readable representation of this command
+	 */
+	@Override
+	public String toString() {
+		String name = getClass().getName();
+		int lastDot = name.lastIndexOf('.');
+		if (lastDot >= 0) {
+			return name.substring(lastDot + 1);
+		} else {
+			return name;
+		}
+	}
 }

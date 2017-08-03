@@ -29,79 +29,81 @@ import java.nio.ByteBuffer;
  */
 public class ByteBufferInputStream extends InputStream {
 
-    /** The underlying byte buffer */
-    private ByteBuffer buffer;
+	/** The underlying byte buffer */
+	private ByteBuffer buffer;
 
-    /**
-     * Class constructor
-     * @param buffer the buffer to present as an input stream, positioned
-     *  at the current read position of the byte buffer
-     */
-    public ByteBufferInputStream(ByteBuffer buffer) {
-        this.buffer = buffer;
-    }
-
-    @Override
-    public int read(byte[] b, int off, int len) throws IOException {
-
-        if (b == null) {
-	    throw new NullPointerException();
-	} else if (off < 0 || len < 0 || len > b.length - off) {
-	    throw new IndexOutOfBoundsException();
-	} else if (len == 0) {
-	    return 0;
+	/**
+	 * Class constructor
+	 * 
+	 * @param buffer
+	 *            the buffer to present as an input stream, positioned at the
+	 *            current read position of the byte buffer
+	 */
+	public ByteBufferInputStream(ByteBuffer buffer) {
+		this.buffer = buffer;
 	}
 
-        final int remaining = buffer.remaining();
-        if (remaining == 0) {
-            return -1;
-        } else if (remaining < len) {
-            buffer.get(b, off, remaining);
-            return remaining;
-        } else {
-            buffer.get(b, off, len);
-            return len;
-        }
-    }
+	@Override
+	public int available() throws IOException {
+		return buffer.remaining();
+	}
 
-    @Override
-    public long skip(long n) throws IOException {
-        if (n <= 0) {
-            return 0;
-        } else {
-            final int remaining = buffer.remaining();
-            if (n < remaining) {
-                buffer.position(buffer.position() + remaining);
-                return remaining;
-            } else {
-                buffer.position((int) (buffer.position() + n));
-                return n;
-            }
-        }
-    }
+	@Override
+	public void mark(int readlimit) {
+		buffer.mark();
+	}
 
-    @Override
-    public int read() throws IOException {
-        return buffer.get();
-    }
+	@Override
+	public boolean markSupported() {
+		return true;
+	}
 
-    @Override
-    public int available() throws IOException {
-        return buffer.remaining();
-    }
+	@Override
+	public int read() throws IOException {
+		return buffer.get();
+	}
 
-    @Override
-    public void mark(int readlimit) {
-        buffer.mark();
-    }
+	@Override
+	public int read(byte[] b, int off, int len) throws IOException {
 
-    @Override
-    public boolean markSupported() {
-        return true;
-    }
+		if (b == null) {
+			throw new NullPointerException();
+		} else if (off < 0 || len < 0 || len > b.length - off) {
+			throw new IndexOutOfBoundsException();
+		} else if (len == 0) {
+			return 0;
+		}
 
-    @Override
-    public void reset() throws IOException {
-        buffer.reset();
-    }
+		final int remaining = buffer.remaining();
+		if (remaining == 0) {
+			return -1;
+		} else if (remaining < len) {
+			buffer.get(b, off, remaining);
+			return remaining;
+		} else {
+			buffer.get(b, off, len);
+			return len;
+		}
+	}
+
+	@Override
+	public void reset() throws IOException {
+		buffer.reset();
+	}
+
+	@Override
+	public long skip(long n) throws IOException {
+		if (n <= 0) {
+			return 0;
+		} else {
+			final int remaining = buffer.remaining();
+			if (n < remaining) {
+				buffer.position(buffer.position() + remaining);
+				return remaining;
+			} else {
+				buffer.position((int) (buffer.position() + n));
+				return n;
+			}
+		}
+	}
 }

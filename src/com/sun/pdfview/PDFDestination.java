@@ -44,32 +44,52 @@ public class PDFDestination {
 	public static final int FITB = 5;
 	public static final int FITBH = 6;
 	public static final int FITBV = 7;
-	/** the type of this destination (from the list above) */
-	private int type;
-	/** the page we refer to */
-	private PDFObject pageObj;
-	/** the left coordinate of the fit area, if applicable */
-	private float left;
-	/** the right coordinate of the fit area, if applicable */
-	private float right;
-	/** the top coordinate of the fit area, if applicable */
-	private float top;
-	/** the bottom coordinate of the fit area, if applicable */
-	private float bottom;
-	/** the zoom, if applicable */
-	private float zoom;
 
 	/**
-	 * Creates a new instance of PDFDestination
-	 *
-	 * @param pageObj
-	 *            the page object this destination refers to
-	 * @param type
-	 *            the type of page this object refers to
+	 * Get a destination, given a name. This means the destination is in the
+	 * root node's dests dictionary.
 	 */
-	protected PDFDestination(PDFObject pageObj, int type) {
-		this.pageObj = pageObj;
-		this.type = type;
+	private static PDFObject getDestFromName(PDFObject name, PDFObject root) throws IOException {
+		// find the dests object in the root node
+		PDFObject dests = root.getDictRef("Dests");
+		if (dests != null) {
+			// find this name in the dests dictionary
+			return dests.getDictRef(name.getStringValue());
+		}
+
+		// not found
+		return null;
+	}
+
+	/**
+	 * Get a destination, given a string. This means the destination is in the
+	 * root node's names dictionary.
+	 */
+	private static PDFObject getDestFromString(PDFObject str, PDFObject root) throws IOException {
+		// find the names object in the root node
+		PDFObject names = root.getDictRef("Names");
+		if (names != null) {
+			// find the dests entry in the names dictionary
+			PDFObject dests = names.getDictRef("Dests");
+			if (dests != null) {
+				// create a name tree object
+				NameTree tree = new NameTree(dests);
+
+				// find the value we're looking for
+				PDFObject obj = tree.find(str.getStringValue());
+
+				// if we get back a dictionary, look for the /D value
+				if (obj != null && obj.getType() == PDFObject.DICTIONARY) {
+					obj = obj.getDictRef("D");
+				}
+
+				// found it
+				return obj;
+			}
+		}
+
+		// not found
+		return null;
 	}
 
 	/**
@@ -166,60 +186,35 @@ public class PDFDestination {
 		return dest;
 	}
 
-	/**
-	 * Get the type of this destination
-	 */
-	public int getType() {
-		return this.type;
-	}
+	/** the type of this destination (from the list above) */
+	private int type;
+	/** the page we refer to */
+	private PDFObject pageObj;
+	/** the left coordinate of the fit area, if applicable */
+	private float left;
+	/** the right coordinate of the fit area, if applicable */
+	private float right;
+
+	/** the top coordinate of the fit area, if applicable */
+	private float top;
+
+	/** the bottom coordinate of the fit area, if applicable */
+	private float bottom;
+
+	/** the zoom, if applicable */
+	private float zoom;
 
 	/**
-	 * Get the PDF Page object associated with this destination
+	 * Creates a new instance of PDFDestination
+	 *
+	 * @param pageObj
+	 *            the page object this destination refers to
+	 * @param type
+	 *            the type of page this object refers to
 	 */
-	public PDFObject getPage() {
-		return this.pageObj;
-	}
-
-	/**
-	 * Get the left coordinate value
-	 */
-	public float getLeft() {
-		return this.left;
-	}
-
-	/**
-	 * Set the left coordinate value
-	 */
-	public void setLeft(float left) {
-		this.left = left;
-	}
-
-	/**
-	 * Get the right coordinate value
-	 */
-	public float getRight() {
-		return this.right;
-	}
-
-	/**
-	 * Set the right coordinate value
-	 */
-	public void setRight(float right) {
-		this.right = right;
-	}
-
-	/**
-	 * Get the top coordinate value
-	 */
-	public float getTop() {
-		return this.top;
-	}
-
-	/**
-	 * Set the top coordinate value
-	 */
-	public void setTop(float top) {
-		this.top = top;
+	protected PDFDestination(PDFObject pageObj, int type) {
+		this.pageObj = pageObj;
+		this.type = type;
 	}
 
 	/**
@@ -230,10 +225,38 @@ public class PDFDestination {
 	}
 
 	/**
-	 * Set the bottom coordinate value
+	 * Get the left coordinate value
 	 */
-	public void setBottom(float bottom) {
-		this.bottom = bottom;
+	public float getLeft() {
+		return this.left;
+	}
+
+	/**
+	 * Get the PDF Page object associated with this destination
+	 */
+	public PDFObject getPage() {
+		return this.pageObj;
+	}
+
+	/**
+	 * Get the right coordinate value
+	 */
+	public float getRight() {
+		return this.right;
+	}
+
+	/**
+	 * Get the top coordinate value
+	 */
+	public float getTop() {
+		return this.top;
+	}
+
+	/**
+	 * Get the type of this destination
+	 */
+	public int getType() {
+		return this.type;
 	}
 
 	/**
@@ -244,56 +267,37 @@ public class PDFDestination {
 	}
 
 	/**
+	 * Set the bottom coordinate value
+	 */
+	public void setBottom(float bottom) {
+		this.bottom = bottom;
+	}
+
+	/**
+	 * Set the left coordinate value
+	 */
+	public void setLeft(float left) {
+		this.left = left;
+	}
+
+	/**
+	 * Set the right coordinate value
+	 */
+	public void setRight(float right) {
+		this.right = right;
+	}
+
+	/**
+	 * Set the top coordinate value
+	 */
+	public void setTop(float top) {
+		this.top = top;
+	}
+
+	/**
 	 * Set the zoom value
 	 */
 	public void setZoom(float zoom) {
 		this.zoom = zoom;
-	}
-
-	/**
-	 * Get a destination, given a name. This means the destination is in the
-	 * root node's dests dictionary.
-	 */
-	private static PDFObject getDestFromName(PDFObject name, PDFObject root) throws IOException {
-		// find the dests object in the root node
-		PDFObject dests = root.getDictRef("Dests");
-		if (dests != null) {
-			// find this name in the dests dictionary
-			return dests.getDictRef(name.getStringValue());
-		}
-
-		// not found
-		return null;
-	}
-
-	/**
-	 * Get a destination, given a string. This means the destination is in the
-	 * root node's names dictionary.
-	 */
-	private static PDFObject getDestFromString(PDFObject str, PDFObject root) throws IOException {
-		// find the names object in the root node
-		PDFObject names = root.getDictRef("Names");
-		if (names != null) {
-			// find the dests entry in the names dictionary
-			PDFObject dests = names.getDictRef("Dests");
-			if (dests != null) {
-				// create a name tree object
-				NameTree tree = new NameTree(dests);
-
-				// find the value we're looking for
-				PDFObject obj = tree.find(str.getStringValue());
-
-				// if we get back a dictionary, look for the /D value
-				if (obj != null && obj.getType() == PDFObject.DICTIONARY) {
-					obj = obj.getDictRef("D");
-				}
-
-				// found it
-				return obj;
-			}
-		}
-
-		// not found
-		return null;
 	}
 }

@@ -25,54 +25,58 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 
 /**
- * PDFPaint is some kind of shader that knows how to fill a path.
- * At the moment, only a solid color is implemented, but gradients
- * and textures should be possible, too.
+ * PDFPaint is some kind of shader that knows how to fill a path. At the moment,
+ * only a solid color is implemented, but gradients and textures should be
+ * possible, too.
+ * 
  * @author Mike Wessler
  */
 public class PDFPaint {
 
-    private Paint mainPaint;
+	/**
+	 * get the PDFPaint representing a solid color
+	 */
+	public static PDFPaint getColorPaint(Color c) {
+		return getPaint(c);
+	}
 
-    /**
-     * create a new PDFPaint based on a solid color
-     */
-    protected PDFPaint(Paint p) {
-        this.mainPaint = p;
-    }
+	/**
+	 * get the PDFPaint representing a generic paint
+	 */
+	public static PDFPaint getPaint(Paint p) {
+		return new PDFPaint(p);
+	}
 
-    /**
-     * get the PDFPaint representing a solid color
-     */
-    public static PDFPaint getColorPaint(Color c) {
-        return getPaint(c);
-    }
+	private Paint mainPaint;
 
-    /**
-     * get the PDFPaint representing a generic paint
-     */
-    public static PDFPaint getPaint(Paint p) {
-        return new PDFPaint(p);
-    }
+	/**
+	 * create a new PDFPaint based on a solid color
+	 */
+	protected PDFPaint(Paint p) {
+		this.mainPaint = p;
+	}
 
-    /**
-     * fill a path with the paint, and record the dirty area.
-     * @param state the current graphics state
-     * @param g the graphics into which to draw
-     * @param s the path to fill
-     */
-    public Rectangle2D fill(PDFRenderer state, Graphics2D g,
-            GeneralPath s) {
-        g.setPaint(this.mainPaint);
-        g.fill(s);
+	/**
+	 * fill a path with the paint, and record the dirty area.
+	 * 
+	 * @param state
+	 *            the current graphics state
+	 * @param g
+	 *            the graphics into which to draw
+	 * @param s
+	 *            the path to fill
+	 */
+	public Rectangle2D fill(PDFRenderer state, Graphics2D g, GeneralPath s) {
+		g.setPaint(this.mainPaint);
+		g.fill(s);
 
-        return s.createTransformedShape(g.getTransform()).getBounds2D();
-    }
+		return s.createTransformedShape(g.getTransform()).getBounds2D();
+	}
 
-    /**
-     * get the primary color associated with this PDFPaint.
-     */
-    public Paint getPaint() {
-        return this.mainPaint;
-    }
+	/**
+	 * get the primary color associated with this PDFPaint.
+	 */
+	public Paint getPaint() {
+		return this.mainPaint;
+	}
 }

@@ -34,34 +34,37 @@ import com.sun.pdfview.PDFParseException;
 import ch.randelshofer.media.jpeg.JPEGImageIO;
 
 /**
- * decode a DCT encoded array into a byte array.  This class uses Java's
- * built-in JPEG image class to do the decoding.
+ * decode a DCT encoded array into a byte array. This class uses Java's built-in
+ * JPEG image class to do the decoding.
  *
  * @author Mike Wessler
  */
 public class DCTDecode {
 
-    /**
-     * decode an array of bytes in DCT format.
-     * <p>
-     * DCT is the format used by JPEG images, so this class simply
-     * loads the DCT-format bytes as an image, then reads the bytes out
-     * of the image to create the array.  Unfortunately, their most
-     * likely use is to get turned BACK into an image, so this isn't
-     * terribly efficient... but is is general... don't hit, please.
-     * <p>
-     * The DCT-encoded stream may have 1, 3 or 4 samples per pixel, depending
-     * on the colorspace of the image.  In decoding, we look for the colorspace
-     * in the stream object's dictionary to decide how to decode this image.
-     * If no colorspace is present, we guess 3 samples per pixel.
-     *
-     * @param dict the stream dictionary
-     * @param buf the DCT-encoded buffer
-     * @param params the parameters to the decoder (ignored)
-     * @return the decoded buffer
-     * @throws PDFParseException 
-     */
-    protected static ByteBuffer decode(PDFObject dict, ByteBuffer buf, PDFObject params) throws PDFParseException {
+	/**
+	 * decode an array of bytes in DCT format.
+	 * <p>
+	 * DCT is the format used by JPEG images, so this class simply loads the
+	 * DCT-format bytes as an image, then reads the bytes out of the image to
+	 * create the array. Unfortunately, their most likely use is to get turned
+	 * BACK into an image, so this isn't terribly efficient... but is is
+	 * general... don't hit, please.
+	 * <p>
+	 * The DCT-encoded stream may have 1, 3 or 4 samples per pixel, depending on
+	 * the colorspace of the image. In decoding, we look for the colorspace in
+	 * the stream object's dictionary to decide how to decode this image. If no
+	 * colorspace is present, we guess 3 samples per pixel.
+	 *
+	 * @param dict
+	 *            the stream dictionary
+	 * @param buf
+	 *            the DCT-encoded buffer
+	 * @param params
+	 *            the parameters to the decoder (ignored)
+	 * @return the decoded buffer
+	 * @throws PDFParseException
+	 */
+	protected static ByteBuffer decode(PDFObject dict, ByteBuffer buf, PDFObject params) throws PDFParseException {
 		// BEGIN PATCH W. Randelshofer Completely rewrote decode routine in
 		// order to
 		// support JPEG images in the CMYK color space.
@@ -72,35 +75,34 @@ public class DCTDecode {
 		// to
 		// support JPEG images in the CMYK color space.
 
-    }
+	}
 
-	
 	/*************************************************************************
 	 * @param buf
 	 * @return
 	 * @throws PDFParseException
 	 ************************************************************************/
-	
-	private static BufferedImage loadImageData(ByteBuffer buf)
-			throws PDFParseException {
+
+	private static BufferedImage loadImageData(ByteBuffer buf) throws PDFParseException {
 		buf.rewind();
 		byte[] input = new byte[buf.remaining()];
 		buf.get(input);
 		BufferedImage bimg;
 		try {
 			try {
-				bimg = JPEGImageIO.read(new ByteArrayInputStream(input), false);				
+				bimg = JPEGImageIO.read(new ByteArrayInputStream(input), false);
 			} catch (IllegalArgumentException colorProfileMismatch) {
 				// we experienced this problem with an embedded jpeg
-				// that specified a icc color profile with 4 components 
+				// that specified a icc color profile with 4 components
 				// but the raster had only 3 bands (apparently YCC encoded)
 				Image img = Toolkit.getDefaultToolkit().createImage(input);
 				// wait until image is loaded using ImageIcon for convenience
 				ImageIcon imageIcon = new ImageIcon(img);
 				// copy to buffered image
-				bimg = new BufferedImage(imageIcon.getIconWidth(), imageIcon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
-				bimg.getGraphics().drawImage(img, 0, 0 , null);
-			}			
+				bimg = new BufferedImage(imageIcon.getIconWidth(), imageIcon.getIconHeight(),
+						BufferedImage.TYPE_INT_RGB);
+				bimg.getGraphics().drawImage(img, 0, 0, null);
+			}
 		} catch (Exception ex) {
 			PDFParseException ex2 = new PDFParseException("DCTDecode failed");
 			ex2.initCause(ex);
@@ -111,46 +113,45 @@ public class DCTDecode {
 	}
 }
 
-
 /**
- * Image tracker.  I'm not sure why I'm not using the default Java
- * image tracker for this one.
+ * Image tracker. I'm not sure why I'm not using the default Java image tracker
+ * for this one.
  */
 class MyTracker implements ImageObserver {
-    boolean done= false;
-    
-    /**
-     * create a new MyTracker that watches this image.  The image
-     * will start loading immediately.
-     */
-    public MyTracker(Image img) {
-	img.getWidth(this);
-    }
-    
-    /**
-     * More information has come in about the image.
-     */
-    @Override
-	public boolean imageUpdate(Image img, int infoflags, int x, int y,
-			       int width, int height) {
-	if ((infoflags & (ALLBITS | ERROR | ABORT))!=0) {
-	    synchronized(this) {
-		this.done= true;
-		notifyAll();
-	    }
-	    return false;
+	public boolean done = false;
+
+	/**
+	 * create a new MyTracker that watches this image. The image will start
+	 * loading immediately.
+	 */
+	public MyTracker(Image img) {
+		img.getWidth(this);
 	}
-	return true;
-    }
-    
-    /**
-     * Wait until the image is done, then return.
-     */
-    public synchronized void waitForAll() {
-	if (!this.done) {
-	    try {
-		wait();
-	    } catch (InterruptedException ie) {}
+
+	/**
+	 * More information has come in about the image.
+	 */
+	@Override
+	public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
+		if ((infoflags & (ALLBITS | ERROR | ABORT)) != 0) {
+			synchronized (this) {
+				this.done = true;
+				notifyAll();
+			}
+			return false;
+		}
+		return true;
 	}
-    }
+
+	/**
+	 * Wait until the image is done, then return.
+	 */
+	public synchronized void waitForAll() {
+		if (!this.done) {
+			try {
+				wait();
+			} catch (InterruptedException ie) {
+			}
+		}
+	}
 }

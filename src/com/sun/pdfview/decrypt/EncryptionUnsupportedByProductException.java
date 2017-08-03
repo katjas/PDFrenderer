@@ -20,22 +20,20 @@
 package com.sun.pdfview.decrypt;
 
 /**
- * Identifies that the specified encryption mechanism is not
- * supported by this product, that is, PDFRenderer, as opposed to
- * a {@link EncryptionUnsupportedByPlatformException limitation in
- * the platform}. 
+ * Identifies that the specified encryption mechanism is not supported by this
+ * product, that is, PDFRenderer, as opposed to a
+ * {@link EncryptionUnsupportedByPlatformException limitation in the platform}.
  *
  * @author Luke Kirby
  */
-public class EncryptionUnsupportedByProductException
-        extends UnsupportedEncryptionException {
+public class EncryptionUnsupportedByProductException extends UnsupportedEncryptionException {
 
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
 	public EncryptionUnsupportedByProductException(String message) {
-        super(message);
-    }
+		super(message);
+	}
 }

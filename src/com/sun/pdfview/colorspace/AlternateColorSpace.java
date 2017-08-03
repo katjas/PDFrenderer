@@ -25,73 +25,77 @@ import com.sun.pdfview.PDFPaint;
 import com.sun.pdfview.function.PDFFunction;
 
 /**
- * A color space that uses another color space to return values, and a
- * function to map between values in the input and input values to the
- * alternate color space
- */ 
+ * A color space that uses another color space to return values, and a function
+ * to map between values in the input and input values to the alternate color
+ * space
+ */
 public class AlternateColorSpace extends PDFColorSpace {
-    /** The alternate color space */
-    private PDFColorSpace alternate;
-    
-    /** The function */
-    private PDFFunction function;
-    
-    private AltColorSpace altcolorspace;
-    
-    /** Creates a new instance of AlternateColorSpace */
-    public AlternateColorSpace(PDFColorSpace alternate, PDFFunction function) {
-        super(null);
-        
-        this.alternate = alternate;
-        this.function = function;
-    }
-    
-    /**
-     * get the number of components expected in the getPaint command
-     */
-    @Override public int getNumComponents() {
-	if (this.function != null) {
-            return this.function.getNumInputs();
-        } else {
-            return this.alternate.getNumComponents();
-        }
-    }
+	/** The alternate color space */
+	private PDFColorSpace alternate;
 
-    /**
-     * get the PDFPaint representing the color described by the
-     * given color components
-     * @param components the color components corresponding to the given
-     * colorspace
-     * @return a PDFPaint object representing the closest Color to the
-     * given components.
-     */
-    @Override public PDFPaint getPaint(float[] components) {
-        if (this.function != null) {
-            // translate values using function
-            components = this.function.calculate(components);
-        }
-        
-        return this.alternate.getPaint(components);
-    }
-    
-    /**
-     * get the original Java ColorSpace.
-     */
-    @Override public ColorSpace getColorSpace() {
-    	if (altcolorspace == null) {
+	/** The function */
+	private PDFFunction function;
+
+	private AltColorSpace altcolorspace;
+
+	/** Creates a new instance of AlternateColorSpace */
+	public AlternateColorSpace(PDFColorSpace alternate, PDFFunction function) {
+		super(null);
+
+		this.alternate = alternate;
+		this.function = function;
+	}
+
+	/**
+	 * get the original Java ColorSpace.
+	 */
+	@Override
+	public ColorSpace getColorSpace() {
+		if (altcolorspace == null) {
 			altcolorspace = new AltColorSpace(function, alternate.getColorSpace());
 		}
-    	return altcolorspace;
-    	//return this.alternate.getColorSpace();
-    }
-    
+		return altcolorspace;
+		// return this.alternate.getColorSpace();
+	}
+
 	/*************************************************************************
 	 * Get the PDF function
+	 * 
 	 * @return PDFFunction
 	 ************************************************************************/
 	public PDFFunction getFunktion() {
-		return this.function;		
+		return this.function;
 	}
-	
-	
+
+	/**
+	 * get the number of components expected in the getPaint command
+	 */
+	@Override
+	public int getNumComponents() {
+		if (this.function != null) {
+			return this.function.getNumInputs();
+		} else {
+			return this.alternate.getNumComponents();
+		}
+	}
+
+	/**
+	 * get the PDFPaint representing the color described by the given color
+	 * components
+	 * 
+	 * @param components
+	 *            the color components corresponding to the given colorspace
+	 * @return a PDFPaint object representing the closest Color to the given
+	 *         components.
+	 */
+	@Override
+	public PDFPaint getPaint(float[] components) {
+		if (this.function != null) {
+			// translate values using function
+			components = this.function.calculate(components);
+		}
+
+		return this.alternate.getPaint(components);
+	}
+
 }

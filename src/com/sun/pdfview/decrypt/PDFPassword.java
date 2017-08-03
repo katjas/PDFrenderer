@@ -61,68 +61,92 @@ import com.sun.pdfview.PDFStringUtil;
  */
 public class PDFPassword {
 
-	/** The empty password */
-	public static final PDFPassword EMPTY_PASSWORD = new PDFPassword(new byte[0]);
-
 	/**
-	 * Ensure a non-null PDFPassword by substituting the empty password for a
-	 * null password
-	 * 
-	 * @param password
-	 *            the password, may be null
-	 * @return a non-null password
+	 * Converts strings to byte by employing a {@link CharsetEncoder} and a
+	 * configurable mechanism to replace or ignore characters that are
+	 * unrepresentable according to the encoder.
 	 */
-	public static PDFPassword nonNullPassword(PDFPassword password) {
-		return password != null ? password : EMPTY_PASSWORD;
-	}
+	private static abstract class CharsetEncoderGenerator implements PasswordByteGenerator {
 
-	/** the password in bytes, if specified as such */
-	private byte[] passwordBytes = null;
-	/** the passwird as a string, if specified as such */
-	private String passwordString = null;
+		private Byte replacementByte;
 
-	/**
-	 * Construct a byte-based password
-	 * 
-	 * @param passwordBytes
-	 *            the password bytes
-	 */
-	public PDFPassword(byte[] passwordBytes) {
-		this.passwordBytes = passwordBytes != null ? passwordBytes : new byte[0];
-	}
+		/**
+		 * Class constructor
+		 *
+		 * @param replacementByte
+		 *            the byte to replace to use to represent any
+		 *            unrepresentable character, or null if unrepresentable
+		 *            characters should just be ignored
+		 */
+		protected CharsetEncoderGenerator(Byte replacementByte) {
+			this.replacementByte = replacementByte;
+		}
 
-	/**
-	 * Construct a string-based password
-	 * 
-	 * @param passwordString
-	 *            the password
-	 */
-	public PDFPassword(String passwordString) {
-		this.passwordString = passwordString != null ? passwordString : "";
-	}
+		protected abstract CharsetEncoder createCharsetEncoder();
 
-	/**
-	 * Get the password bytes.
-	 *
-	 * @param unicodeConversion
-	 *            whether the specific conversion from a unicode String, as
-	 *            present for version 5 encryption, should be used
-	 * @return a list of possible password bytes
-	 */
-	List<byte[]> getPasswordBytes(boolean unicodeConversion) {
-		// TODO - handle unicodeConversion when we support version 5
-		if (this.passwordBytes != null || this.passwordString == null) {
-			return Collections.singletonList(this.passwordBytes);
-		} else {
-			if (isAlphaNum7BitString(this.passwordString)) {
-				// there's no reasonthat this string would get encoded
-				// in any other way
-				return Collections.singletonList(PDFStringUtil.asBytes(this.passwordString));
+		@Override
+		public byte[] generateBytes(String password) {
+			final CharsetEncoder encoder = createCharsetEncoder();
+			if (this.replacementByte != null) {
+				encoder.replaceWith(new byte[] { this.replacementByte });
+				encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
 			} else {
-				return generatePossiblePasswordBytes(this.passwordString);
+				encoder.onUnmappableCharacter(CodingErrorAction.IGNORE);
+			}
+			try {
+				final ByteBuffer b = encoder.encode(CharBuffer.wrap(password));
+				final byte[] bytes = new byte[b.remaining()];
+				b.get(bytes);
+				return bytes;
+			} catch (CharacterCodingException e) {
+				// shouldn't happen: unmappable characters should be the only
+				// problem, and we're not handling them with a report
+				return null;
 			}
 		}
+
 	}
+
+	/**
+	 * Generate byte[] representations based on a Unicode code point identity
+	 * encoding; characters over 255 in value are considered unrepresentable
+	 */
+	private static class IdentityEncodingByteGenerator extends CharsetEncoderGenerator {
+
+		private IdentityEncodingByteGenerator(Byte replacementByte) {
+			super(replacementByte);
+		}
+
+		@Override
+		protected CharsetEncoder createCharsetEncoder() {
+			return new Identity8BitCharsetEncoder();
+		}
+	}
+
+	/**
+	 * Converts a string password to a byte[] representation
+	 */
+	private static interface PasswordByteGenerator {
+		byte[] generateBytes(String password);
+	}
+
+	/**
+	 * Generate byte[] representations based on the PDFDocEncoding
+	 */
+	private static class PDFDocEncodingByteGenerator extends CharsetEncoderGenerator {
+
+		private PDFDocEncodingByteGenerator(Byte replacementByte) {
+			super(replacementByte);
+		}
+
+		@Override
+		protected CharsetEncoder createCharsetEncoder() {
+			return new PDFDocCharsetEncoder();
+		}
+	}
+
+	/** The empty password */
+	public static final PDFPassword EMPTY_PASSWORD = new PDFPassword(new byte[0]);
 
 	/**
 	 * An array of password byte generators that attempts to enumerate the
@@ -189,6 +213,67 @@ public class PDFPassword {
 		return possibilties;
 	}
 
+	/**
+	 * Ensure a non-null PDFPassword by substituting the empty password for a
+	 * null password
+	 * 
+	 * @param password
+	 *            the password, may be null
+	 * @return a non-null password
+	 */
+	public static PDFPassword nonNullPassword(PDFPassword password) {
+		return password != null ? password : EMPTY_PASSWORD;
+	}
+
+	/** the password in bytes, if specified as such */
+	private byte[] passwordBytes = null;
+
+	/** the passwird as a string, if specified as such */
+	private String passwordString = null;
+
+	/**
+	 * Construct a byte-based password
+	 * 
+	 * @param passwordBytes
+	 *            the password bytes
+	 */
+	public PDFPassword(byte[] passwordBytes) {
+		this.passwordBytes = passwordBytes != null ? passwordBytes : new byte[0];
+	}
+
+	/**
+	 * Construct a string-based password
+	 * 
+	 * @param passwordString
+	 *            the password
+	 */
+	public PDFPassword(String passwordString) {
+		this.passwordString = passwordString != null ? passwordString : "";
+	}
+
+	/**
+	 * Get the password bytes.
+	 *
+	 * @param unicodeConversion
+	 *            whether the specific conversion from a unicode String, as
+	 *            present for version 5 encryption, should be used
+	 * @return a list of possible password bytes
+	 */
+	List<byte[]> getPasswordBytes(boolean unicodeConversion) {
+		// TODO - handle unicodeConversion when we support version 5
+		if (this.passwordBytes != null || this.passwordString == null) {
+			return Collections.singletonList(this.passwordBytes);
+		} else {
+			if (isAlphaNum7BitString(this.passwordString)) {
+				// there's no reasonthat this string would get encoded
+				// in any other way
+				return Collections.singletonList(PDFStringUtil.asBytes(this.passwordString));
+			} else {
+				return generatePossiblePasswordBytes(this.passwordString);
+			}
+		}
+	}
+
 	private boolean isAlphaNum7BitString(String string) {
 		for (int i = 0; i < string.length(); ++i) {
 			final char c = string.charAt(i);
@@ -197,90 +282,6 @@ public class PDFPassword {
 			}
 		}
 		return true;
-	}
-
-	/**
-	 * Converts a string password to a byte[] representation
-	 */
-	private static interface PasswordByteGenerator {
-		byte[] generateBytes(String password);
-	}
-
-	/**
-	 * Converts strings to byte by employing a {@link CharsetEncoder} and a
-	 * configurable mechanism to replace or ignore characters that are
-	 * unrepresentable according to the encoder.
-	 */
-	private static abstract class CharsetEncoderGenerator implements PasswordByteGenerator {
-
-		private Byte replacementByte;
-
-		/**
-		 * Class constructor
-		 *
-		 * @param replacementByte
-		 *            the byte to replace to use to represent any
-		 *            unrepresentable character, or null if unrepresentable
-		 *            characters should just be ignored
-		 */
-		protected CharsetEncoderGenerator(Byte replacementByte) {
-			this.replacementByte = replacementByte;
-		}
-
-		@Override
-		public byte[] generateBytes(String password) {
-			final CharsetEncoder encoder = createCharsetEncoder();
-			if (this.replacementByte != null) {
-				encoder.replaceWith(new byte[] { this.replacementByte });
-				encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
-			} else {
-				encoder.onUnmappableCharacter(CodingErrorAction.IGNORE);
-			}
-			try {
-				final ByteBuffer b = encoder.encode(CharBuffer.wrap(password));
-				final byte[] bytes = new byte[b.remaining()];
-				b.get(bytes);
-				return bytes;
-			} catch (CharacterCodingException e) {
-				// shouldn't happen: unmappable characters should be the only
-				// problem, and we're not handling them with a report
-				return null;
-			}
-		}
-
-		protected abstract CharsetEncoder createCharsetEncoder();
-
-	}
-
-	/**
-	 * Generate byte[] representations based on the PDFDocEncoding
-	 */
-	private static class PDFDocEncodingByteGenerator extends CharsetEncoderGenerator {
-
-		private PDFDocEncodingByteGenerator(Byte replacementByte) {
-			super(replacementByte);
-		}
-
-		@Override
-		protected CharsetEncoder createCharsetEncoder() {
-			return new PDFDocCharsetEncoder();
-		}
-	}
-
-	/**
-	 * Generate byte[] representations based on a Unicode code point identity
-	 * encoding; characters over 255 in value are considered unrepresentable
-	 */
-	private static class IdentityEncodingByteGenerator extends CharsetEncoderGenerator {
-
-		private IdentityEncodingByteGenerator(Byte replacementByte) {
-			super(replacementByte);
-		}
-
-		@Override
-		protected CharsetEncoder createCharsetEncoder() {
-			return new Identity8BitCharsetEncoder();
-		}
 	}
 
 }
