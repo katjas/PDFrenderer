@@ -37,6 +37,34 @@ import com.sun.pdfview.PDFObject;
  * @author Mike Wessler
  */
 public class Type1Font extends OutlineFont {
+	
+	private String chr2name[];
+	
+	private int password;
+	
+	private byte[] subrs[];
+	
+	private int lenIV;
+	
+	private Map<String, Object> name2outline;
+	
+	private Map<String, FlPoint> name2width;
+	
+	private AffineTransform at;
+	
+	/** the Type1 stack of command values */
+	private float stack[] = new float[100];
+	
+	/** the current position in the Type1 stack */
+	private int sloc = 0;
+	
+	/** the stack of postscript commands (used by callothersubr) */
+	private float psStack[] = new float[3];
+
+	/** the current position in the postscript stack */
+	private int psLoc = 0;
+
+	int callcount = 0;
 
 	/**
 	 * PostScript reader (not a parser, as the name would seem to indicate).
@@ -144,25 +172,6 @@ public class Type1Font extends OutlineFont {
 			this.loc = loc;
 		}
 	}
-
-	private String chr2name[];
-	private int password;
-	private byte[] subrs[];
-	private int lenIV;
-	private Map<String, Object> name2outline;
-	private Map<String, FlPoint> name2width;
-	private AffineTransform at;
-	/** the Type1 stack of command values */
-	private float stack[] = new float[100];
-	/** the current position in the Type1 stack */
-	private int sloc = 0;
-	/** the stack of postscript commands (used by callothersubr) */
-	private float psStack[] = new float[3];
-
-	/** the current position in the postscript stack */
-	private int psLoc = 0;
-
-	int callcount = 0;
 
 	/**
 	 * create a new Type1Font based on a font data stream and an encoding.

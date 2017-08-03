@@ -31,6 +31,11 @@ import java.util.TreeMap;
  * @author jkaplan
  */
 public class CMapFormat4 extends CMap {
+	
+	/**
+	 * The segments and associated data can be a char[] or an Integer
+	 */
+	public SortedMap<Segment, Object> segments;
 
 	static class Segment implements Comparable {
 		/** the end code (highest code in this segment) */
@@ -81,11 +86,6 @@ public class CMapFormat4 extends CMap {
 			return compareTo(o) == 0;
 		}
 	}
-
-	/**
-	 * The segments and associated data can be a char[] or an Integer
-	 */
-	public SortedMap<Segment, Object> segments;
 
 	/** Creates a new instance of CMapFormat0 */
 	protected CMapFormat4(short language) {

@@ -47,6 +47,34 @@ import com.sun.pdfview.function.PDFFunction;
  * A shader that performs radial shader based on a function.
  */
 public class ShaderType3 extends PDFShader {
+	
+	/** the center of the first circle */
+	private Point2D center1;
+
+	/** the center of the second circle */
+	private Point2D center2;
+
+	/** the radius of the first circle */
+	private float radius1;
+
+	/** the radius of the second circle */
+	private float radius2;
+
+	/** the domain minimum */
+	private float minT = 0f;
+
+	/** the domain maximum */
+	private float maxT = 1f;
+
+	/** whether to extend the start of the axis */
+	private boolean extendStart = false;
+
+	/** whether to extend the end of the axis */
+	private boolean extendEnd = false;
+
+	/** functions, as an array of either 1 or n functions */
+	private PDFFunction[] functions;
+	
 	/**
 	 * A subclass of paint that uses this shader to generate a paint
 	 */
@@ -222,33 +250,6 @@ public class ShaderType3 extends PDFShader {
 			return child;
 		}
 	}
-
-	/** the center of the first circle */
-	private Point2D center1;
-
-	/** the center of the second circle */
-	private Point2D center2;
-
-	/** the radius of the first circle */
-	private float radius1;
-
-	/** the radius of the second circle */
-	private float radius2;
-
-	/** the domain minimum */
-	private float minT = 0f;
-
-	/** the domain maximum */
-	private float maxT = 1f;
-
-	/** whether to extend the start of the axis */
-	private boolean extendStart = false;
-
-	/** whether to extend the end of the axis */
-	private boolean extendEnd = false;
-
-	/** functions, as an array of either 1 or n functions */
-	private PDFFunction[] functions;
 
 	/** Creates a new instance of ShaderType2 */
 	public ShaderType3() {

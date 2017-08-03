@@ -6,7 +6,12 @@ import java.util.Map;
 public class OperationSet {
 
 	private static OperationSet instance;
-
+	
+	/**
+	 * the set of all Operations we support. These operations are defined in
+	 * Appendix B - Operators.
+	 */
+	
 	/*************************************************************************
 	 * @return
 	 ************************************************************************/
@@ -18,10 +23,6 @@ public class OperationSet {
 		return instance;
 	}
 
-	/**
-	 * the set of all Operations we support. These operations are defined in
-	 * Appendix B - Operators.
-	 */
 	private Map<String, PostScriptOperation> operationSet = null;
 
 	/*************************************************************************

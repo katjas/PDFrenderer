@@ -33,6 +33,14 @@ import com.sun.pdfview.PDFDebugger;
  * @author jkaplan
  */
 public class CmapTable extends TrueTypeTable {
+	
+	/** Holds value of property version. */
+	private short version;
+
+	/**
+	 * Holds the CMap subtables, sorted properly
+	 */
+	private final SortedMap<CmapSubtable, CMap> subtables;
 
 	static class CmapSubtable implements Comparable {
 		/**
@@ -86,14 +94,6 @@ public class CmapTable extends TrueTypeTable {
 			return compareTo(obj) == 0;
 		}
 	}
-
-	/** Holds value of property version. */
-	private short version;
-
-	/**
-	 * Holds the CMap subtables, sorted properly
-	 */
-	private final SortedMap<CmapSubtable, CMap> subtables;
 
 	/** Creates a new instance of CmapTable */
 	protected CmapTable() {

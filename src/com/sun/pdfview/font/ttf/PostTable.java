@@ -30,6 +30,36 @@ import com.sun.pdfview.PDFDebugger;
  * @author jkaplan
  */
 public class PostTable extends TrueTypeTable {
+	
+	/** Holds value of property format. */
+	private int format;
+
+	/** Holds value of property italicAngle. */
+	private int italicAngle;
+
+	/** Holds value of property underlinePosition. */
+	private short underlinePosition;
+
+	/** Holds value of property underlineThickness. */
+	private short underlineThickness;
+
+	/** Holds value of property isFixedPitch. */
+	private short isFixedPitch;
+
+	/** Holds value of property minMemType42. */
+	private int minMemType42;
+
+	/** Holds value of property maxMemType42. */
+	private int maxMemType42;
+
+	/** Holds value of property minMemType1. */
+	private int minMemType1;
+
+	/** Holds value of property maxMemType1. */
+	private int maxMemType1;
+
+	/** A map which character values to names and vice versa */
+	private PostMap nameMap;
 
 	/** An empty post map */
 	class PostMap {
@@ -265,36 +295,6 @@ public class PostTable extends TrueTypeTable {
 			}
 		}
 	}
-
-	/** Holds value of property format. */
-	private int format;
-
-	/** Holds value of property italicAngle. */
-	private int italicAngle;
-
-	/** Holds value of property underlinePosition. */
-	private short underlinePosition;
-
-	/** Holds value of property underlineThickness. */
-	private short underlineThickness;
-
-	/** Holds value of property isFixedPitch. */
-	private short isFixedPitch;
-
-	/** Holds value of property minMemType42. */
-	private int minMemType42;
-
-	/** Holds value of property maxMemType42. */
-	private int maxMemType42;
-
-	/** Holds value of property minMemType1. */
-	private int minMemType1;
-
-	/** Holds value of property maxMemType1. */
-	private int maxMemType1;
-
-	/** A map which character values to names and vice versa */
-	private PostMap nameMap;
 
 	/** Creates a new instance of PostTable */
 	protected PostTable() {

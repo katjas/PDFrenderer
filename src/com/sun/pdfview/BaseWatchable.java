@@ -23,6 +23,28 @@ package com.sun.pdfview;
  * the parser and renderer to do their thing.
  */
 public abstract class BaseWatchable implements Watchable, Runnable {
+	
+	/** the current status, from the list in Watchable */
+	private int status = Watchable.UNKNOWN;
+
+	/** a lock for status-related operations */
+	private final Object statusLock = new Object();
+
+	/** a lock for parsing operations */
+	private final Object parserLock = new Object();
+
+	/** when to stop */
+	private Gate gate;
+
+	/** the thread we are running in */
+	private Thread thread;
+
+	private Exception exception;
+	
+	/** suppress local stack trace on setError. */
+	private static boolean SuppressSetErrorStackTrace = false;
+	
+	private static PDFErrorHandler errorHandler = new PDFErrorHandler();
 
 	/**
 	 * A class that lets us give it a target time or number of steps, and will
@@ -71,11 +93,6 @@ public abstract class BaseWatchable implements Watchable, Runnable {
 		}
 	}
 
-	/** suppress local stack trace on setError. */
-	private static boolean SuppressSetErrorStackTrace = false;
-	// handle exceptions via this class
-	private static PDFErrorHandler errorHandler = new PDFErrorHandler();
-
 	public static PDFErrorHandler getErrorHandler() {
 		if (errorHandler == null) {
 			errorHandler = new PDFErrorHandler();
@@ -104,23 +121,6 @@ public abstract class BaseWatchable implements Watchable, Runnable {
 	public static void setSuppressSetErrorStackTrace(boolean suppressTrace) {
 		SuppressSetErrorStackTrace = suppressTrace;
 	}
-
-	/** the current status, from the list in Watchable */
-	private int status = Watchable.UNKNOWN;
-
-	/** a lock for status-related operations */
-	private final Object statusLock = new Object();
-
-	/** a lock for parsing operations */
-	private final Object parserLock = new Object();
-
-	/** when to stop */
-	private Gate gate;
-
-	/** the thread we are running in */
-	private Thread thread;
-
-	private Exception exception;
 
 	/**
 	 * Creates a new instance of BaseWatchable

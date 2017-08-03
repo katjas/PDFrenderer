@@ -32,6 +32,12 @@ import com.sun.pdfview.PDFParseException;
  *
  */
 public abstract class PDFPattern {
+	
+	/** the pattern type (1 or 2) */
+	private int type;
+
+	/** the matrix to transform from pattern space to PDF space */
+	private AffineTransform xform;
 
 	/**
 	 * Read a pattern from the given pattern stream
@@ -82,13 +88,7 @@ public abstract class PDFPattern {
 
 		return pattern;
 	}
-
-	/** the pattern type (1 or 2) */
-	private int type;
-
-	/** the matrix to transform from pattern space to PDF space */
-	private AffineTransform xform;
-
+	
 	/** Creates a new instance of PDFPattern */
 	protected PDFPattern(int type) {
 		this.type = type;

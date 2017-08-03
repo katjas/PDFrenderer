@@ -25,6 +25,25 @@ import java.nio.ByteBuffer;
  * A single glyph in a pdf font. May be simple or compound via subclasses
  */
 public class Glyf {
+	
+	/** If true, the glyf is compound */
+	private boolean isCompound;
+
+	/** the number of contours */
+	private short numContours;
+
+	/** the minimum x value */
+	private short minX;
+
+	/** the minimum y value */
+	private short minY;
+
+	/** the maximum x value */
+	private short maxX;
+
+	/** the maximum y value */
+	private short maxY;
+	
 	/**
 	 * Get a map from the given data
 	 *
@@ -58,24 +77,6 @@ public class Glyf {
 
 		return g;
 	}
-
-	/** If true, the glyf is compound */
-	private boolean isCompound;
-
-	/** the number of contours */
-	private short numContours;
-
-	/** the minimum x value */
-	private short minX;
-
-	/** the minimum y value */
-	private short minY;
-
-	/** the maximum x value */
-	private short maxX;
-
-	/** the maximum y value */
-	private short maxY;
 
 	/**
 	 * Creates a new instance of glyf Don't use this directly, use

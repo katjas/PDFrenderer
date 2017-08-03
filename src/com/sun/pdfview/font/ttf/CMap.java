@@ -29,6 +29,16 @@ import com.sun.pdfview.PDFDebugger;
  * @author jkaplan
  */
 public abstract class CMap {
+	
+	/**
+	 * The format of this map
+	 */
+	private final short format;
+
+	/**
+	 * The language of this map, or 0 for language-independent
+	 */
+	private final short language;
 
 	/**
 	 * Create a map for the given format and language
@@ -123,16 +133,6 @@ public abstract class CMap {
 
 		return outMap;
 	}
-
-	/**
-	 * The format of this map
-	 */
-	private final short format;
-
-	/**
-	 * The language of this map, or 0 for language-independent
-	 */
-	private final short language;
 
 	/**
 	 * Creates a new instance of CMap Don't use this directly, use

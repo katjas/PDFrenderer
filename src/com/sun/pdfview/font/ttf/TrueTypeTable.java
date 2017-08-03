@@ -37,6 +37,16 @@ public class TrueTypeTable {
 	public static final int NAME_TABLE = 0x6e616d65;
 	public static final int POST_TABLE = 0x706f7374;
 	public static final int LOCA_TABLE = 0x6c6f6361;
+	
+	/**
+	 * This table's tag
+	 */
+	private int tag;
+
+	/**
+	 * The data in this table, in ByteBuffer form
+	 */
+	private ByteBuffer data;
 
 	/**
 	 * Get a new instance of an empty table by tag string
@@ -132,16 +142,6 @@ public class TrueTypeTable {
 
 		return new String(c);
 	}
-
-	/**
-	 * This table's tag
-	 */
-	private int tag;
-
-	/**
-	 * The data in this table, in ByteBuffer form
-	 */
-	private ByteBuffer data;
 
 	/**
 	 * Creates a new instance of TrueTypeTable.

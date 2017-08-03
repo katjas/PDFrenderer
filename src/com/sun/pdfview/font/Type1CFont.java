@@ -35,40 +35,7 @@ import com.sun.pdfview.PDFObject;
  * @author Mike Wessler
  */
 public class Type1CFont extends OutlineFont {
-
-	/**
-	 * A range. There's probably a version of this class floating around
-	 * somewhere already in Java.
-	 */
-	static class Range {
-
-		private final int start;
-
-		private final int len;
-
-		public Range(int start, int len) {
-			this.start = start;
-			this.len = len;
-		}
-
-		public final int getEnd() {
-			return this.start + this.len;
-		}
-
-		public final int getLen() {
-			return this.len;
-		}
-
-		public final int getStart() {
-			return this.start;
-		}
-
-		@Override
-		public String toString() {
-			return "Range: start: " + this.start + ", len: " + this.len;
-		}
-	}
-
+	
 	private static int CMD = 0;
 
 	private static int NUM = 1;
@@ -128,6 +95,39 @@ public class Type1CFont extends OutlineFont {
 	int lsubrsoffset = 0;
 
 	int nglyphs = 1;
+
+	/**
+	 * A range. There's probably a version of this class floating around
+	 * somewhere already in Java.
+	 */
+	static class Range {
+
+		private final int start;
+
+		private final int len;
+
+		public Range(int start, int len) {
+			this.start = start;
+			this.len = len;
+		}
+
+		public final int getEnd() {
+			return this.start + this.len;
+		}
+
+		public final int getLen() {
+			return this.len;
+		}
+
+		public final int getStart() {
+			return this.start;
+		}
+
+		@Override
+		public String toString() {
+			return "Range: start: " + this.start + ", len: " + this.len;
+		}
+	}
 
 	/**
 	 * create a new Type1CFont based on a font data stream and a descriptor

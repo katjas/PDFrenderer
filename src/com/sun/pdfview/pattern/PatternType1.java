@@ -52,6 +52,38 @@ import com.sun.pdfview.PDFRenderer;
  * A type 1 (tiling) pattern
  */
 public class PatternType1 extends PDFPattern {
+	
+	/** paint types */
+	public static final int PAINT_COLORED = 1;
+	public static final int PAINT_UNCOLORED = 2;
+	/** tiling types */
+	public static final int TILE_CONSTANT = 1;
+
+	public static final int TILE_NODISTORT = 2;
+
+	public static final int TILE_FASTER = 3;
+
+	/** the resources used by the image we will tile */
+	private HashMap<String, PDFObject> resources;
+
+	/** the paint type (colored or uncolored) */
+	private int paintType;
+
+	/** the tiling type (constant, no distort or faster) */
+	private int tilingType;
+
+	/** the bounding box of the tile, in tile space */
+	private Rectangle2D bbox;
+
+	/** the horiztonal tile spacing, in tile space */
+	private int xStep;
+
+	/** the vertical spacing, in tile space */
+	private int yStep;
+
+	/** the stream data */
+	private byte[] data;
+	
 	/**
 	 * This class overrides PDFPaint to paint in the pattern coordinate space
 	 */
@@ -213,37 +245,6 @@ public class PatternType1 extends PDFPattern {
 			return child;
 		}
 	}
-
-	/** paint types */
-	public static final int PAINT_COLORED = 1;
-	public static final int PAINT_UNCOLORED = 2;
-	/** tiling types */
-	public static final int TILE_CONSTANT = 1;
-
-	public static final int TILE_NODISTORT = 2;
-
-	public static final int TILE_FASTER = 3;
-
-	/** the resources used by the image we will tile */
-	private HashMap<String, PDFObject> resources;
-
-	/** the paint type (colored or uncolored) */
-	private int paintType;
-
-	/** the tiling type (constant, no distort or faster) */
-	private int tilingType;
-
-	/** the bounding box of the tile, in tile space */
-	private Rectangle2D bbox;
-
-	/** the horiztonal tile spacing, in tile space */
-	private int xStep;
-
-	/** the vertical spacing, in tile space */
-	private int yStep;
-
-	/** the stream data */
-	private byte[] data;
 
 	/** Creates a new instance of PatternType1 */
 	public PatternType1() {

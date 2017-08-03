@@ -73,6 +73,18 @@ public abstract class PDFFunction {
 
 	/** PostScript calculator function. */
 	public static final int TYPE_4 = 4;
+	
+	/** the type of this function from the list of known types */
+	private final int type;
+
+	/** the input domain of this function, an array of 2 * <i>m</i> floats */
+	private float[] domain;
+
+	/**
+	 * the output range of this functions, and array of 2 * <i>n</i> floats.
+	 * required for type 0 and 4 functions
+	 */
+	private float[] range;
 
 	/**
 	 * Get a PDFFunction from a PDFObject
@@ -172,18 +184,6 @@ public abstract class PDFFunction {
 
 		return value;
 	}
-
-	/** the type of this function from the list of known types */
-	private final int type;
-
-	/** the input domain of this function, an array of 2 * <i>m</i> floats */
-	private float[] domain;
-
-	/**
-	 * the output range of this functions, and array of 2 * <i>n</i> floats.
-	 * required for type 0 and 4 functions
-	 */
-	private float[] range;
 
 	/** Creates a new instance of PDFFunction */
 	protected PDFFunction(int type) {

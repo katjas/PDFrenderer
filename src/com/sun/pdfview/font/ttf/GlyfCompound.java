@@ -27,6 +27,34 @@ import java.util.List;
  * A single simple glyph in a pdf font.
  */
 public class GlyfCompound extends Glyf {
+	
+	/** flags */
+	private static final int ARG_1_AND_2_ARE_WORDS = 0x1;
+	
+	private static final int ARGS_ARE_XY_VALUES = 0x2;
+	
+	private static final int ROUND_XY_TO_GRID = 0x4;
+	
+	private static final int WE_HAVE_A_SCALE = 0x8;
+	
+	private static final int MORE_COMPONENTS = 0x20;
+	
+	private static final int WE_HAVE_AN_X_AND_Y_SCALE = 0x40;
+	
+	private static final int WE_HAVE_A_TWO_BY_TWO = 0x80;
+	
+	private static final int WE_HAVE_INSTRUCTIONS = 0x100;
+	
+	private static final int USE_MY_METRICS = 0x200;
+
+	private static final int OVERLAP_COMPOUND = 0x400;
+
+	/** the flags for each compound glyph */
+	private GlyfComponent[] components;
+
+	/** the instructions for the compound as a whole */
+	private byte[] instructions;
+	
 	/**
 	 * The record for a single component of this compound glyph
 	 */
@@ -49,25 +77,6 @@ public class GlyfCompound extends Glyf {
 		public float e = 0.0f;
 		public float f = 0.0f;
 	}
-
-	/** flags */
-	private static final int ARG_1_AND_2_ARE_WORDS = 0x1;
-	private static final int ARGS_ARE_XY_VALUES = 0x2;
-	private static final int ROUND_XY_TO_GRID = 0x4;
-	private static final int WE_HAVE_A_SCALE = 0x8;
-	private static final int MORE_COMPONENTS = 0x20;
-	private static final int WE_HAVE_AN_X_AND_Y_SCALE = 0x40;
-	private static final int WE_HAVE_A_TWO_BY_TWO = 0x80;
-	private static final int WE_HAVE_INSTRUCTIONS = 0x100;
-	private static final int USE_MY_METRICS = 0x200;
-
-	private static final int OVERLAP_COMPOUND = 0x400;
-
-	/** the flags for each compound glyph */
-	private GlyfComponent[] components;
-
-	/** the instructions for the compound as a whole */
-	private byte[] instructions;
 
 	/**
 	 * Creates a new instance of a simple glyf

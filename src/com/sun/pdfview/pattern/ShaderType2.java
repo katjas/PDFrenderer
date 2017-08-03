@@ -45,6 +45,28 @@ import com.sun.pdfview.function.PDFFunction;
  * A shader that performs axial shader based on a function.
  */
 public class ShaderType2 extends PDFShader {
+	
+	/** the start of the axis */
+	private Point2D axisStart;
+
+	/** the end of the axis */
+	private Point2D axisEnd;
+
+	/** the domain minimum */
+	private float minT = 0f;
+
+	/** the domain maximum */
+	private float maxT = 1f;
+
+	/** whether to extend the start of the axis */
+	private boolean extendStart = false;
+
+	/** whether to extend the end of the axis */
+	private boolean extendEnd = false;
+
+	/** functions, as an array of either 1 or n functions */
+	private PDFFunction[] functions;
+	
 	/**
 	 * A subclass of paint that uses this shader to generate a paint
 	 */
@@ -187,27 +209,6 @@ public class ShaderType2 extends PDFShader {
 			return (float) tp;
 		}
 	}
-
-	/** the start of the axis */
-	private Point2D axisStart;
-
-	/** the end of the axis */
-	private Point2D axisEnd;
-
-	/** the domain minimum */
-	private float minT = 0f;
-
-	/** the domain maximum */
-	private float maxT = 1f;
-
-	/** whether to extend the start of the axis */
-	private boolean extendStart = false;
-
-	/** whether to extend the end of the axis */
-	private boolean extendEnd = false;
-
-	/** functions, as an array of either 1 or n functions */
-	private PDFFunction[] functions;
 
 	/** Creates a new instance of ShaderType2 */
 	public ShaderType2() {

@@ -31,6 +31,60 @@ import java.util.TreeMap;
  * @author jon
  */
 public class NameTable extends TrueTypeTable {
+	
+	/**
+	 * The format of this table
+	 */
+	private short format;
+
+	/**
+	 * The actual name records
+	 */
+	private SortedMap<NameRecord, String> records;
+	
+	/**
+	 * Values for platformID
+	 */
+	public static final short PLATFORMID_UNICODE = 0;
+	public static final short PLATFORMID_MACINTOSH = 1;
+
+	public static final short PLATFORMID_MICROSOFT = 3;
+
+	/**
+	 * Values for platformSpecificID if platform is Mac
+	 */
+	public static final short ENCODINGID_MAC_ROMAN = 0;
+	/**
+	 * Values for platformSpecificID if platform is Unicode
+	 */
+	public static final short ENCODINGID_UNICODE_DEFAULT = 0;
+	public static final short ENCODINGID_UNICODE_V11 = 1;
+
+	public static final short ENCODINGID_UNICODE_V2 = 3;
+
+	/**
+	 * Values for language ID if platform is Mac
+	 */
+	public static final short LANGUAGEID_MAC_ENGLISH = 0;
+	/**
+	 * Values for nameID
+	 */
+	public static final short NAMEID_COPYRIGHT = 0;
+	
+	public static final short NAMEID_FAMILY = 1;
+	
+	public static final short NAMEID_SUBFAMILY = 2;
+	
+	public static final short NAMEID_SUBFAMILY_UNIQUE = 3;
+	
+	public static final short NAMEID_FULL_NAME = 4;
+	
+	public static final short NAMEID_VERSION = 5;
+	
+	public static final short NAMEID_POSTSCRIPT_NAME = 6;
+	
+	public static final short NAMEID_TRADEMARK = 7;
+	
 	/**
 	 * A class to hold the data associated with each record
 	 */
@@ -108,42 +162,6 @@ public class NameTable extends TrueTypeTable {
 	}
 
 	/**
-	 * Values for platformID
-	 */
-	public static final short PLATFORMID_UNICODE = 0;
-	public static final short PLATFORMID_MACINTOSH = 1;
-
-	public static final short PLATFORMID_MICROSOFT = 3;
-
-	/**
-	 * Values for platformSpecificID if platform is Mac
-	 */
-	public static final short ENCODINGID_MAC_ROMAN = 0;
-	/**
-	 * Values for platformSpecificID if platform is Unicode
-	 */
-	public static final short ENCODINGID_UNICODE_DEFAULT = 0;
-	public static final short ENCODINGID_UNICODE_V11 = 1;
-
-	public static final short ENCODINGID_UNICODE_V2 = 3;
-
-	/**
-	 * Values for language ID if platform is Mac
-	 */
-	public static final short LANGUAGEID_MAC_ENGLISH = 0;
-	/**
-	 * Values for nameID
-	 */
-	public static final short NAMEID_COPYRIGHT = 0;
-	public static final short NAMEID_FAMILY = 1;
-	public static final short NAMEID_SUBFAMILY = 2;
-	public static final short NAMEID_SUBFAMILY_UNIQUE = 3;
-	public static final short NAMEID_FULL_NAME = 4;
-	public static final short NAMEID_VERSION = 5;
-	public static final short NAMEID_POSTSCRIPT_NAME = 6;
-	public static final short NAMEID_TRADEMARK = 7;
-
-	/**
 	 * Get the charset name for a given platform, encoding and language
 	 */
 	public static String getCharsetName(int platformID, int encodingID) {
@@ -160,16 +178,6 @@ public class NameTable extends TrueTypeTable {
 
 		return charset;
 	}
-
-	/**
-	 * The format of this table
-	 */
-	private short format;
-
-	/**
-	 * The actual name records
-	 */
-	private SortedMap<NameRecord, String> records;
 
 	/** Creates a new instance of NameTable */
 	protected NameTable() {
