@@ -8,16 +8,12 @@ import com.sun.pdfview.PDFObject;
 
 public class CCITTFaxDecode {
 
-
-
-	protected static ByteBuffer decode(PDFObject dict, ByteBuffer buf,
-            PDFObject params) throws IOException {
+	protected static ByteBuffer decode(PDFObject dict, ByteBuffer buf, PDFObject params) throws IOException {
 
 		byte[] bytes = new byte[buf.remaining()];
-	    buf.get(bytes, 0, bytes.length);
+		buf.get(bytes, 0, bytes.length);
 		return ByteBuffer.wrap(decode(dict, bytes));
 	}
-
 
 	protected static byte[] decode(PDFObject dict, byte[] source) throws IOException {
 		int width = 1728;
@@ -56,17 +52,18 @@ public class CCITTFaxDecode {
 			} else if (k < 0) {
 				decoder.decodeT6(destination, source, 0, rows);
 			}
-		}catch (Exception e) {
-		    PDFDebugger.debug("Error decoding CCITTFax image k: "+ k);
-			// some PDf producer don't correctly assign a k value for the deocde,
-			// as  result we can try one more time using the T6.
-			//first, reset buffer
+		} catch (Exception e) {
+			PDFDebugger.debug("Error decoding CCITTFax image k: " + k);
+			// some PDf producer don't correctly assign a k value for the
+			// deocde,
+			// as result we can try one more time using the T6.
+			// first, reset buffer
 			destination = new byte[size];
 			try {
 				decoder.decodeT6(destination, source, 0, rows);
-			}catch (Exception e1) {
+			} catch (Exception e1) {
 				// do nothing
-			    PDFDebugger.debug("Error decoding CCITTFax image");
+				PDFDebugger.debug("Error decoding CCITTFax image");
 			}
 		}
 		if (!getOptionFieldBoolean(dict, "BlackIs1", false)) {
@@ -81,7 +78,7 @@ public class CCITTFaxDecode {
 
 	public static int getOptionFieldInt(PDFObject dict, String name, int defaultValue) throws IOException {
 
-        PDFObject dictParams = getDecodeParams(dict);
+		PDFObject dictParams = getDecodeParams(dict);
 
 		if (dictParams == null) {
 			return defaultValue;
@@ -95,7 +92,7 @@ public class CCITTFaxDecode {
 
 	public static boolean getOptionFieldBoolean(PDFObject dict, String name, boolean defaultValue) throws IOException {
 
-        PDFObject dictParams = getDecodeParams(dict);
+		PDFObject dictParams = getDecodeParams(dict);
 
 		if (dictParams == null) {
 			return defaultValue;
@@ -107,11 +104,11 @@ public class CCITTFaxDecode {
 		return value.getBooleanValue();
 	}
 
-    private static PDFObject getDecodeParams(PDFObject dict) throws IOException {
-        PDFObject decdParams = dict.getDictRef("DecodeParms");
-        if (decdParams != null && decdParams.getType() == PDFObject.ARRAY) {
-            return decdParams.getArray()[0];
-        }
-        return decdParams;
-    }
+	private static PDFObject getDecodeParams(PDFObject dict) throws IOException {
+		PDFObject decdParams = dict.getDictRef("DecodeParms");
+		if (decdParams != null && decdParams.getType() == PDFObject.ARRAY) {
+			return decdParams.getArray()[0];
+		}
+		return decdParams;
+	}
 }

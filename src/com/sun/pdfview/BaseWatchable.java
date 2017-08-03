@@ -275,22 +275,28 @@ public abstract class BaseWatchable implements Watchable, Runnable {
         if (synchronous) {
             this.thread = Thread.currentThread();
             run();
-        } else {
-        	this.thread = new Thread(this);
-        	this.thread.setName(getClass().getName());
-        	//Fix for NPE: Taken from http://java.net/jira/browse/PDF_RENDERER-46
-        	synchronized (statusLock) {
-        	    Thread.UncaughtExceptionHandler h = (th, ex) -> PDFDebugger.debug( "Uncaught exception: " + ex );
-                thread.setUncaughtExceptionHandler( h );
-        		thread.start();
-        		try {
-        			statusLock.wait();
-        		} catch (InterruptedException ex) {
-        			// ignore
-        		}
-        	}
-        }
-    }
+		} else {
+			this.thread = new Thread(this);
+			this.thread.setName(getClass().getName());
+			// Fix for NPE: Taken from
+			// http://java.net/jira/browse/PDF_RENDERER-46
+			synchronized (statusLock) {
+				Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {
+					@Override
+					public void uncaughtException(Thread th, Throwable ex) {
+						PDFDebugger.debug("Uncaught exception: " + ex);
+					}
+				};
+				thread.setUncaughtExceptionHandler(h);
+				thread.start();
+				try {
+					statusLock.wait();
+				} catch (InterruptedException ex) {
+					// ignore
+				}
+			}
+		}
+	}
 
     /**
      * Set the status of this watchable
