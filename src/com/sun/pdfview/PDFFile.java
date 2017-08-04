@@ -64,22 +64,22 @@ public class PDFFile {
 	/**
 	 * A ByteBuffer containing the file data
 	 */
-	ByteBuffer buf;
+	private ByteBuffer buf;
 	/**
 	 * the cross reference table mapping object numbers to locations in the PDF
 	 * file
 	 */
-	PDFXref[] objIdx;
+	private PDFXref[] objIdx;
 	/** the root PDFObject, as specified in the PDF file */
-	PDFObject root = null;
+	private PDFObject root = null;
 	/** the Encrypt PDFObject, from the trailer */
-	PDFObject encrypt = null;
+	private PDFObject encrypt = null;
 
 	/** The Info PDFPbject, from the trailer, for simple metadata */
-	PDFObject info = null;
+	private PDFObject info = null;
 
 	/** a mapping of page numbers to parsed PDF commands */
-	Cache cache;
+	private Cache cache;
 	/**
 	 * whether the file is printable or not (trailer -> Encrypt -> P & 0x4)
 	 */

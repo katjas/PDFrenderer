@@ -60,12 +60,12 @@ public class ToUnicodeMap extends PDFCMap {
 		public char srcStart;
 		public char srcEnd;
 
-		CodeRangeMapping(char srcStart, char srcEnd) {
+		public CodeRangeMapping(char srcStart, char srcEnd) {
 			this.srcStart = srcStart;
 			this.srcEnd = srcEnd;
 		}
 
-		boolean contains(char c) {
+		public boolean contains(char c) {
 			return this.srcStart <= c && c <= this.srcEnd;
 		}
 
