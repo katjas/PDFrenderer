@@ -392,8 +392,11 @@ public class PDFFile {
         // skip whitespace
         int c;
         PDFObject obj = null;
-        while (obj == null) {
+        while (obj == null && this.buf.hasRemaining()) {
             while (isWhiteSpace(c = this.buf.get())) {
+            	if(!buf.hasRemaining()) {
+            		break;
+            	}
             }
             // check character for special punctuation:
             if (c == '<') {
@@ -658,7 +661,7 @@ public class PDFFile {
         while ((val = readHexPair()) >= 0) {
             sb.append((char) val);
         }
-        if (this.buf.get() != '>') {
+        if (buf.hasRemaining() && this.buf.get() != '>') {
             throw new PDFParseException("Bad character in Hex String");
         }
         return new PDFObject(this, PDFObject.STRING,
@@ -707,7 +710,7 @@ public class PDFFile {
         int parencount = 1;
         StringBuffer sb = new StringBuffer();
 
-        while (parencount > 0) {
+        while (buf.hasRemaining() && parencount > 0) {
             c = this.buf.get() & 0xFF;
             // process unescaped parenthesis
             if (c == '(') {
@@ -844,7 +847,7 @@ public class PDFFile {
 	while((obj= readObject(objNum, objGen, decrypter))!=null) {
             ary.add(obj);
         }
-        if (this.buf.get() != ']') {
+        if (this.buf.hasRemaining() && this.buf.get() != ']') {
             throw new PDFParseException("Array should end with ']'");
         }
         PDFObject[] objlist = new PDFObject[ary.size()];
@@ -862,7 +865,7 @@ public class PDFFile {
         // all we have to check for is #hh hex notations.
         StringBuffer sb = new StringBuffer();
         int c;
-        while (isRegularCharacter(c = this.buf.get())) {
+        while (this.buf.hasRemaining() && isRegularCharacter(c = this.buf.get())) {
             if (c < '!' && c > '~') {
                 break;      // out-of-range, should have been hex
             }
@@ -891,7 +894,7 @@ public class PDFFile {
         boolean sawdot = start == '.';
         double dotmult = sawdot ? 0.1 : 1;
         double value = (start >= '0' && start <= '9') ? start - '0' : 0;
-        while (true) {
+        while (true && this.buf.hasRemaining()) {
             int c = this.buf.get();
             if (c == '.') {
                 if (sawdot) {
@@ -926,7 +929,7 @@ public class PDFFile {
         // we've read the first character (it's passed in as the argument)
         StringBuffer sb = new StringBuffer(String.valueOf(start));
         int c;
-        while (isRegularCharacter(c = this.buf.get())) {
+        while (buf.hasRemaining() && isRegularCharacter(c = this.buf.get())) {
             sb.append((char) c);
         }
         this.buf.position(this.buf.position() - 1);
