@@ -197,13 +197,13 @@ public class ShaderType3 extends PDFShader {
 					// if (s[0] >= 0 && s[1] <= 1) s[1] = s[1];
 					if (s[1] >= 0 && s[1] <= 1) {
 						s[1] = s[1];
-					} else if (extendEnd == true && s[1] >= 0 && radius1 + s[1] * dr1r0 >= 0) {
+					} else if (extendEnd && s[1] >= 0 && radius1 + s[1] * dr1r0 >= 0) {
 						s[1] = s[1];
 					} else if (s[0] >= 0 && s[0] <= 1) {
 						s[1] = s[0];
-					} else if (extendStart == true && s[1] <= 0 && radius1 + s[1] * dr1r0 >= 0) {
+					} else if (extendStart && s[1] <= 0 && radius1 + s[1] * dr1r0 >= 0) {
 						s[1] = s[1];
-					} else if (extendStart == true && s[0] <= 1 && radius1 + s[0] * dr1r0 >= 0) {
+					} else if (extendStart && s[0] <= 1 && radius1 + s[0] * dr1r0 >= 0) {
 						s[1] = s[0];
 					} else {
 						render = false;

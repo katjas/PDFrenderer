@@ -18,7 +18,7 @@ public class ImageDataDecoder {
 	 * @return
 	 ************************************************************************/
 
-	static byte[] decodeImageData(BufferedImage bimg) {
+	public static byte[] decodeImageData(BufferedImage bimg) {
 		byte[] output = null;
 
 		int type = bimg.getType();

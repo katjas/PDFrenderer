@@ -85,6 +85,18 @@ public abstract class PDFShader {
 
 	/** The tolerance for reevaluating the shading function again */
 	public static float TOLERANCE = 1e-4f;
+	
+	/** the type of the shading (1 through 7) */
+	private final int type;
+
+	/** the colorspace */
+	private PDFColorSpace colorSpace;
+
+	/** the background color */
+	private PDFPaint background;
+
+	/** the bounding box of the pattern */
+	private Rectangle2D bbox;
 
 	/**
 	 * Parse a pdf shader into a shader object
@@ -162,18 +174,6 @@ public abstract class PDFShader {
 
 		return shader;
 	}
-
-	/** the type of the shading (1 through 7) */
-	private final int type;
-
-	/** the colorspace */
-	private PDFColorSpace colorSpace;
-
-	/** the background color */
-	private PDFPaint background;
-
-	/** the bounding box of the pattern */
-	private Rectangle2D bbox;
 
 	/** Creates a new instance of PDFShader */
 	protected PDFShader(int type) {

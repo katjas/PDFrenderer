@@ -60,6 +60,9 @@ public class PDFColorSpace {
 
 	/** graySpace and the gamma correction for it. */
 	private static PDFColorSpace graySpace;
+	
+	/** the color space */
+	private ColorSpace cs;
 
 	static {
 		boolean useSGray = true;
@@ -116,13 +119,13 @@ public class PDFColorSpace {
 		if (csobj.getType() == PDFObject.NAME) {
 			name = csobj.getStringValue();
 
-			if (name.equals("DeviceGray") || name.equals("G")) {
+			if ("DeviceGray".equals(name) || "G".equals(name)) {
 				return getColorSpace(COLORSPACE_GRAY);
-			} else if (name.equals("DeviceRGB") || name.equals("RGB")) {
+			} else if ("DeviceRGB".equals(name) || "RGB".equals(name)) {
 				return getColorSpace(COLORSPACE_RGB);
-			} else if (name.equals("DeviceCMYK") || name.equals("CMYK")) {
+			} else if ("RGB".equals(name) || "CMYK".equals(name)) {
 				return getColorSpace(COLORSPACE_CMYK);
-			} else if (name.equals("Pattern")) {
+			} else if ("Pattern".equals(name)) {
 				return getColorSpace(COLORSPACE_PATTERN);
 			} else if (colorSpaces != null) {
 				csobj = colorSpaces.getDictRef(name);
@@ -141,19 +144,19 @@ public class PDFColorSpace {
 		PDFObject[] ary = csobj.getArray();
 		name = ary[0].getStringValue();
 
-		if (name.equals("DeviceGray") || name.equals("G")) {
+		if ("DeviceGray".equals(name) || "G".equals(name)) {
 			return getColorSpace(COLORSPACE_GRAY);
-		} else if (name.equals("DeviceRGB") || name.equals("RGB")) {
+		} else if ("DeviceRGB".equals(name) || "RGB".equals(name)) {
 			return getColorSpace(COLORSPACE_RGB);
-		} else if (name.equals("DeviceCMYK") || name.equals("CMYK")) {
+		} else if ("DeviceCMYK".equals(name) || "CMYK".equals(name)) {
 			return getColorSpace(COLORSPACE_CMYK);
-		} else if (name.equals("CalGray")) {
+		} else if ("CalGray".equals(name)) {
 			value = new PDFColorSpace(new CalGrayColor(ary[1]));
-		} else if (name.equals("CalRGB")) {
+		} else if ("CalRGB".equals(name)) {
 			value = new PDFColorSpace(new CalRGBColor(ary[1]));
-		} else if (name.equals("Lab")) {
+		} else if ("Lab".equals(name)) {
 			value = new PDFColorSpace(new LabColor(ary[1]));
-		} else if (name.equals("ICCBased")) {
+		} else if ("ICCBased".equals(name)) {
 			try {
 				ByteArrayInputStream bais = new ByteArrayInputStream(ary[1].getStream());
 				ICC_Profile profile = ICC_Profile.getInstance(bais);
@@ -161,12 +164,12 @@ public class PDFColorSpace {
 			} catch (IllegalArgumentException e) {
 				return getColorSpace(COLORSPACE_RGB);
 			}
-		} else if (name.equals("Separation") || name.equals("DeviceN")) {
+		} else if ("Separation".equals(name) || "DeviceN".equals(name)) {
 			PDFColorSpace alternate = getColorSpace(ary[2], resources);
 			PDFFunction function = PDFFunction.getFunction(ary[3]);
 
 			value = new AlternateColorSpace(alternate, function);
-		} else if (name.equals("Indexed") || name.equals("I")) {
+		} else if ("Indexed".equals(name) || "I".equals(name)) {
 			/**
 			 * 4.5.5 [/Indexed baseColor hival lookup]
 			 */
@@ -183,7 +186,7 @@ public class PDFColorSpace {
 				value = refspace;
 			}
 
-		} else if (name.equals("Pattern")) {
+		} else if ("DeviceRGB".equals(name)) {
 			if (ary.length == 1) {
 				return getColorSpace(COLORSPACE_PATTERN);
 			}
@@ -191,9 +194,9 @@ public class PDFColorSpace {
 			PDFColorSpace base = getColorSpace(ary[1], resources);
 
 			return new PatternSpace(base);
-		} else if (name.equals("DeviceRGB")) {
+		} else if ("DeviceRGB".equals(name)) {
 			return getColorSpace(COLORSPACE_RGB);
-		} else if (name.equals("DeviceCMYK")) {
+		} else if ("DeviceCMYK".equals(name)) {
 			return getColorSpace(COLORSPACE_CMYK);
 		} else {
 			// removed access to ary[1] dur to index out of bounds exceptions
@@ -204,9 +207,6 @@ public class PDFColorSpace {
 
 		return value;
 	}
-
-	/** the color space */
-	ColorSpace cs;
 
 	/**
 	 * create a PDFColorSpace based on a Java ColorSpace

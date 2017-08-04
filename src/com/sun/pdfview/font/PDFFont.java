@@ -256,9 +256,9 @@ public abstract class PDFFont {
 			descriptor = new PDFFontDescriptor(baseFont);
 		}
 
-		if (subType.equals("Type0")) {
+		if ("Type0".equals(subType)) {
 			font = new Type0Font(baseFont, obj, descriptor);
-		} else if (subType.equals("Type1")) {
+		} else if ("Type1".equals(subType)) {
 			// load a type1 font
 			if (descriptor.getFontFile() != null) {
 				// it's a Type1 font, included.
@@ -270,7 +270,7 @@ public abstract class PDFFont {
 				// no font info. Fake it based on the FontDescriptor
 				font = new BuiltinFont(baseFont, obj, descriptor);
 			}
-		} else if (subType.equals("TrueType")) {
+		} else if ("TrueType".equals(subType)) {
 			if (descriptor.getFontFile2() != null) {
 				// load a TrueType font
 				try {
@@ -293,23 +293,23 @@ public abstract class PDFFont {
 					font = new BuiltinFont(baseFont, obj, descriptor);
 				}
 			}
-		} else if (subType.equals("Type3")) {
+		} else if ("Type3".equals(subType)) {
 			// load a type 3 font
 			font = new Type3Font(baseFont, obj, resources, descriptor);
-		} else if (subType.equals("CIDFontType2")) {
+		} else if ("CIDFontType2".equals(subType)) {
 			if (descriptor.getFontFile2() != null) {
 				font = new CIDFontType2(baseFont, obj, descriptor);
 			} else {
 				// fake it with a built-in font
 				font = new BuiltinFont(baseFont, obj, descriptor);
 			}
-		} else if (subType.equals("CIDFontType0")) {
+		} else if ("CIDFontType0".equals(subType)) {
 			if (descriptor.getFontFile2() != null) {
 				font = new CIDFontType2(baseFont, obj, descriptor);
 			} else {
 				font = new CIDFontType0(baseFont, obj, descriptor);
 			}
-		} else if (subType.equals("MMType1")) {
+		} else if ("MMType1".equals(subType)) {
 			// not yet implemented, fake it with a built-in font
 			font = new BuiltinFont(baseFont, obj, descriptor);
 		} else {

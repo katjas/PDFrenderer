@@ -709,7 +709,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
 	 * was called.
 	 */
 	public void pop() {
-		if (this.stack.isEmpty() == false) {
+		if (!this.stack.isEmpty()) {
 			this.state = this.stack.pop();
 		}
 

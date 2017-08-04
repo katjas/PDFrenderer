@@ -42,11 +42,11 @@ public class ToUnicodeMap extends PDFCMap {
 			this.destStart = destStart;
 		}
 
-		boolean contains(char c) {
+		private boolean contains(char c) {
 			return this.srcStart <= c && c <= this.srcEnd;
 		}
 
-		char map(char src) {
+		private char map(char src) {
 			return (char) (this.destStart + (src - this.srcStart));
 		}
 

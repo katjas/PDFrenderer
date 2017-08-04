@@ -422,7 +422,7 @@ public class PDFFile {
 		}
 
 		PDFObject typeObj = pagedict.getDictRef("Type");
-		if (typeObj != null && typeObj.getStringValue().equals("Page")) {
+		if (typeObj != null && "Page".equals(typeObj.getStringValue())) {
 			// we found our page!
 			return pagedict;
 		}
@@ -436,9 +436,7 @@ public class PDFFile {
 				// BUG: some PDFs (T1Format.pdf) don't have the Type tag.
 				// use the Count tag to indicate a Pages dictionary instead.
 				PDFObject countItem = kid.getDictRef("Count");
-				// if
-				// (kids[i].getDictRef("Type").getStringValue().equals("Pages"))
-				// {
+				
 				if (countItem != null) {
 					count = countItem.getIntValue();
 				}
@@ -730,7 +728,7 @@ public class PDFFile {
 
 		// now we've got a page. Make sure.
 		PDFObject typeObj = page.getDictRef("Type");
-		if (typeObj == null || !typeObj.getStringValue().equals("Page")) {
+		if (typeObj == null || !"Page".equals(typeObj.getStringValue())) {
 			return 0;
 		}
 
@@ -1426,7 +1424,7 @@ public class PDFFile {
 							// as needed
 							obj = new PDFObject(this, xref);
 						} else if (testR != null && testR.getType() == PDFObject.KEYWORD
-								&& testR.getStringValue().equals("obj")) {
+								&& "obj".equals(testR.getStringValue())) {
 							// it's an object description
 							obj = readObjectDescription(obj.getIntValue(), testnum.getIntValue(), decrypter);
 						} else {
@@ -1492,7 +1490,7 @@ public class PDFFile {
 					+ String.valueOf(endkey.getStringValue()));
 		}
 		if (obj.getType() == PDFObject.DICTIONARY && endkey.getStringValue() != null
-				&& endkey.getStringValue().equals("stream")) {
+				&& "stream".equals(endkey.getStringValue())) {
 			// skip until we see \n
 			readLine();
 			ByteBuffer data = readStream(obj);
@@ -1504,7 +1502,7 @@ public class PDFFile {
 		}
 		// at this point, obj is the object, keyword should be "endobj"
 		String endcheck = endkey.getStringValue();
-		if (endcheck == null || !endcheck.equals("endobj")) {
+		if (endcheck == null || !"endobj".equals(endcheck)) {
 			PDFDebugger.debug("WARNING: object at " + debugpos + " didn't end with 'endobj'");
 		}
 		obj.setObjectId(objNum, objGen);
@@ -1582,7 +1580,7 @@ public class PDFFile {
 			while (true) {
 				// read until the word "trailer"
 				PDFObject obj = readObject(-1, -1, IdentityDecrypter.getInstance());
-				if (obj.getType() == PDFObject.KEYWORD && obj.getStringValue().equals("trailer")) {
+				if (obj.getType() == PDFObject.KEYWORD && "trailer".equals(obj.getStringValue())) {
 					break;
 				}
 

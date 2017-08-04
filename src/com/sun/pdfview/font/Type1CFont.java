@@ -210,7 +210,7 @@ public class Type1CFont extends OutlineFont {
 	 * @return a range describing the offsets of the start and end of the entry
 	 *         from the start of the file, not the dictionary
 	 */
-	Range getIndexEntry(int index, int id) {
+	public Range getIndexEntry(int index, int id) {
 		int hold = this.pos;
 		this.pos = index;
 		int count = readInt(2);

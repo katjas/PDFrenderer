@@ -144,14 +144,14 @@ public class StampAnnotation extends PDFAnnotation {
 		ArrayList<PDFCmd> result = new ArrayList<PDFCmd>();
 		result.add(PDFPage.createPushCmd());
 		result.add(PDFPage.createPushCmd());
-		if (type.equals("Image")) {
+		if ("Image".equals(type)) {
 			// stamp annotation transformation
 			AffineTransform rectAt = getPositionTransformation();
 			result.add(PDFPage.createXFormCmd(rectAt));
 
 			PDFImage img = PDFImage.createImage(obj, new HashMap<String, PDFObject>(), false);
 			result.add(PDFPage.createImageCmd(img));
-		} else if (type.equals("Form")) {
+		} else if ("Form".equals(type)) {
 
 			// rats. parse it.
 			PDFObject bobj = obj.getDictRef("BBox");

@@ -53,15 +53,15 @@ public class PDFAction {
 		// create the action based on the type
 		PDFAction action = null;
 		String type = typeObj.getStringValue();
-		if (type.equals("GoTo")) {
+		if ("GoTo".equals(type)) {
 			action = new GoToAction(obj, root);
-		} else if (type.equals("GoToE")) {
+		} else if ("GoToE".equals(type)) {
 			action = new GoToEAction(obj, root);
-		} else if (type.equals("GoToR")) {
+		} else if ("GoToR".equals(type)) {
 			action = new GoToRAction(obj, root);
-		} else if (type.equals("URI")) {
+		} else if ("URI".equals(type)) {
 			action = new UriAction(obj);
-		} else if (type.equals("Launch")) {
+		} else if ("Launch".equals(type)) {
 			action = new LaunchAction(obj);
 		} else {
 			/** [JK FIXME: Implement other action types! ] */

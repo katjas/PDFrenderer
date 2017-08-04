@@ -64,15 +64,15 @@ public class Type1Font extends OutlineFont {
 	/** the current position in the postscript stack */
 	private int psLoc = 0;
 
-	int callcount = 0;
+	private int callcount = 0;
 
 	/**
 	 * PostScript reader (not a parser, as the name would seem to indicate).
 	 */
 	class PSParser {
 
-		byte[] data;
-		int loc;
+		private byte[] data;
+		private int loc;
 
 		/**
 		 * create a PostScript reader given some data and an initial offset into
@@ -798,7 +798,7 @@ public class Type1Font extends OutlineFont {
 		String type = psp.readThing(); // read the key (i is the start of the
 										// key)
 		type = psp.readThing();
-		if (type.equals("StandardEncoding")) {
+		if ("StandardEncoding".equals(type)) {
 			byte[] stdenc[] = new byte[FontSupport.standardEncoding.length][];
 			for (i = 0; i < stdenc.length; i++) {
 				stdenc[i] = FontSupport.getName(FontSupport.standardEncoding[i]).getBytes();
@@ -810,7 +810,7 @@ public class Type1Font extends OutlineFont {
 		byte[] line;
 		while (true) {
 			String s = psp.readThing();
-			if (s.equals("dup")) {
+			if ("dup".equals(s)) {
 				String thing = psp.readThing();
 				int id = 0;
 				try {
@@ -823,7 +823,7 @@ public class Type1Font extends OutlineFont {
 				if (Character.isDigit(elt.charAt(0))) {
 					int hold = Integer.parseInt(elt);
 					String special = psp.readThing();
-					if (special.equals("-|") || special.equals("RD")) {
+					if ("-|".equals(special) || "RD".equals(special)) {
 						psp.setLoc(psp.getLoc() + 1);
 						line = psp.getNEncodedBytes(hold, this.password, this.lenIV);
 					}
@@ -905,12 +905,12 @@ public class Type1Font extends OutlineFont {
 			if (c == '/') {
 				int len = Integer.parseInt(psp.readThing());
 				String go = psp.readThing(); // it's -| or RD
-				if (go.equals("-|") || go.equals("RD")) {
+				if ("-|".equals(go) || "RD".equals(go)) {
 					psp.setLoc(psp.getLoc() + 1);
 					byte[] line = psp.getNEncodedBytes(len, this.password, this.lenIV);
 					hm.put(s.substring(1), line);
 				}
-			} else if (s.equals("end")) {
+			} else if ("end".equals(s)) {
 				break;
 			}
 		}

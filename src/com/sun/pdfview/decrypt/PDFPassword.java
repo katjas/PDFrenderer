@@ -66,6 +66,9 @@ public class PDFPassword {
 
 	/** the passwird as a string, if specified as such */
 	private String passwordString = null;
+	
+	/** The empty password */
+	public static final PDFPassword EMPTY_PASSWORD = new PDFPassword(new byte[0]);
 
 	/**
 	 * Converts strings to byte by employing a {@link CharsetEncoder} and a
@@ -150,10 +153,7 @@ public class PDFPassword {
 			return new PDFDocCharsetEncoder();
 		}
 	}
-
-	/** The empty password */
-	public static final PDFPassword EMPTY_PASSWORD = new PDFPassword(new byte[0]);
-
+	
 	/**
 	 * An array of password byte generators that attempts to enumerate the
 	 * possible strategies that an encrypting application might take to convert

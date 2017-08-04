@@ -37,6 +37,10 @@ import com.sun.pdfview.PDFDebugger;
  * @author jkaplan
  */
 public class TrueTypeFont {
+	
+	private final int type;
+	
+	private final SortedMap<String, Object> tables;
 
 	/**
 	 * Calculate the checksum for a given table
@@ -54,7 +58,7 @@ public class TrueTypeFont {
 		// special adjustment for head table: always treat the 4-bytes
 		// starting at byte 8 as 0x0000. This the checkSumAdjustment so
 		// must be ignored here (see the TTF spec)
-		if (tagString.equals("head")) {
+		if ("head".equals(tagString)) {
 			data.putInt(8, 0);
 			sum += data.getInt();
 			sum += data.getInt();
@@ -173,11 +177,6 @@ public class TrueTypeFont {
 
 		return font;
 	}
-
-	private final int type;
-	// could be a ByteBuffer or a TrueTypeTable
-
-	private final SortedMap<String, Object> tables;
 
 	/** Creates a new instance of TrueTypeParser */
 	public TrueTypeFont(int type) {
@@ -371,7 +370,7 @@ public class TrueTypeFont {
 		// find the head table
 		for (String tagString : this.tables.keySet()) {
 			// adjust the checksum
-			if (tagString.equals("head")) {
+			if ("head".equals(tagString)) {
 				fontData.putInt(offset + 8, checksumAdj);
 				return;
 			}

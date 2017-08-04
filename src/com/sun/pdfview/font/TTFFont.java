@@ -44,6 +44,12 @@ import com.sun.pdfview.font.ttf.TrueTypeFont;
  * A true-type font
  */
 public class TTFFont extends OutlineFont {
+	
+	/** the truetype font itself */
+	private TrueTypeFont font;
+	
+	/** the number of units per em in the font */
+	private float unitsPerEm;
 
 	/** a point on the stack of points */
 	static class PointRec {
@@ -81,11 +87,6 @@ public class TTFFont extends OutlineFont {
 		public PointRec prevOff;
 
 	}
-
-	/** the truetype font itself */
-	private TrueTypeFont font;
-	/** the number of units per em in the font */
-	private float unitsPerEm;
 
 	public TTFFont(String baseFont, PDFObject fontObj, PDFFontDescriptor descriptor) throws IOException {
 		this(baseFont, fontObj, descriptor, null);

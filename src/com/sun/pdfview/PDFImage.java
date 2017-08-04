@@ -100,6 +100,8 @@ public class PDFImage {
 
 	/** true if the image is in encoded in JPEG */
 	private final boolean jpegDecode;
+	
+	private static int[][] GREY_TO_ARGB = new int[8][];
 
 	/**
 	 * A wrapper for ComponentColorSpace which normalizes based on the decode
@@ -358,7 +360,7 @@ public class PDFImage {
 	 */
 	static class PdfComponentColorModel extends ComponentColorModel {
 
-		int bitsPerComponent;
+		private int bitsPerComponent;
 
 		public PdfComponentColorModel(ColorSpace cs, int[] bpc) {
 			super(cs, bpc, false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
@@ -411,8 +413,6 @@ public class PDFImage {
 		}
 
 	}
-
-	private static int[][] GREY_TO_ARGB = new int[8][];
 
 	/**
 	 * Create a map from all bit-patterns of a certain depth greyscale to the

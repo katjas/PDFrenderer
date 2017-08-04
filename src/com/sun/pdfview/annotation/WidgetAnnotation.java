@@ -21,6 +21,16 @@ import com.sun.pdfview.PDFParser;
  * @since Aug 20, 2010
  */
 public class WidgetAnnotation extends PDFAnnotation {
+	
+	private String fieldValue;
+	
+	private FieldType fieldType;
+	
+	private String fieldName;
+	
+	private PDFObject fieldValueRef;
+	
+	private List<PDFCmd> cmd;
 
 	/**
 	 * Type for PDF form elements
@@ -38,6 +48,8 @@ public class WidgetAnnotation extends PDFAnnotation {
 		Choice("Ch"),
 		/** Signature Field */
 		Signature("Sig");
+		
+		private final String typeCode;
 
 		static FieldType getByCode(String typeCode) {
 			FieldType[] values = values();
@@ -49,19 +61,12 @@ public class WidgetAnnotation extends PDFAnnotation {
 			return null;
 		}
 
-		private final String typeCode;
+		
 
 		FieldType(String typeCode) {
 			this.typeCode = typeCode;
 		}
 	}
-
-	private String fieldValue;
-	private FieldType fieldType;
-	private String fieldName;
-	private PDFObject fieldValueRef;
-
-	private List<PDFCmd> cmd;
 
 	public WidgetAnnotation(PDFObject annotObject) throws IOException {
 		super(annotObject, ANNOTATION_TYPE.WIDGET);

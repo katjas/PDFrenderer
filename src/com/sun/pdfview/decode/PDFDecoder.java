@@ -89,7 +89,7 @@ public class PDFDecoder {
 			// determine whether default encryption applies or if there's a
 			// specific Crypt filter; it must be the first filter according to
 			// the errata for PDF1.7
-			boolean specificCryptFilter = spec.ary.length != 0 && spec.ary[0].getStringValue().equals("Crypt");
+			boolean specificCryptFilter = spec.ary.length != 0 && "Crypt".equals(spec.ary[0].getStringValue());
 			if (!specificCryptFilter) {
 				// No Crypt filter, so should apply default decryption (if
 				// present!)
@@ -102,24 +102,23 @@ public class PDFDecoder {
 					if (filterLimits.contains(enctype)) {
 						break;
 					}
-					if (enctype != null) {
-						if (enctype.equals("FlateDecode") || enctype.equals("Fl")) {
+						if ("FlateDecode".equals(enctype) || "Fl".equals(enctype)) {
 							streamBuf = FlateDecode.decode(dict, streamBuf, spec.params[i]);
-						} else if (enctype.equals("LZWDecode") || enctype.equals("LZW")) {
+						} else if ("LZWDecode".equals(enctype) || "LZW".equals(enctype)) {
 							streamBuf = LZWDecode.decode(streamBuf, spec.params[i]);
-						} else if (enctype.equals("ASCII85Decode") || enctype.equals("A85")) {
+						} else if ("ASCII85Decode".equals(enctype) || "A85".equals(enctype)) {
 							streamBuf = ASCII85Decode.decode(streamBuf, spec.params[i]);
-						} else if (enctype.equals("ASCIIHexDecode") || enctype.equals("AHx")) {
+						} else if ("ASCIIHexDecode".equals(enctype) || "AHx".equals(enctype)) {
 							streamBuf = ASCIIHexDecode.decode(streamBuf, spec.params[i]);
-						} else if (enctype.equals("RunLengthDecode") || enctype.equals("RL")) {
+						} else if ("RunLengthDecode".equals(enctype) || "RL".equals(enctype)) {
 							streamBuf = RunLengthDecode.decode(streamBuf, spec.params[i]);
-						} else if (enctype.equals("DCTDecode") || enctype.equals("DCT")) {
+						} else if ("DCTDecode".equals(enctype) || "DCT".equals(enctype)) {
 							streamBuf = DCTDecode.decode(dict, streamBuf, spec.params[i]);
-						} else if (enctype.equals("JPXDecode")) {
+						} else if ("JPXDecode".equals(enctype)) {
 							streamBuf = JPXDecode.decode(dict, streamBuf, spec.params[i]);
-						} else if (enctype.equals("CCITTFaxDecode") || enctype.equals("CCF")) {
+						} else if ("CCITTFaxDecode".equals(enctype) || "CCF".equals(enctype)) {
 							streamBuf = CCITTFaxDecode.decode(dict, streamBuf, spec.params[i]);
-						} else if (enctype.equals("Crypt")) {
+						} else if ("Crypt".equals(enctype)) {
 							String cfName = PDFDecrypterFactory.CF_IDENTITY;
 							if (spec.params[i] != null) {
 								final PDFObject nameObj = spec.params[i].getDictRef("Name");
@@ -128,12 +127,12 @@ public class PDFDecoder {
 								}
 							}
 							streamBuf = dict.getDecrypter().decryptBuffer(cfName, null, streamBuf);
-						} else if (enctype.equals("JBIG2Decode")) {
+						} else if ("JBIG2Decode".equals(enctype)) {
 							streamBuf = JBig2Decode.decode(dict, streamBuf, spec.params[i]);
 						} else {
 							throw new PDFParseException("Unknown coding method:" + spec.ary[i].getStringValue());
 						}
-					}
+					
 				} catch (Exception e) {
 					throw new PDFParseException("Problem decoding " + enctype + " encoded stream!", e);
 				}
@@ -188,7 +187,7 @@ public class PDFDecoder {
 			// determine whether default encryption applies or if there's a
 			// specific Crypt filter; it must be the first filter according to
 			// the errata for PDF1.7
-			boolean specificCryptFilter = spec.ary.length != 0 && spec.ary[0].getStringValue().equals("Crypt");
+			boolean specificCryptFilter = spec.ary.length != 0 && "Crypt".equals(spec.ary[0].getStringValue());
 			if (!specificCryptFilter) {
 				// No Crypt filter, so we just need to refer to
 				// the default decrypter

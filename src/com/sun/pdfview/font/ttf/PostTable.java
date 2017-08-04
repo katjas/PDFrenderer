@@ -162,11 +162,12 @@ public class PostTable extends TrueTypeTable {
 
 	/** an extension to handle format 2 post maps */
 	class PostMapFormat2 extends PostMapFormat0 {
+		
 		/** the glyph name index */
-		short[] glyphNameIndex;
+		private short[] glyphNameIndex;
 
 		/** the glyph names */
-		String[] glyphNames;
+		private String[] glyphNames;
 
 		@Override
 		/** Map a character name to an index */

@@ -146,7 +146,7 @@ class PDFFillPaintCmd extends PDFCmd {
  * draw an image
  */
 class PDFImageCmd extends PDFCmd {
-	PDFImage image;
+	private PDFImage image;
 
 	public PDFImageCmd(PDFImage image) {
 		this.image = image;
@@ -170,22 +170,7 @@ class PDFImageCmd extends PDFCmd {
  * @author Mike Wessler
  */
 public class PDFPage {
-	public static PDFImageCmd createImageCmd(PDFImage image) {
-		return new PDFImageCmd(image);
-	}
-
-	public static PDFPopCmd createPopCmd() {
-		return new PDFPopCmd();
-	}
-
-	public static PDFPushCmd createPushCmd() {
-		return new PDFPushCmd();
-	}
-
-	public static PDFXformCmd createXFormCmd(AffineTransform at) {
-		return new PDFXformCmd(new AffineTransform(at));
-	}
-
+	
 	/**
 	 * the array of commands. The length of this array will always be greater
 	 * than or equal to the actual number of commands.
@@ -196,8 +181,10 @@ public class PDFPage {
 	 * commands added to the cmds list.
 	 */
 	private boolean finished = false;
+	
 	/** the page number used to find this page */
 	private final int pageNumber;
+	
 	/** the bounding box of the page, in page coordinates */
 	private final Rectangle2D bbox;
 
@@ -215,6 +202,24 @@ public class PDFPage {
 
 	/** List of annotations for this page */
 	private List<PDFAnnotation> annots;
+	
+	public static PDFImageCmd createImageCmd(PDFImage image) {
+		return new PDFImageCmd(image);
+	}
+
+	public static PDFPopCmd createPopCmd() {
+		return new PDFPopCmd();
+	}
+
+	public static PDFPushCmd createPushCmd() {
+		return new PDFPushCmd();
+	}
+
+	public static PDFXformCmd createXFormCmd(AffineTransform at) {
+		return new PDFXformCmd(new AffineTransform(at));
+	}
+
+	
 
 	/**
 	 * create a PDFPage with dimensions in bbox and rotation.
@@ -811,12 +816,10 @@ public class PDFPage {
 	public void updateImages() {
 		for (WeakReference<?> ref : this.renderers.values()) {
 			PDFRenderer renderer = (PDFRenderer) ref.get();
-			if (renderer != null) {
-				if (renderer.getStatus() == Watchable.NEEDS_DATA) {
-					// there are watchers. Set the state to paused and
-					// let the watcher decide when to start.
-					renderer.setStatus(Watchable.PAUSED);
-				}
+			if (renderer != null && renderer.getStatus() == Watchable.NEEDS_DATA) {
+				// there are watchers. Set the state to paused and
+				// let the watcher decide when to start.
+				renderer.setStatus(Watchable.PAUSED);
 			}
 		}
 	}
@@ -930,7 +933,7 @@ class PDFStrokePaintCmd extends PDFCmd {
  * concatenate a transform to the graphics state
  */
 class PDFXformCmd extends PDFCmd {
-	AffineTransform at;
+	private AffineTransform at;
 
 	public PDFXformCmd(AffineTransform at) {
 		if (at == null) {

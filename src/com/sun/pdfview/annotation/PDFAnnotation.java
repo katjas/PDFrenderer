@@ -22,13 +22,13 @@ import com.sun.pdfview.PDFParseException;
  * @since 03.07.2009
  ****************************************************************************/
 public class PDFAnnotation {
-	
+
 	private final PDFObject pdfObj;
-	
+
 	private final ANNOTATION_TYPE type;
 
 	private final Float rect;
-	
+
 	public enum ANNOTATION_TYPE {
 		UNKNOWN("-", 0, PDFAnnotation.class), LINK("Link", 1, LinkAnnotation.class), WIDGET("Widget", 2,
 				WidgetAnnotation.class), STAMP("Stamp", 3,

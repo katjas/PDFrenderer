@@ -32,6 +32,8 @@ import java.awt.geom.Rectangle2D;
  * @author Mike Wessler
  */
 public class PDFPaint {
+	
+	private Paint mainPaint;
 
 	/**
 	 * get the PDFPaint representing a solid color
@@ -46,8 +48,6 @@ public class PDFPaint {
 	public static PDFPaint getPaint(Paint p) {
 		return new PDFPaint(p);
 	}
-
-	private Paint mainPaint;
 
 	/**
 	 * create a new PDFPaint based on a solid color

@@ -244,7 +244,7 @@ public class GlyfCompound extends Glyf {
 	/**
 	 * Set the components
 	 */
-	void setComponents(GlyfComponent[] components) {
+	public void setComponents(GlyfComponent[] components) {
 		this.components = components;
 	}
 

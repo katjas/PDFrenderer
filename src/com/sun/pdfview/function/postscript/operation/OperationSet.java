@@ -7,6 +7,8 @@ public class OperationSet {
 
 	private static OperationSet instance;
 	
+	private Map<String, PostScriptOperation> operationSet = null;
+	
 	/**
 	 * the set of all Operations we support. These operations are defined in
 	 * Appendix B - Operators.
@@ -22,8 +24,6 @@ public class OperationSet {
 		}
 		return instance;
 	}
-
-	private Map<String, PostScriptOperation> operationSet = null;
 
 	/*************************************************************************
 	 * Constructor

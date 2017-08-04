@@ -150,10 +150,10 @@ public class PDFObject {
 			this.type = BOOLEAN;
 		} else if (obj instanceof PDFParser.Tok) {
 			PDFParser.Tok tok = (PDFParser.Tok) obj;
-			if (tok != null && tok.name != null && tok.name.equals("true")) {
+			if (tok != null && tok.name != null && "true".equals(tok.name)) {
 				this.value = Boolean.TRUE;
 				this.type = BOOLEAN;
-			} else if (tok != null && tok.name != null && tok.name.equals("false")) {
+			} else if (tok != null && tok.name != null && "false".equals(tok.name)) {
 				this.value = Boolean.FALSE;
 				this.type = BOOLEAN;
 			} else {

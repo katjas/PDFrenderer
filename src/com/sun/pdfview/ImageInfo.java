@@ -23,10 +23,13 @@ import java.awt.geom.Rectangle2D;
 
 public class ImageInfo {
 
-	int width;
-	int height;
-	Rectangle2D clip;
-	Color bgColor;
+	public int width;
+	
+	public int height;
+	
+	public Rectangle2D clip;
+	
+	public Color bgColor;
 
 	public ImageInfo(int width, int height, Rectangle2D clip) {
 		this(width, height, clip, Color.WHITE);

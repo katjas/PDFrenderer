@@ -72,7 +72,7 @@ public class PDFFontEncoding {
 		if (encoding.getType() == PDFObject.NAME) {
 			// if the encoding is a String, it is the name of an encoding
 			// or the name of a CMap, depending on the type of the font
-			if (fontType.equals("Type0")) {
+			if ("Type0".equals(fontType)) {
 				this.type = TYPE_CMAP;
 				this.cmap = PDFCMap.getCMap(encoding.getStringValue());
 			} else {
@@ -85,11 +85,11 @@ public class PDFFontEncoding {
 			// loook at the "Type" entry of the encoding to determine the type
 			String typeStr = encoding.getDictRef("Type").getStringValue();
 
-			if (typeStr.equals("Encoding")) {
+			if ("Encoding".equals(typeStr)) {
 				// it is an encoding
 				this.type = TYPE_ENCODING;
 				parseEncoding(encoding);
-			} else if (typeStr.equals("CMap")) {
+			} else if ("CMap".equals(typeStr)) {
 				// it is a CMap
 				this.type = TYPE_CMAP;
 				this.cmap = PDFCMap.getCMap(encoding);
@@ -101,15 +101,15 @@ public class PDFFontEncoding {
 
 	/** Get the base encoding for a given name */
 	private int[] getBaseEncoding(String encodingName) {
-		if (encodingName.equals("MacRomanEncoding")) {
+		if ("MacRomanEncoding".equals(encodingName)) {
 			return FontSupport.macRomanEncoding;
-		} else if (encodingName.equals("MacExpertEncoding")) {
+		} else if ("MacExpertEncoding".equals(encodingName)) {
 			return FontSupport.type1CExpertCharset;
-		} else if (encodingName.equals("WinAnsiEncoding")) {
+		} else if ("WinAnsiEncoding".equals(encodingName)) {
 			return FontSupport.winAnsiEncoding;
-		} else if (encodingName.equals("StandardEncoding")) {
+		} else if ("StandardEncoding".equals(encodingName)) {
 			return FontSupport.standardEncoding;
-		} else if (encodingName.equals("SymbolSetEncoding")) {
+		} else if ("SymbolSetEncoding".equals(encodingName)) {
 			return FontSupport.symbolSetEncoding;
 		} else {
 			throw new IllegalArgumentException("Unknown encoding: " + encodingName);
