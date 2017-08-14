@@ -55,11 +55,21 @@ public class BuiltinFont extends Type1Font {
         "Arial,Bold", "Helvetica-Bold",
         "Arial,BoldItalic", "Helvetica-BoldOblique",
         "Arial,Italic", "Helvetica-Oblique",
+        // map ArialMT to Helvetica
+        "ArialMT", "Helvetica",
+        "Arial-BoldMT", "Helvetica-Bold",
+        "Arial-BoldItalicMT", "Helvetica-BoldOblique",
+        "Arial-ItalicMT", "Helvetica-Oblique",
         // map TimesNewRoman to Times
         "TimesNewRoman", "Times-Roman",
         "TimesNewRoman,Bold", "Times-Bold",
         "TimesNewRoman,BoldItalic", "Times-BoldItalic",
         "TimesNewRoman,Italic", "Times-Italic",
+        // map TimesNewRomanPSMT to Times
+        "TimesNewRomanPSMT", "Times-Roman",
+        "TimesNewRomanPS-BoldMT", "Times-Bold",
+        "TimesNewRomanPS-BoldItalicMT", "Times-BoldItalic",
+        "TimesNewRomanPS-ItalicMT", "Times-Italic",
         //Map some variants of Courier
         "Courier,Bold", "Courier-Bold",
         "Courier,BoldItalic", "Courier-BoldOblique",
@@ -96,6 +106,11 @@ public class BuiltinFont extends Type1Font {
         super(baseFont, fontObj, descriptor);
 
         String fontName = descriptor.getFontName();
+        
+        //check if font is 'PostScript' version of font
+        if(fontName.contains("PSMT")) {
+        	fontName = fontName.replace("PSMT", "");
+        }
 
         // check if it's one of the 14 base fonts
         for (int i = 0; i < baseFonts.length; i++) {
