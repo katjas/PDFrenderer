@@ -690,10 +690,6 @@ public class PDFPage {
     ************************************************************************/
     public void setAnnots(List<PDFAnnotation> annots) {
         this.annots = annots;
-//        for (PDFAnnotation pdfAnnotation : annots) {
-//            // add command to the page if needed
-//            this.commands.addAll(pdfAnnotation.getPageCommandsForAnnotation());
-//        }
     }
 
     public void addAnnotations() {
