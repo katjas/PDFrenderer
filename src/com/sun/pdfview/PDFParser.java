@@ -1526,4 +1526,5 @@ public class PDFParser extends BaseWatchable {
     	}
     	super.setStatus(status);
     }
+    
 }
