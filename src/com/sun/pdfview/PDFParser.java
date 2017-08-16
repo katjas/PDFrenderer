@@ -1518,4 +1518,12 @@ public class PDFParser extends BaseWatchable {
             return newState;
         }
     }
+    
+    @Override
+    protected void setStatus(int status) {
+    	if(status == BaseWatchable.COMPLETED) {
+    		this.cmds.addAnnotations();
+    	}
+    	super.setStatus(status);
+    }
 }

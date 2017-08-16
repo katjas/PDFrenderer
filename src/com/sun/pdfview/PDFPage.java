@@ -690,12 +690,21 @@ public class PDFPage {
     ************************************************************************/
     public void setAnnots(List<PDFAnnotation> annots) {
         this.annots = annots;
-        for (PDFAnnotation pdfAnnotation : annots) {
-            // add command to the page if needed
-            this.commands.addAll(pdfAnnotation.getPageCommandsForAnnotation());
-        }
+//        for (PDFAnnotation pdfAnnotation : annots) {
+//            // add command to the page if needed
+//            this.commands.addAll(pdfAnnotation.getPageCommandsForAnnotation());
+//        }
     }
 
+    public void addAnnotations() {
+    	if(this.annots != null) {
+            for (PDFAnnotation pdfAnnotation : this.annots) {
+                // add command to the page if needed
+                this.commands.addAll(pdfAnnotation.getPageCommandsForAnnotation());
+            }
+    	}
+    }
+    
     public static PDFImageCmd createImageCmd(PDFImage image) {
         return new PDFImageCmd(image);
     }
