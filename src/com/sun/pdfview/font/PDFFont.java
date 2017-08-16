@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import com.sun.pdfview.BaseWatchable;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
+import com.sun.pdfview.PDFRenderer;
 import com.sun.pdfview.font.cid.PDFCMap;
 import com.sun.pdfview.font.ttf.TrueTypeFont;
 
@@ -176,6 +177,7 @@ public abstract class PDFFont {
                 try {
                     font = new TTFFont(baseFont, obj, descriptor);
                 }catch (Exception e) {
+            		PDFRenderer.getErrorHandler().publishException(e);
                     // fake it with a built-in font
                     font = new BuiltinFont(baseFont, obj, descriptor);
                 }
@@ -185,6 +187,7 @@ public abstract class PDFFont {
                 	try {
                         font = new TTFFont(baseFont, obj, descriptor, extFontFile);
                 	}catch (Exception e) {
+                		PDFRenderer.getErrorHandler().publishException(e);
                 		// fake it with a built-in font
                 		font = new BuiltinFont(baseFont, obj, descriptor);
 					}

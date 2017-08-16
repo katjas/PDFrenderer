@@ -187,7 +187,7 @@ public class TrueTypeFont {
     public byte[] writeFont () {
         // allocate a buffer to hold the font
         ByteBuffer buf = ByteBuffer.allocate (getLength ());
-
+        
         // write the font header
         buf.putInt (getType ());
         buf.putShort (getNumTables ());
@@ -266,7 +266,9 @@ public class TrueTypeFont {
         // starting at byte 8 as 0x0000. This the checkSumAdjustment so
         // must be ignored here (see the TTF spec)
         if (tagString.equals ("head")) {
-        	data.putInt (8, 0);
+        	if(!data.isReadOnly()) {
+            	data.putInt (8, 0);
+        	}
         	sum += data.getInt();
         	sum += data.getInt();
         	// consume the uncounted checkSumAdjustment int
