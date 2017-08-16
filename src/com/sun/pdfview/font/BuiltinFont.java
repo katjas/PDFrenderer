@@ -106,11 +106,6 @@ public class BuiltinFont extends Type1Font {
         super(baseFont, fontObj, descriptor);
 
         String fontName = descriptor.getFontName();
-        
-        //check if font is 'PostScript' version of font
-        if(fontName.contains("PSMT")) {
-        	fontName = fontName.replace("PSMT", "");
-        }
 
         // check if it's one of the 14 base fonts
         for (int i = 0; i < baseFonts.length; i++) {
