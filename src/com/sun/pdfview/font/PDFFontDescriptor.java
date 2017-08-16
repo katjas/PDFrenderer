@@ -110,21 +110,36 @@ public class PDFFontDescriptor {
         boolean areConditionalParametersRequired = !"Type3".equals(fontSubType)
                 && !Boolean.getBoolean("PDFRenderer.lenientFontDescriptorParsing");
         
-        if (areConditionalParametersRequired || obj.getDictionary().containsKey("Ascent")) {
+    	// these values are declared as Required except for Type 3 fonts
+    	// however a value might not be available for some fonts and 
+    	// therefore some predefined value is set, so that we have a fallback
+        if ( obj.getDictionary().containsKey("Ascent")) {
             setAscent(obj.getDictRef("Ascent").getIntValue());
         }
-        if (areConditionalParametersRequired || obj.getDictionary().containsKey("CapHeight")) {
+        else if (areConditionalParametersRequired) {
+        	setAscent(728); // value of ArialMT as used with Report Label
+        }
+        if ( obj.getDictionary().containsKey("CapHeight")) {
             setCapHeight(obj.getDictRef("CapHeight").getIntValue());
         }
-        if (areConditionalParametersRequired || obj.getDictionary().containsKey("Descent")) {
+        else if (areConditionalParametersRequired) {
+        	setCapHeight(716); // value of ArialMT as used with Report Label
+        }
+        if ( obj.getDictionary().containsKey("Descent")) {
             setDescent(obj.getDictRef("Descent").getIntValue());
         }
-        if (areConditionalParametersRequired || obj.getDictionary().containsKey("StemV")) {
+        else if (areConditionalParametersRequired) {
+        	setDescent(-210); // value of ArialMT as used with Report Label
+        }
+        if ( obj.getDictionary().containsKey("StemV")) {
             setStemV(obj.getDictRef("StemV").getIntValue());
         }
+        else if (areConditionalParametersRequired) {
+        	setStemV(109); // "normal" value for vertical stem width (PDFlib)
+        }
 
-        // font bounding box
-        if (areConditionalParametersRequired || obj.getDictionary().containsKey("FontBBox")) {
+        // font bounding box (non-optional but a NPE won't help)
+        if (obj.getDictionary().containsKey("FontBBox")) {
             PDFObject[] bboxdef = obj.getDictRef("FontBBox").getArray();
             float[] bboxfdef = new float[4];
             for (int i = 0; i < 4; i++) {
