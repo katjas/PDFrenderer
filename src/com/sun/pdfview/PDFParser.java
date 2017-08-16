@@ -1525,6 +1525,5 @@ public class PDFParser extends BaseWatchable {
     		this.cmds.addAnnotations();
     	}
     	super.setStatus(status);
-    }
-    
+    }    
 }

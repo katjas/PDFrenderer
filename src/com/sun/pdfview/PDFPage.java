@@ -718,7 +718,6 @@ public class PDFPage {
     }
 }
 
-
 /**
 * draw an image
 */
