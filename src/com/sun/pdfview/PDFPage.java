@@ -108,6 +108,8 @@ public class PDFPage {
         this.renderers = Collections.synchronizedMap(new HashMap<ImageInfo, WeakReference<?>>());
         // initialize the list of commands
         this.commands = Collections.synchronizedList(new ArrayList<PDFCmd>(250));
+        // corresponding pop in PDFParser -> setStatus
+        this.addPush();
     }
 
     /**
