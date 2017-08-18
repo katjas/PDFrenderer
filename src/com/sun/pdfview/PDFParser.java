@@ -84,6 +84,7 @@ public class PDFParser extends BaseWatchable {
     private int strokeOverprintMode;
     private boolean fillOverprint;
     private int fillOverprintMode;
+	private boolean addAnnotation;
 
     /**
     * Don't call this constructor directly. Instead, use
@@ -1522,7 +1523,12 @@ public class PDFParser extends BaseWatchable {
     @Override
     protected void setStatus(int status) {
     	if(status == BaseWatchable.COMPLETED) {
-    		this.cmds.addAnnotations();
+    		if(!addAnnotation){
+    			// corresponding push in constructor PDFPage
+    			this.cmds.addPop();
+    			this.cmds.addAnnotations();
+    			addAnnotation = true;
+    		}
     	}
     	super.setStatus(status);
     }    
