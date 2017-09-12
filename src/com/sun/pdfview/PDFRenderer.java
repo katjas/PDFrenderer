@@ -239,7 +239,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
                 width = 1.0f / (float) bt.getScaleX();
             } else {
                 // prevent division by a really small number
-                width = 1.0f;
+                width = stroke.getLineWidth()<1f?1.0f:stroke.getLineWidth();
             }
             stroke = new BasicStroke(width, bs.getEndCap(), bs.getLineJoin(), bs.getMiterLimit(), bs.getDashArray(), bs.getDashPhase());
         }
