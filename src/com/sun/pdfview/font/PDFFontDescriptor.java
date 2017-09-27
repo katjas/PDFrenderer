@@ -177,443 +177,345 @@ public class PDFFontDescriptor {
 		// descriptor?]]
 	}
 
-	/**
-	 * Getter for property ascent.
-	 * 
-	 * @return Value of property ascent.
-	 *
-	 */
-	public int getAscent() {
-		return this.ascent;
-	}
 
-	/**
-	 * Getter for property avgWidth.
-	 * 
-	 * @return Value of property avgWidth.
-	 *
-	 */
-	public int getAvgWidth() {
-		return this.avgWidth;
-	}
+    /** Getter for property ascent.
+     * @return Value of property ascent.
+     *
+     */
+    public int getAscent() {
+        return this.ascent;
+    }
 
-	/**
-	 * Getter for property capHeight.
-	 * 
-	 * @return Value of property capHeight.
-	 *
-	 */
-	public int getCapHeight() {
-		return this.capHeight;
-	}
+    /** Setter for property ascent.
+     * @param ascent New value of property ascent.
+     *
+     */
+    public void setAscent(int ascent) {
+        this.ascent = ascent;
+    }
 
-	/**
-	 * Getter for property charSet.
-	 * 
-	 * @return Value of property charSet.
-	 *
-	 */
-	public PDFObject getCharSet() {
-		return this.charSet;
-	}
+    /** Getter for property capHeight.
+     * @return Value of property capHeight.
+     *
+     */
+    public int getCapHeight() {
+        return this.capHeight;
+    }
 
-	/**
-	 * Getter for property descent.
-	 * 
-	 * @return Value of property descent.
-	 *
-	 */
-	public int getDescent() {
-		return this.descent;
-	}
+    /** Setter for property capHeight.
+     * @param capHeight New value of property capHeight.
+     *
+     */
+    public void setCapHeight(int capHeight) {
+        this.capHeight = capHeight;
+    }
 
-	/**
-	 * Getter for property flags.
-	 * 
-	 * @return Value of property flags.
-	 *
-	 */
-	public int getFlags() {
-		return this.flags;
-	}
+    /** Getter for property descent.
+     * @return Value of property descent.
+     *
+     */
+    public int getDescent() {
+        return this.descent;
+    }
 
-	/**
-	 * Getter for property fontBBox.
-	 * 
-	 * @return Value of property fontBBox.
-	 *
-	 */
-	public Rectangle2D.Float getFontBBox() {
-		return this.fontBBox;
-	}
+    /** Setter for property descent.
+     * @param descent New value of property descent.
+     *
+     */
+    public void setDescent(int descent) {
+        this.descent = descent;
+    }
 
-	/**
-	 * Getter for property fontFamily. Option (PDF 1.5)
-	 * 
-	 * @return Value of the property fontFamily
-	 */
-	public String getFontFamily() {
-		return this.fontFamily;
-	}
+    /** Getter for property flags.
+     * @return Value of property flags.
+     *
+     */
+    public int getFlags() {
+        return this.flags;
+    }
 
-	/**
-	 * Getter for property fontFile.
-	 * 
-	 * @return Value of property fontFile.
-	 *
-	 */
-	public PDFObject getFontFile() {
-		return this.fontFile;
-	}
+    /** Setter for property flags.
+     * @param flags New value of property flags.
+     *
+     */
+    public void setFlags(int flags) {
+        this.flags = flags;
+    }
 
-	/**
-	 * Getter for property fontFile2.
-	 * 
-	 * @return Value of property fontFile2.
-	 *
-	 */
-	public PDFObject getFontFile2() {
-		return this.fontFile2;
-	}
+    /** Getter for property fontFamily. Option (PDF 1.5)
+     * @return Value of the property fontFamily
+     */
+    public String getFontFamily() {
+        return this.fontFamily;
+    }
 
-	/**
-	 * Getter for property fontFile3.
-	 * 
-	 * @return Value of property fontFile3.
-	 *
-	 */
-	public PDFObject getFontFile3() {
-		return this.fontFile3;
-	}
+    /** Setter for property fontFamily.
+     * @param fontFamily New value of property fontFamily.
+     *
+     */
+    public void setFontFamily(String fontFamily) {
+        this.fontFamily = fontFamily;
+    }
 
-	/**
-	 * Getter for property fontName.
-	 * 
-	 * @return Value of property fontName.
-	 *
-	 */
-	public String getFontName() {
-		return this.fontName;
-	}
+    /** Getter for property fontName.
+     * @return Value of property fontName.
+     *
+     */
+    public String getFontName() {
+        return this.fontName;
+    }
 
-	/**
-	 * Getter for property fontStretch. Option (PDF 1.5)
-	 * 
-	 * @return Value of the property fontStretch
-	 */
-	public String getFontStretch() {
-		return this.fontStretch;
-	}
+    /** Setter for property fontName.
+     * @param fontName New value of property fontName.
+     *
+     */
+    public void setFontName(String fontName) {
+        this.fontName = fontName;
+    }
 
-	/**
-	 * Getter for property fontWeight. Option (PDF 1.5)
-	 *
-	 * @return Value of the property fontWeight
-	 */
-	public int getFontWeight() {
-		return this.fontWeight;
-	}
+    /** Getter for property fontStretch. Option (PDF 1.5)
+     * 
+     * @return Value of the property fontStretch
+     */
+    public String getFontStretch() {
+        return this.fontStretch;
+    }
 
-	/**
-	 * Getter for property italicAngle.
-	 * 
-	 * @return Value of property italicAngle.
-	 *
-	 */
-	public int getItalicAngle() {
-		return this.italicAngle;
-	}
+    /** Setter for property fontStretch. Possible values are:
+     * UltraCondensed, ExtraCondensed, Condensed, SemiCondensed,
+     * Normal, SemiExpanded, Expanded, ExtraExpanded or UltraExpanded
+     * We do not check at this time.
+     *
+     * @param fontStretch New value of property fontStretch.
+     *
+     */
+    public void setFontStretch(String fontStretch) {
+        this.fontStretch = fontStretch;
+    }
 
-	/**
-	 * Getter for property leading.
-	 * 
-	 * @return Value of property leading.
-	 *
-	 */
-	public int getLeading() {
-		return this.leading;
-	}
+    /** Getter for property fontWeight. Option (PDF 1.5)
+     *
+     * @return Value of the property fontWeight
+     */
+    public int getFontWeight() {
+        return this.fontWeight;
+    }
 
-	/**
-	 * Getter for property maxWidth.
-	 * 
-	 * @return Value of property maxWidth.
-	 *
-	 */
-	public int getMaxWidth() {
-		return this.maxWidth;
-	}
+    /** Setter for property fontWeight. Possible values are:
+     * 100, 200, 300, 400, 500, 600, 700, 800, 900
+     * We do not check at this time.
+     *
+     * @param fontWeight New value of property fontWeight.
+     *
+     */
+    public void setFontWeight(int fontWeight) {
+        this.fontWeight = fontWeight;
+    }
 
-	/**
-	 * Getter for property misingWidth.
-	 * 
-	 * @return Value of property misingWidth.
-	 *
-	 */
-	public int getMissingWidth() {
-		return this.missingWidth;
-	}
+    /** Getter for property italicAngle.
+     * @return Value of property italicAngle.
+     *
+     */
+    public int getItalicAngle() {
+        return this.italicAngle;
+    }
 
-	/**
-	 * Getter for property stemH.
-	 * 
-	 * @return Value of property stemH.
-	 *
-	 */
-	public int getStemH() {
-		return this.stemH;
-	}
+    /** Setter for property italicAngle.
+     * @param italicAngle New value of property italicAngle.
+     *
+     */
+    public void setItalicAngle(int italicAngle) {
+        this.italicAngle = italicAngle;
+    }
 
-	/**
-	 * Getter for property stemV.
-	 * 
-	 * @return Value of property stemV.
-	 *
-	 */
-	public int getStemV() {
-		return this.stemV;
-	}
+    /** Getter for property stemV.
+     * @return Value of property stemV.
+     *
+     */
+    public int getStemV() {
+        return this.stemV;
+    }
 
-	/**
-	 * Getter for property xHeight.
-	 * 
-	 * @return Value of property xHeight.
-	 *
-	 */
-	public int getXHeight() {
-		return this.xHeight;
-	}
+    /** Setter for property stemV.
+     * @param stemV New value of property stemV.
+     *
+     */
+    public void setStemV(int stemV) {
+        this.stemV = stemV;
+    }
 
-	/**
-	 * Setter for property ascent.
-	 * 
-	 * @param ascent
-	 *            New value of property ascent.
-	 *
-	 */
-	public void setAscent(int ascent) {
-		this.ascent = ascent;
-	}
+    /** Getter for property avgWidth.
+     * @return Value of property avgWidth.
+     *
+     */
+    public int getAvgWidth() {
+        return this.avgWidth;
+    }
 
-	/**
-	 * Setter for property avgWidth.
-	 * 
-	 * @param avgWidth
-	 *            New value of property avgWidth.
-	 *
-	 */
-	public void setAvgWidth(int avgWidth) {
-		this.avgWidth = avgWidth;
-	}
+    /** Setter for property avgWidth.
+     * @param avgWidth New value of property avgWidth.
+     *
+     */
+    public void setAvgWidth(int avgWidth) {
+        this.avgWidth = avgWidth;
+    }
 
-	/**
-	 * Setter for property capHeight.
-	 * 
-	 * @param capHeight
-	 *            New value of property capHeight.
-	 *
-	 */
-	public void setCapHeight(int capHeight) {
-		this.capHeight = capHeight;
-	}
+    /** Getter for property fontFile.
+     * @return Value of property fontFile.
+     *
+     */
+    public PDFObject getFontFile() {
+        return this.fontFile;
+    }
 
-	/**
-	 * Setter for property charSet.
-	 * 
-	 * @param charSet
-	 *            New value of property charSet.
-	 *
-	 */
-	public void setCharSet(PDFObject charSet) {
-		this.charSet = charSet;
-	}
+    /** Setter for property fontFile.
+     * @param fontFile New value of property fontFile.
+     *
+     */
+    public void setFontFile(PDFObject fontFile) {
+        this.fontFile = fontFile;
+    }
 
-	/**
-	 * Setter for property descent.
-	 * 
-	 * @param descent
-	 *            New value of property descent.
-	 *
-	 */
-	public void setDescent(int descent) {
-		this.descent = descent;
-	}
+    /** Getter for property fontFile2.
+     * @return Value of property fontFile2.
+     *
+     */
+    public PDFObject getFontFile2() {
+        return this.fontFile2;
+    }
 
-	/**
-	 * Setter for property flags.
-	 * 
-	 * @param flags
-	 *            New value of property flags.
-	 *
-	 */
-	public void setFlags(int flags) {
-		this.flags = flags;
-	}
+    /** Setter for property fontFile2.
+     * @param fontFile2 New value of property fontFile2.
+     *
+     */
+    public void setFontFile2(PDFObject fontFile2) {
+        this.fontFile2 = fontFile2;
+    }
 
-	/**
-	 * Setter for property fontBBox.
-	 * 
-	 * @param fontBBox
-	 *            New value of property fontBBox.
-	 *
-	 */
-	public void setFontBBox(Rectangle2D.Float fontBBox) {
-		this.fontBBox = fontBBox;
-	}
+    /** Getter for property fontFile3.
+     * @return Value of property fontFile3.
+     *
+     */
+    public PDFObject getFontFile3() {
+        return this.fontFile3;
+    }
 
-	/**
-	 * Setter for property fontFamily.
-	 * 
-	 * @param fontFamily
-	 *            New value of property fontFamily.
-	 *
-	 */
-	public void setFontFamily(String fontFamily) {
-		this.fontFamily = fontFamily;
-	}
+    /** Setter for property fontFile3.
+     * @param fontFile3 New value of property fontFile3.
+     *
+     */
+    public void setFontFile3(PDFObject fontFile3) {
+        this.fontFile3 = fontFile3;
+    }
 
-	/**
-	 * Setter for property fontFile.
-	 * 
-	 * @param fontFile
-	 *            New value of property fontFile.
-	 *
-	 */
-	public void setFontFile(PDFObject fontFile) {
-		this.fontFile = fontFile;
-	}
+    /** Getter for property leading.
+     * @return Value of property leading.
+     *
+     */
+    public int getLeading() {
+        return this.leading;
+    }
 
-	/**
-	 * Setter for property fontFile2.
-	 * 
-	 * @param fontFile2
-	 *            New value of property fontFile2.
-	 *
-	 */
-	public void setFontFile2(PDFObject fontFile2) {
-		this.fontFile2 = fontFile2;
-	}
+    /** Setter for property leading.
+     * @param leading New value of property leading.
+     *
+     */
+    public void setLeading(int leading) {
+        this.leading = leading;
+    }
 
-	/**
-	 * Setter for property fontFile3.
-	 * 
-	 * @param fontFile3
-	 *            New value of property fontFile3.
-	 *
-	 */
-	public void setFontFile3(PDFObject fontFile3) {
-		this.fontFile3 = fontFile3;
-	}
+    /** Getter for property maxWidth.
+     * @return Value of property maxWidth.
+     *
+     */
+    public int getMaxWidth() {
+        return this.maxWidth;
+    }
 
-	/**
-	 * Setter for property fontName.
-	 * 
-	 * @param fontName
-	 *            New value of property fontName.
-	 *
-	 */
-	public void setFontName(String fontName) {
-		this.fontName = fontName;
-	}
+    /** Setter for property maxWidth.
+     * @param maxWidth New value of property maxWidth.
+     *
+     */
+    public void setMaxWidth(int maxWidth) {
+        this.maxWidth = maxWidth;
+    }
 
-	/**
-	 * Setter for property fontStretch. Possible values are: UltraCondensed,
-	 * ExtraCondensed, Condensed, SemiCondensed, Normal, SemiExpanded, Expanded,
-	 * ExtraExpanded or UltraExpanded We do not check at this time.
-	 *
-	 * @param fontStretch
-	 *            New value of property fontStretch.
-	 *
-	 */
-	public void setFontStretch(String fontStretch) {
-		this.fontStretch = fontStretch;
-	}
+    /** Getter for property misingWidth.
+     * @return Value of property misingWidth.
+     *
+     */
+    public int getMissingWidth() {
+        return this.missingWidth;
+    }
 
-	/**
-	 * Setter for property fontWeight. Possible values are: 100, 200, 300, 400,
-	 * 500, 600, 700, 800, 900 We do not check at this time.
-	 *
-	 * @param fontWeight
-	 *            New value of property fontWeight.
-	 *
-	 */
-	public void setFontWeight(int fontWeight) {
-		this.fontWeight = fontWeight;
-	}
+    /** Setter for property misingWidth.
+     * @param missingWidth New value of property misingWidth.
+     */
+    public void setMissingWidth(int missingWidth) {
+        this.missingWidth = missingWidth;
+    }
 
-	/**
-	 * Setter for property italicAngle.
-	 * 
-	 * @param italicAngle
-	 *            New value of property italicAngle.
-	 *
-	 */
-	public void setItalicAngle(int italicAngle) {
-		this.italicAngle = italicAngle;
-	}
+    /** Getter for property stemH.
+     * @return Value of property stemH.
+     *
+     */
+    public int getStemH() {
+        return this.stemH;
+    }
 
-	/**
-	 * Setter for property leading.
-	 * 
-	 * @param leading
-	 *            New value of property leading.
-	 *
-	 */
-	public void setLeading(int leading) {
-		this.leading = leading;
-	}
+    /** Setter for property stemH.
+     * @param stemH New value of property stemH.
+     *
+     */
+    public void setStemH(int stemH) {
+        this.stemH = stemH;
+    }
 
-	/**
-	 * Setter for property maxWidth.
-	 * 
-	 * @param maxWidth
-	 *            New value of property maxWidth.
-	 *
-	 */
-	public void setMaxWidth(int maxWidth) {
-		this.maxWidth = maxWidth;
-	}
+    /** Getter for property xHeight.
+     * @return Value of property xHeight.
+     *
+     */
+    public int getXHeight() {
+        return this.xHeight;
+    }
 
-	/**
-	 * Setter for property misingWidth.
-	 * 
-	 * @param missingWidth
-	 *            New value of property misingWidth.
-	 */
-	public void setMissingWidth(int missingWidth) {
-		this.missingWidth = missingWidth;
-	}
+    /** Setter for property xHeight.
+     * @param xHeight New value of property xHeight.
+     *
+     */
+    public void setXHeight(int xHeight) {
+        this.xHeight = xHeight;
+    }
 
-	/**
-	 * Setter for property stemH.
-	 * 
-	 * @param stemH
-	 *            New value of property stemH.
-	 *
-	 */
-	public void setStemH(int stemH) {
-		this.stemH = stemH;
-	}
+    /** Getter for property charSet.
+     * @return Value of property charSet.
+     *
+     */
+    public PDFObject getCharSet() {
+        return this.charSet;
+    }
 
-	/**
-	 * Setter for property stemV.
-	 * 
-	 * @param stemV
-	 *            New value of property stemV.
-	 *
-	 */
-	public void setStemV(int stemV) {
-		this.stemV = stemV;
-	}
+    /** Setter for property charSet.
+     * @param charSet New value of property charSet.
+     *
+     */
+    public void setCharSet(PDFObject charSet) {
+        this.charSet = charSet;
+    }
 
-	/**
-	 * Setter for property xHeight.
-	 * 
-	 * @param xHeight
-	 *            New value of property xHeight.
-	 *
-	 */
-	public void setXHeight(int xHeight) {
-		this.xHeight = xHeight;
-	}
+    /** Getter for property fontBBox.
+     * @return Value of property fontBBox.
+     *
+     */
+    public Rectangle2D.Float getFontBBox() {
+        return this.fontBBox;
+    }
+
+    /** Setter for property fontBBox.
+     * @param fontBBox New value of property fontBBox.
+     *
+     */
+    public void setFontBBox(Rectangle2D.Float fontBBox) {
+        this.fontBBox = fontBBox;
+    }
 }
