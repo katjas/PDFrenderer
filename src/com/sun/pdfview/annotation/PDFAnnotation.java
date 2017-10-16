@@ -8,6 +8,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.pdfview.Configuration;
 import com.sun.pdfview.PDFCmd;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
@@ -28,6 +29,7 @@ public class PDFAnnotation{
 		WIDGET("Widget", 2, WidgetAnnotation.class),
 		STAMP("Stamp", 3, StampAnnotation.class),
 		FREETEXT("FreeText", 5, FreetextAnnotation.class),
+		SIGNATURE("Sig", 6, WidgetAnnotation.class),
 		// TODO 28.03.2012: add more annotation types
 		;
 		
@@ -119,22 +121,48 @@ public class PDFAnnotation{
 		PDFObject subtypeValue = parent.getDictRef("Subtype");
 		if(subtypeValue == null) {
 			return null;
-		}			
+		}
 		String subtypeS = subtypeValue.getStringValue();
-		
 		ANNOTATION_TYPE annotationType = ANNOTATION_TYPE.getByDefinition(subtypeS);
-		Class<?> className = annotationType.getClassName();
 		
-		Constructor<?> constructor;
-		try {
-			constructor = className.getConstructor(PDFObject.class);
-			return (PDFAnnotation)constructor.newInstance(parent);
-		} catch (Exception e) {
-			throw new PDFParseException("Could not parse annotation!", e);
-		} 
+		//if Subtype is Widget than check if it is also a Signature
+		if(annotationType == ANNOTATION_TYPE.WIDGET) {
+			PDFObject sigType = parent.getDictRef("FT");
+			if(sigType != null) {
+				String sigTypeS = sigType.getStringValue();
+				if(ANNOTATION_TYPE.getByDefinition(sigTypeS) == ANNOTATION_TYPE.SIGNATURE) {
+					annotationType = ANNOTATION_TYPE.getByDefinition(sigTypeS);
+				}
+			}
+		}
+		
+		if(displayAnnotation(annotationType)) {
+			Class<?> className = annotationType.getClassName();
+			
+			Constructor<?> constructor;
+			try {
+				constructor = className.getConstructor(PDFObject.class);
+				return (PDFAnnotation)constructor.newInstance(parent);
+			} catch (Exception e) {
+				throw new PDFParseException("Could not parse annotation!", e);
+			} 
+		}
+		
+		return null;
 	}
 
-    /**
+    private static boolean displayAnnotation(ANNOTATION_TYPE annotationType) {
+		switch(annotationType) {
+			case STAMP: return Configuration.getInstance().isPrintStampAnnotations();
+			case WIDGET: return Configuration.getInstance().isPrintWidgetAnnotations();
+			case FREETEXT: return Configuration.getInstance().isPrintFreetextAnnotations();
+			case LINK: return Configuration.getInstance().isPrintLinkAnnotations();
+			case SIGNATURE: return Configuration.getInstance().isPrintSignatureFields();
+			case UNKNOWN: default: return false;
+		}
+	}
+
+	/**
      * Get a Rectangle2D.Float representation for a PDFObject that is an
      * array of four Numbers.
      * @param obj a PDFObject that represents an Array of exactly four
