@@ -45,352 +45,323 @@ import com.sun.pdfview.function.PDFFunction;
  * A shader that performs axial shader based on a function.
  */
 public class ShaderType2 extends PDFShader {
-    /** the start of the axis */
-    private Point2D axisStart;
-    
-    /** the end of the axis */
-    private Point2D axisEnd;
-    
-    /** the domain minimum */
-    private float minT = 0f;
-    
-    /** the domain maximum */
-    private float maxT = 1f;
-    
-    /** whether to extend the start of the axis */
-    private boolean extendStart = false;
-    
-    /** whether to extend the end of the axis */
-    private boolean extendEnd = false;
-    
-    /** functions, as an array of either 1 or n functions */
-    private PDFFunction[] functions;
-     
-    /** Creates a new instance of ShaderType2 */
-    public ShaderType2() {
-        super(2);
-    }
-    
-    /** 
-     * Parse the shader-specific data
-     */
-    @Override
-	public void parse(PDFObject shaderObj) throws IOException
-    {
-        // read the axis coordinates (required)
-        PDFObject coordsObj = shaderObj.getDictRef("Coords");
-        if (coordsObj == null) {
-            throw new PDFParseException("No coordinates found!");
-        }
-        PDFObject[] coords = coordsObj.getArray();
-        Point2D start = new Point2D.Float(coords[0].getFloatValue(),
-                                          coords[1].getFloatValue());
-        Point2D end   = new Point2D.Float(coords[2].getFloatValue(),
-                                          coords[3].getFloatValue());
-        setAxisStart(start);
-        setAxisEnd(end);
-        
-        // read the domain (optional)
-        PDFObject domainObj = shaderObj.getDictRef("Domain");
-        if (domainObj != null) {
-            PDFObject[] domain = domainObj.getArray();
-            setMinT(domain[0].getFloatValue());
-            setMaxT(domain[1].getFloatValue());
-        }
-        
-        // read the functions (required)
-        PDFObject functionObj = shaderObj.getDictRef("Function");
-        if (functionObj == null) {
-            throw new PDFParseException("No function defined for shader!");
-        }
-        PDFObject[] functionArray = functionObj.getArray();
-        PDFFunction[] functions = new PDFFunction[functionArray.length];
-        for (int i = 0; i < functions.length; i++) {
-            functions[i] = PDFFunction.getFunction(functionArray[i]);
-        }
-        setFunctions(functions);
-        
-        // read the extend array (optional)
-        PDFObject extendObj = shaderObj.getDictRef("Extend");
-        if (extendObj != null) {
-            PDFObject[] extendArray = extendObj.getArray();
-            setExtendStart(extendArray[0].getBooleanValue());
-            setExtendEnd(extendArray[1].getBooleanValue());
-        }
-        
-    }
-    
-    /**
-     * Create a paint that paints this pattern
-     */
-    @Override
-	public PDFPaint getPaint() {
-        return PDFPaint.getPaint(new Type2Paint());
-    }
-    
-    /** 
-     * Get the start of the axis
-     */
-    public Point2D getAxisStart() {
-        return this.axisStart;
-    }
-    
-    /**
-     * Set the start of the axis
-     */
-    protected void setAxisStart(Point2D axisStart) {
-        this.axisStart = axisStart;
-    }
-    
-    /** 
-     * Get the end of the axis
-     */
-    public Point2D getAxisEnd() {
-        return this.axisEnd;
-    }
-    
-    /**
-     * Set the start of the axis
-     */
-    protected void setAxisEnd(Point2D axisEnd) {
-        this.axisEnd = axisEnd;
-    }
-    
-    /** 
-     * Get the domain minimum
-     */
-    public float getMinT() {
-        return this.minT;
-    }
-    
-    /**
-     * Set the domain minimum
-     */
-    protected void setMinT(float minT) {
-        this.minT = minT;
-    }
-    
-    /** 
-     * Get the domain maximum
-     */
-    public float getMaxT() {
-        return this.maxT;
-    }
-    
-    /**
-     * Set the domain maximum
-     */
-    protected void setMaxT(float maxT) {
-        this.maxT = maxT;
-    }
-    
-    /**
-     * Get whether to extend the start of the axis
-     */
-    public boolean getExtendStart() {
-        return this.extendStart;
-    }
-    
-    /**
-     * Set whether to extend the start of the axis
-     */
-    protected void setExtendStart(boolean extendStart) {
-        this.extendStart = extendStart;
-    }
-    
-    /**
-     * Get whether to extend the end of the axis
-     */
-    public boolean getExtendEnd() {
-        return this.extendEnd;
-    }
-    
-    /**
-     * Set whether to extend the end of the axis
-     */
-    protected void setExtendEnd(boolean extendEnd) {
-        this.extendEnd = extendEnd;
-    }
-    
-    /**
-     * Get the functions associated with this shader
-     */
-    public PDFFunction[] getFunctions() {
-        return this.functions;
-    }
-    
-    /**
-     * Set the functions associated with this shader
-     */
-    protected void setFunctions(PDFFunction[] functions) {
-        this.functions = functions;
-    }
-    
-    /**
-     * A subclass of paint that uses this shader to generate a paint
-     */
-    class Type2Paint implements Paint {
-        public Type2Paint() {
-        }
-        
-        /** create a paint context */
-        @Override
-		public PaintContext createContext(ColorModel cm, 
-                                          Rectangle deviceBounds, 
-                                          Rectangle2D userBounds,
-                                          AffineTransform xform,
-                                          RenderingHints hints) 
-        {
-            ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
-            ColorModel model = new ComponentColorModel(cs, 
-                                                       true, 
-                                                       false, 
-                                                       Transparency.TRANSLUCENT,
-                                                       DataBuffer.TYPE_BYTE);
-            
-            Point2D devStart = xform.transform(getAxisStart(), null);
-            Point2D devEnd = xform.transform(getAxisEnd(), null);
-          
-            return new Type2PaintContext(model, devStart, devEnd);
-        }
-                
-        @Override
+	
+	/** the start of the axis */
+	private Point2D axisStart;
+
+	/** the end of the axis */
+	private Point2D axisEnd;
+
+	/** the domain minimum */
+	private float minT = 0f;
+
+	/** the domain maximum */
+	private float maxT = 1f;
+
+	/** whether to extend the start of the axis */
+	private boolean extendStart = false;
+
+	/** whether to extend the end of the axis */
+	private boolean extendEnd = false;
+
+	/** functions, as an array of either 1 or n functions */
+	private PDFFunction[] functions;
+	
+	/**
+	 * A subclass of paint that uses this shader to generate a paint
+	 */
+	class Type2Paint implements Paint {
+		
+		/** create a paint context */
+		@Override
+		public PaintContext createContext(ColorModel cm, Rectangle deviceBounds, Rectangle2D userBounds,
+				AffineTransform xform, RenderingHints hints) {
+			ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
+			ColorModel model = new ComponentColorModel(cs, true, false, Transparency.TRANSLUCENT, DataBuffer.TYPE_BYTE);
+
+			Point2D devStart = xform.transform(getAxisStart(), null);
+			Point2D devEnd = xform.transform(getAxisEnd(), null);
+
+			return new Type2PaintContext(model, devStart, devEnd);
+		}
+
+		@Override
 		public int getTransparency() {
-            return Transparency.TRANSLUCENT;
-        }
-    }
-    
-    /** 
-     * A simple paint context that uses an existing raster in device
-     * space to generate pixels
-     */
-    class Type2PaintContext implements PaintContext {
-        /** the color model */
-        private ColorModel colorModel;
-        
-        /** the start of the axis */
-        private Point2D start;
-        
-        /** the end of the axis */
-        private Point2D end;
-        
-        
-        private float dt1t0;
-        private double dx1x0, dy1y0, sqdx1x0psqdy1y0;
-        
-        /**
-         * Create a paint context
-         */
-        Type2PaintContext(ColorModel colorModel, Point2D start, Point2D end) {
-            this.colorModel = colorModel;
-            this.start = start;
-            this.end = end;
-            
-            //pre calculate some often used values
-            dt1t0 = getMaxT() - getMinT();
-            dx1x0 = end.getX() - start.getX();
-            dy1y0 = end.getY() - start.getY();
-            sqdx1x0psqdy1y0 = dx1x0*dx1x0 + dy1y0*dy1y0;
-        }
-        
-        @Override
+			return Transparency.TRANSLUCENT;
+		}
+	}
+
+	/**
+	 * A simple paint context that uses an existing raster in device space to
+	 * generate pixels
+	 */
+	class Type2PaintContext implements PaintContext {
+		/** the color model */
+		private ColorModel colorModel;
+
+		/** the start of the axis */
+		private Point2D start;
+
+		private float dt1t0;
+		private double dx1x0, dy1y0, sqdx1x0psqdy1y0;
+
+		/**
+		 * Create a paint context
+		 */
+		Type2PaintContext(ColorModel colorModel, Point2D start, Point2D end) {
+			this.colorModel = colorModel;
+			this.start = start;
+			// pre calculate some often used values
+			dt1t0 = getMaxT() - getMinT();
+			dx1x0 = end.getX() - start.getX();
+			dy1y0 = end.getY() - start.getY();
+			sqdx1x0psqdy1y0 = dx1x0 * dx1x0 + dy1y0 * dy1y0;
+		}
+
+		@Override
 		public void dispose() {
-            this.colorModel = null;
-        }
-        
-        @Override
+			this.colorModel = null;
+		}
+
+		@Override
 		public ColorModel getColorModel() {
-            return this.colorModel;
-        }
-        
-        @Override
-        public Raster getRaster(int x, int y, int w, int h) {
-        	ColorSpace cs = getColorModel().getColorSpace();
-            PDFColorSpace shadeCSpace = getColorSpace();
+			return this.colorModel;
+		}
 
+		@Override
+		public Raster getRaster(int x, int y, int w, int h) {
+			ColorSpace cs = getColorModel().getColorSpace();
+			PDFColorSpace shadeCSpace = getColorSpace();
 
-        	PDFFunction functions[] = getFunctions();
-        	int numComponents = cs.getNumComponents();
+			PDFFunction functions[] = getFunctions();
+			int numComponents = cs.getNumComponents();
 
-        	float x0 = (float) this.start.getX();
-        	float y0 = (float) this.start.getY();
+			float x0 = (float) this.start.getX();
+			float y0 = (float) this.start.getY();
 
-        	float[] inputs = new float[1];
-            float[] outputs = new float[shadeCSpace.getNumComponents()];
-            float[] outputRBG = new float[numComponents];
+			float[] inputs = new float[1];
+			float[] outputs = new float[shadeCSpace.getNumComponents()];
+			float[] outputRBG = new float[numComponents];
 
-        	// all the data, plus alpha channel
-        	int[] data = new int[w * h * (numComponents + 1)];
+			// all the data, plus alpha channel
+			int[] data = new int[w * h * (numComponents + 1)];
 
-        	// for each device coordinate
-        	for (int j = 0; j < h; j++) {
-        		for (int i = 0; i < w; i += 1) {
-        			boolean render = true;
-        			// find t for that user coordinate
-        			float xp = getXPrime(i + x, j + y, x0, y0);
-        			float t = 0;
-        			if (xp >= 0 && xp <= 1) t = getMinT() + (dt1t0 * xp);
-        			else if (xp < 0 && extendStart) t = getMinT();
-        			else if (xp > 1 && extendEnd) t = getMaxT();
-        			else render = false;
+			// for each device coordinate
+			for (int j = 0; j < h; j++) {
+				for (int i = 0; i < w; i += 1) {
+					boolean render = true;
+					// find t for that user coordinate
+					float xp = getXPrime(i + x, j + y, x0, y0);
+					float t = 0;
+					if (xp >= 0 && xp <= 1) {
+						t = getMinT() + dt1t0 * xp;
+					} else if (xp < 0 && extendStart) {
+						t = getMinT();
+					} else if (xp > 1 && extendEnd) {
+						t = getMaxT();
+					} else {
+						render = false;
+					}
 
-        			if (render) {
-        				// calculate the pixel values at t
-        				inputs[0] = t;
-        				if (functions.length == 1) {
-        					functions[0].calculate(inputs, 0, outputs, 0);
-        				} else {
-        					for (int c = 0; c < functions.length; c++) {
-        						functions[c].calculate(inputs, 0, outputs, c);
-        					} 
-        				}
-        				if (functions[0].getNumOutputs() != numComponents) {
-        					//CMYK
-        					outputRBG = shadeCSpace.getColorSpace().toRGB(outputs);
-        				}
-        				else outputRBG = outputs;
+					if (render) {
+						// calculate the pixel values at t
+						inputs[0] = t;
+						if (functions.length == 1) {
+							functions[0].calculate(inputs, 0, outputs, 0);
+						} else {
+							for (int c = 0; c < functions.length; c++) {
+								functions[c].calculate(inputs, 0, outputs, c);
+							}
+						}
+						if (functions[0].getNumOutputs() != numComponents) {
+							// CMYK
+							outputRBG = shadeCSpace.getColorSpace().toRGB(outputs);
+						} else {
+							outputRBG = outputs;
+						}
 
-        				int base = (j * w + i) * (numComponents + 1);
-        				for (int c = 0; c < numComponents; c++) {
-        					data[base + c] = (int) (outputRBG[c] * 255);
-        				}
-        				data[base + numComponents] = 255; 
-        			}
-        		}
-        	}
+						int base = (j * w + i) * (numComponents + 1);
+						for (int c = 0; c < numComponents; c++) {
+							data[base + c] = (int) (outputRBG[c] * 255);
+						}
+						data[base + numComponents] = 255;
+					}
+				}
+			}
 
-            WritableRaster raster =
-                getColorModel().createCompatibleWritableRaster(w, h);
-            raster.setPixels(0, 0, w, h, data);
-          
-            Raster child = raster.createTranslatedChild(x, y);
-            return child;
-        }
-        
-        /**
-         * x' = (x1 - x0) * (x - x0) + (y1 - y0) * (y - y0)
-         *      -------------------------------------------
-         *               (x1 - x0)^2 + (y1 - y0)^2
-         */
-        private float getXPrime(float x, float y, float x0, float y0) {
-           
-            double tp = ((dx1x0* (x - x0)) + (dy1y0 * (y - y0))) / sqdx1x0psqdy1y0;
-        
-            return (float) tp;
-        }
-        
-        /**
-         * t = t0 + (t1 - t0) x x'
-         */
-        private float getT(float xp) {
-        	
-            if (xp < 0) {
-                return getMinT();
-            } else if (xp > 1) {
-                return getMaxT();
-            } else {
-                return getMinT() + (dt1t0 * xp);
-            }
-        }
-    }
+			WritableRaster raster = getColorModel().createCompatibleWritableRaster(w, h);
+			raster.setPixels(0, 0, w, h, data);
+
+			Raster child = raster.createTranslatedChild(x, y);
+			return child;
+		}
+
+		/**
+		 * x' = (x1 - x0) * (x - x0) + (y1 - y0) * (y - y0)
+		 * ------------------------------------------- (x1 - x0)^2 + (y1 - y0)^2
+		 */
+		private float getXPrime(float x, float y, float x0, float y0) {
+
+			double tp = (dx1x0 * (x - x0) + dy1y0 * (y - y0)) / sqdx1x0psqdy1y0;
+
+			return (float) tp;
+		}
+	}
+
+	/** Creates a new instance of ShaderType2 */
+	public ShaderType2() {
+		super(2);
+	}
+
+	/**
+	 * Get the end of the axis
+	 */
+	public Point2D getAxisEnd() {
+		return this.axisEnd;
+	}
+
+	/**
+	 * Get the start of the axis
+	 */
+	public Point2D getAxisStart() {
+		return this.axisStart;
+	}
+
+	/**
+	 * Get whether to extend the end of the axis
+	 */
+	public boolean getExtendEnd() {
+		return this.extendEnd;
+	}
+
+	/**
+	 * Get whether to extend the start of the axis
+	 */
+	public boolean getExtendStart() {
+		return this.extendStart;
+	}
+
+	/**
+	 * Get the functions associated with this shader
+	 */
+	public PDFFunction[] getFunctions() {
+		return this.functions;
+	}
+
+	/**
+	 * Get the domain maximum
+	 */
+	public float getMaxT() {
+		return this.maxT;
+	}
+
+	/**
+	 * Get the domain minimum
+	 */
+	public float getMinT() {
+		return this.minT;
+	}
+
+	/**
+	 * Create a paint that paints this pattern
+	 */
+	@Override
+	public PDFPaint getPaint() {
+		return PDFPaint.getPaint(new Type2Paint());
+	}
+
+	/**
+	 * Parse the shader-specific data
+	 */
+	@Override
+	public void parse(PDFObject shaderObj) throws IOException {
+		// read the axis coordinates (required)
+		PDFObject coordsObj = shaderObj.getDictRef("Coords");
+		if (coordsObj == null) {
+			throw new PDFParseException("No coordinates found!");
+		}
+		PDFObject[] coords = coordsObj.getArray();
+		Point2D start = new Point2D.Float(coords[0].getFloatValue(), coords[1].getFloatValue());
+		Point2D end = new Point2D.Float(coords[2].getFloatValue(), coords[3].getFloatValue());
+		setAxisStart(start);
+		setAxisEnd(end);
+
+		// read the domain (optional)
+		PDFObject domainObj = shaderObj.getDictRef("Domain");
+		if (domainObj != null) {
+			PDFObject[] domain = domainObj.getArray();
+			setMinT(domain[0].getFloatValue());
+			setMaxT(domain[1].getFloatValue());
+		}
+
+		// read the functions (required)
+		PDFObject functionObj = shaderObj.getDictRef("Function");
+		if (functionObj == null) {
+			throw new PDFParseException("No function defined for shader!");
+		}
+		PDFObject[] functionArray = functionObj.getArray();
+		PDFFunction[] functions = new PDFFunction[functionArray.length];
+		for (int i = 0; i < functions.length; i++) {
+			functions[i] = PDFFunction.getFunction(functionArray[i]);
+		}
+		setFunctions(functions);
+
+		// read the extend array (optional)
+		PDFObject extendObj = shaderObj.getDictRef("Extend");
+		if (extendObj != null) {
+			PDFObject[] extendArray = extendObj.getArray();
+			setExtendStart(extendArray[0].getBooleanValue());
+			setExtendEnd(extendArray[1].getBooleanValue());
+		}
+
+	}
+
+	/**
+	 * Set the start of the axis
+	 */
+	protected void setAxisEnd(Point2D axisEnd) {
+		this.axisEnd = axisEnd;
+	}
+
+	/**
+	 * Set the start of the axis
+	 */
+	protected void setAxisStart(Point2D axisStart) {
+		this.axisStart = axisStart;
+	}
+
+	/**
+	 * Set whether to extend the end of the axis
+	 */
+	protected void setExtendEnd(boolean extendEnd) {
+		this.extendEnd = extendEnd;
+	}
+
+	/**
+	 * Set whether to extend the start of the axis
+	 */
+	protected void setExtendStart(boolean extendStart) {
+		this.extendStart = extendStart;
+	}
+
+	/**
+	 * Set the functions associated with this shader
+	 */
+	protected void setFunctions(PDFFunction[] functions) {
+		this.functions = functions;
+	}
+
+	/**
+	 * Set the domain maximum
+	 */
+	protected void setMaxT(float maxT) {
+		this.maxT = maxT;
+	}
+
+	/**
+	 * Set the domain minimum
+	 */
+	protected void setMinT(float minT) {
+		this.minT = minT;
+	}
 }

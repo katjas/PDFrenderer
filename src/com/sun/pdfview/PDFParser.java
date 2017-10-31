@@ -50,23 +50,34 @@ import com.sun.pdfview.pattern.PDFShader;
 * @author Mike Wessler
 */
 public class PDFParser extends BaseWatchable {
+	
     private int mDebugCommandIndex;
+    
     // ---- parsing variables
     private Stack<Object> stack; // stack of Object
+    
     private Stack<ParserState> parserStates; // stack of RenderState
+    
     // the current render state
     private ParserState state;
+    
     private GeneralPath path;
+    
     private int clip;
+    
     private int loc;
+    
     private boolean resend = false;
+    
     private Tok tok;
+    
     private boolean catchexceptions = true; // Indicates state of BX...EX
     /**
     * a weak reference to the page we render into. For the page
     * to remain available, some other code must retain a strong reference to
     * it.
     */
+    
     private final WeakReference<PDFPage> pageRef;
     /**
     * the actual command, for use within a singe iteration. Note that
@@ -74,17 +85,25 @@ public class PDFParser extends BaseWatchable {
     * page can be collected if not in use
     */
     private PDFPage cmds;
+    
     // ---- result variables
-    byte[] stream;
-    HashMap<String, PDFObject> resources;
+    private byte[] stream;
+    
+    private HashMap<String, PDFObject> resources;
 
-    boolean errorwritten = false;
+    private boolean errorwritten = false;
+    
     private boolean autoAdjustStroke = false;
+    
     private boolean strokeOverprint;
+    
     private int strokeOverprintMode;
+    
     private boolean fillOverprint;
+    
     private int fillOverprintMode;
-	private boolean addAnnotation;
+	
+    private boolean addAnnotation;
 
     /**
     * Don't call this constructor directly. Instead, use

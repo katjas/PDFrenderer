@@ -26,9 +26,13 @@ import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 
 /**
- * decode an LZW-encoded array of bytes.  LZW is a patented algorithm.
+ * decode an LZW-encoded array of bytes. LZW is a patented algorithm.
  *
- * <p>Feb 21, 2009 Legal statement on Intellectual Property from Unisys</p><pre>
+ * <p>
+ * Feb 21, 2009 Legal statement on Intellectual Property from Unisys
+ * </p>
+ * 
+ * <pre>
  * <b><u>LZW Patent Information</u></b> (http://www.unisys.com/about__unisys/lzw)
  * <u>License Information on GIF and Other LZW-based Technologies
  * </u><p>
@@ -61,141 +65,153 @@ import com.sun.pdfview.PDFParseException;
  * or with regard to the interpretation of any license agreements.
  * You should consult with your own legal counsel regarding your
  * particular situation.
- * </pre></p>
+ * </pre>
+ * </p>
  * 
  * @author Mike Wessler
  */
 public class LZWDecode {
 
-    ByteBuffer buf;
-    int bytepos;
-    int bitpos;
-    byte[] dict[] = new byte[4096][];
-    int dictlen = 0;
-    int bitspercode = 9;
-    static int STOP = 257;
-    static int CLEARDICT = 256;
+	private static int STOP = 257;
+	
+	private static int CLEARDICT = 256;
+	
+	private ByteBuffer buf;
+	
+	private int bytepos;
+	
+	private int bitpos;
+	
+	private byte[] dict[] = new byte[4096][];
+	
+	private int dictlen = 0;
 
-    /**
-     * initialize this decoder with an array of encoded bytes
-     * @param buf the buffer of bytes
-     */
-    private LZWDecode(ByteBuffer buf) throws PDFParseException {
-        for (int i = 0; i < 256; i++) {
-            this.dict[i] = new byte[1];
-            this.dict[i][0] = (byte) i;
-        }
-        this.dictlen = 258;
-        this.bitspercode = 9;
-        this.buf = buf;
-        this.bytepos = 0;
-        this.bitpos = 0;
-    }
+	private int bitspercode = 9;
 
-    /**
-     * reset the dictionary to the initial 258 entries
-     */
-    private void resetDict() {
-        this.dictlen = 258;
-        this.bitspercode = 9;
-    }
+	/**
+	 * decode an array of LZW-encoded bytes to a byte array.
+	 *
+	 * @param buf
+	 *            the buffer of encoded bytes
+	 * @param params
+	 *            parameters for the decoder (unused)
+	 * @return the decoded uncompressed bytes
+	 */
+	public static ByteBuffer decode(ByteBuffer buf, PDFObject params) throws IOException {
+		// decode the array
+		LZWDecode me = new LZWDecode(buf);
+		ByteBuffer outBytes = me.decode();
 
-    /**
-     * get the next code from the input stream
-     */
-    private int nextCode() {
-        int fillbits = this.bitspercode;
-        int value = 0;
-        if (this.bytepos >= this.buf.limit() - 1) {
-            return -1;
-        }
-        while (fillbits > 0) {
-            int nextbits = this.buf.get(this.bytepos);  // bitsource
-            int bitsfromhere = 8 - this.bitpos;  // how many bits can we take?
-            if (bitsfromhere > fillbits) { // don't take more than we need
-                bitsfromhere = fillbits;
-            }
-            value |= ((nextbits >> (8 - this.bitpos - bitsfromhere)) &
-                    (0xff >> (8 - bitsfromhere))) << (fillbits - bitsfromhere);
-            fillbits -= bitsfromhere;
-            this.bitpos += bitsfromhere;
-            if (this.bitpos >= 8) {
-                this.bitpos = 0;
-                this.bytepos++;
-            }
-        }
-        return value;
-    }
+		// undo a predictor algorithm, if any was used
+		if (params != null && params.getDictionary().containsKey("Predictor")) {
+			Predictor predictor = Predictor.getPredictor(params);
+			if (predictor != null) {
+				outBytes = predictor.unpredict(outBytes);
+			}
+		}
 
-    /**
-     * decode the array.
-     * @return the uncompressed byte array
-     */
-    private ByteBuffer decode() throws PDFParseException {
-        // algorithm derived from:
-        // http://www.rasip.fer.hr/research/compress/algorithms/fund/lz/lzw.html
-        // and the PDFReference
-        int cW = CLEARDICT;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        while (true) {
-            int pW = cW;
-            cW = nextCode();
-            if (cW == -1) {
-                throw new PDFParseException("Missed the stop code in LZWDecode!");
-            }
-            if (cW == STOP) {
-                break;
-            } else if (cW == CLEARDICT) {
-                resetDict();
-            //		pW= -1;
-            } else if (pW == CLEARDICT) {
-                baos.write(this.dict[cW], 0, this.dict[cW].length);
-            } else {
-                if (cW < this.dictlen) {  // it's a code in the dictionary
-                    baos.write(this.dict[cW], 0, this.dict[cW].length);
-                    byte[] p = new byte[this.dict[pW].length + 1];
-                    System.arraycopy(this.dict[pW], 0, p, 0, this.dict[pW].length);
-                    p[this.dict[pW].length] = this.dict[cW][0];
-                    this.dict[this.dictlen++] = p;
-                } else {  // not in the dictionary (should==dictlen)
-                    //		    if (cW!=dictlen) {
-                    //			System.out.println("Got a bouncy code: "+cW+" (dictlen="+dictlen+")");
-                    //		    }
-                    byte[] p = new byte[this.dict[pW].length + 1];
-                    System.arraycopy(this.dict[pW], 0, p, 0, this.dict[pW].length);
-                    p[this.dict[pW].length] = p[0];
-                    baos.write(p, 0, p.length);
-                    this.dict[this.dictlen++] = p;
-                }
-                if (this.dictlen >= (1 << this.bitspercode) - 1 && this.bitspercode < 12) {
-                    this.bitspercode++;
-                }
-            }
-        }
-        return ByteBuffer.wrap(baos.toByteArray());
-    }
+		return outBytes;
+	}
 
-    /**
-     * decode an array of LZW-encoded bytes to a byte array.
-     *
-     * @param buf the buffer of encoded bytes
-     * @param params parameters for the decoder (unused)
-     * @return the decoded uncompressed bytes
-     */
-    public static ByteBuffer decode(ByteBuffer buf, PDFObject params)
-            throws IOException {
-        // decode the array
-        LZWDecode me = new LZWDecode(buf);
-        ByteBuffer outBytes = me.decode();
+	/**
+	 * initialize this decoder with an array of encoded bytes
+	 * 
+	 * @param buf
+	 *            the buffer of bytes
+	 */
+	private LZWDecode(ByteBuffer buf) throws PDFParseException {
+		for (int i = 0; i < 256; i++) {
+			this.dict[i] = new byte[1];
+			this.dict[i][0] = (byte) i;
+		}
+		this.dictlen = 258;
+		this.bitspercode = 9;
+		this.buf = buf;
+		this.bytepos = 0;
+		this.bitpos = 0;
+	}
 
-        // undo a predictor algorithm, if any was used
-        if (params != null && params.getDictionary().containsKey("Predictor")) {
-            Predictor predictor = Predictor.getPredictor(params);
-            if (predictor != null) {
-                outBytes = predictor.unpredict(outBytes);
-            }
-        }
+	/**
+	 * decode the array.
+	 * 
+	 * @return the uncompressed byte array
+	 */
+	private ByteBuffer decode() throws PDFParseException {
+		// algorithm derived from:
+		// http://www.rasip.fer.hr/research/compress/algorithms/fund/lz/lzw.html
+		// and the PDFReference
+		int cW = CLEARDICT;
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		while (true) {
+			int pW = cW;
+			cW = nextCode();
+			if (cW == -1) {
+				throw new PDFParseException("Missed the stop code in LZWDecode!");
+			}
+			if (cW == STOP) {
+				break;
+			} else if (cW == CLEARDICT) {
+				resetDict();
+				// pW= -1;
+			} else if (pW == CLEARDICT) {
+				baos.write(this.dict[cW], 0, this.dict[cW].length);
+			} else {
+				if (cW < this.dictlen) { // it's a code in the dictionary
+					baos.write(this.dict[cW], 0, this.dict[cW].length);
+					byte[] p = new byte[this.dict[pW].length + 1];
+					System.arraycopy(this.dict[pW], 0, p, 0, this.dict[pW].length);
+					p[this.dict[pW].length] = this.dict[cW][0];
+					this.dict[this.dictlen++] = p;
+				} else { // not in the dictionary (should==dictlen)
+					// if (cW!=dictlen) {
+					// System.out.println("Got a bouncy code: "+cW+"
+					// (dictlen="+dictlen+")");
+					// }
+					byte[] p = new byte[this.dict[pW].length + 1];
+					System.arraycopy(this.dict[pW], 0, p, 0, this.dict[pW].length);
+					p[this.dict[pW].length] = p[0];
+					baos.write(p, 0, p.length);
+					this.dict[this.dictlen++] = p;
+				}
+				if (this.dictlen >= (1 << this.bitspercode) - 1 && this.bitspercode < 12) {
+					this.bitspercode++;
+				}
+			}
+		}
+		return ByteBuffer.wrap(baos.toByteArray());
+	}
 
-        return outBytes;
-    }
+	/**
+	 * get the next code from the input stream
+	 */
+	private int nextCode() {
+		int fillbits = this.bitspercode;
+		int value = 0;
+		if (this.bytepos >= this.buf.limit() - 1) {
+			return -1;
+		}
+		while (fillbits > 0) {
+			int nextbits = this.buf.get(this.bytepos); // bitsource
+			int bitsfromhere = 8 - this.bitpos; // how many bits can we take?
+			if (bitsfromhere > fillbits) { // don't take more than we need
+				bitsfromhere = fillbits;
+			}
+			value |= (nextbits >> 8 - this.bitpos - bitsfromhere & 0xff >> 8 - bitsfromhere) << fillbits - bitsfromhere;
+			fillbits -= bitsfromhere;
+			this.bitpos += bitsfromhere;
+			if (this.bitpos >= 8) {
+				this.bitpos = 0;
+				this.bytepos++;
+			}
+		}
+		return value;
+	}
+
+	/**
+	 * reset the dictionary to the initial 258 entries
+	 */
+	private void resetDict() {
+		this.dictlen = 258;
+		this.bitspercode = 9;
+	}
 }

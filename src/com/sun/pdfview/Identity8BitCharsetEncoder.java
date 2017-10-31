@@ -19,43 +19,42 @@
 
 package com.sun.pdfview;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
-import java.nio.CharBuffer;
-import java.nio.ByteBuffer;
 
 /**
- * A {@link CharsetEncoder} that attempts to write out the lower 8 bits
- * of any character. Characters &gt;= 256 in value are regarded
- * as unmappable.
+ * A {@link CharsetEncoder} that attempts to write out the lower 8 bits of any
+ * character. Characters &gt;= 256 in value are regarded as unmappable.
  *
  * @author Luke Kirby
  */
 public class Identity8BitCharsetEncoder extends CharsetEncoder {
 
-    public Identity8BitCharsetEncoder() {
-        super(null, 1, 1);
-    }
+	public Identity8BitCharsetEncoder() {
+		super(null, 1, 1);
+	}
 
-    @Override
+	@Override
 	protected CoderResult encodeLoop(CharBuffer in, ByteBuffer out) {
-        while (in.remaining() > 0) {
-            if (out.remaining() < 1) {
-                return CoderResult.OVERFLOW;
-            }
-            final char c = in.get();
-            if (c >= 0 && c < 256) {
-                out.put((byte) c);
-            } else {
-                return CoderResult.unmappableForLength(1);
-            }
-        }
-        return CoderResult.UNDERFLOW;
-    }
+		while (in.remaining() > 0) {
+			if (out.remaining() < 1) {
+				return CoderResult.OVERFLOW;
+			}
+			final char c = in.get();
+			if (c >= 0 && c < 256) {
+				out.put((byte) c);
+			} else {
+				return CoderResult.unmappableForLength(1);
+			}
+		}
+		return CoderResult.UNDERFLOW;
+	}
 
-    @Override
-    public boolean isLegalReplacement(byte[] repl) {
-        // avoid referencing the non-existent character set
-        return true;
-    }
+	@Override
+	public boolean isLegalReplacement(byte[] repl) {
+		// avoid referencing the non-existent character set
+		return true;
+	}
 }

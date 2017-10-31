@@ -25,48 +25,47 @@ import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 
 /**
- * Performs identity decryption; that is, inputs aren't encrypted and
- * are returned right back.
+ * Performs identity decryption; that is, inputs aren't encrypted and are
+ * returned right back.
  *
  * @Author Luke Kirby
  */
 public class IdentityDecrypter implements PDFDecrypter {
 
-    private static IdentityDecrypter INSTANCE = new IdentityDecrypter();
+	private static IdentityDecrypter INSTANCE = new IdentityDecrypter();
 
-    @Override
-	public ByteBuffer decryptBuffer(String cryptFilterName,
-            PDFObject streamObj, ByteBuffer streamBuf)
-            throws PDFParseException {
+	public static IdentityDecrypter getInstance() {
+		return INSTANCE;
+	}
 
-        if (cryptFilterName != null) {
-            throw new PDFParseException("This Encryption version does not support Crypt filters");
-        }
+	@Override
+	public ByteBuffer decryptBuffer(String cryptFilterName, PDFObject streamObj, ByteBuffer streamBuf)
+			throws PDFParseException {
 
-        return streamBuf;
-    }
+		if (cryptFilterName != null) {
+			throw new PDFParseException("This Encryption version does not support Crypt filters");
+		}
 
-    @Override
+		return streamBuf;
+	}
+
+	@Override
 	public String decryptString(int objNum, int objGen, String inputBasicString) {
-        return inputBasicString;
-    }
+		return inputBasicString;
+	}
 
-    public static IdentityDecrypter getInstance() {
-        return INSTANCE;
-    }
-
-    @Override
+	@Override
 	public boolean isEncryptionPresent() {
-        return false;
-    }
+		return false;
+	}
 
-    @Override
+	@Override
 	public boolean isEncryptionPresent(String cryptFilterName) {
-        return false;
-    }
+		return false;
+	}
 
-    @Override
+	@Override
 	public boolean isOwnerAuthorised() {
-        return false;
-    }
+		return false;
+	}
 }

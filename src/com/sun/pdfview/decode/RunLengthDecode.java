@@ -30,45 +30,11 @@ import com.sun.pdfview.PDFParseException;
  * @author Mike Wessler
  */
 public class RunLengthDecode {
+	
 	/** the end of data in the RunLength encoding. */
 	private static final int RUN_LENGTH_EOD = 128;
-
+	
 	private ByteBuffer buf;
-
-	/**
-	 * initialize the decoder with an array of bytes in RunLength format
-	 */
-	private RunLengthDecode(ByteBuffer buf) {
-		this.buf = buf;
-	}
-
-	/**
-	 * decode the array
-	 * 
-	 * @return the decoded bytes
-	 */
-	private ByteBuffer decode() {
-		// start at the beginning of the buffer
-		this.buf.rewind();
-
-		// allocate the output buffer
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		int dupAmount;
-		byte[] buffer = new byte[128];
-		while ((dupAmount = this.buf.get()&0xFF) != RUN_LENGTH_EOD) {
-			if (dupAmount >= 0 && dupAmount <= 127) {
-				int amountToCopy = dupAmount + 1;
-				this.buf.get(buffer, 0, amountToCopy);
-				baos.write(buffer, 0, amountToCopy);
-			} else {
-				byte dupByte = this.buf.get();
-				for (int i = 0; i < 257 - dupAmount; i++) {
-					baos.write(dupByte);
-				}
-			}
-		}
-		return ByteBuffer.wrap(baos.toByteArray());
-	}
 
 	/**
 	 * decode an array of bytes in RunLength format.
@@ -90,5 +56,40 @@ public class RunLengthDecode {
 	public static ByteBuffer decode(ByteBuffer buf, PDFObject params) throws PDFParseException {
 		RunLengthDecode me = new RunLengthDecode(buf);
 		return me.decode();
+	}
+
+	/**
+	 * initialize the decoder with an array of bytes in RunLength format
+	 */
+	private RunLengthDecode(ByteBuffer buf) {
+		this.buf = buf;
+	}
+
+	/**
+	 * decode the array
+	 * 
+	 * @return the decoded bytes
+	 */
+	private ByteBuffer decode() {
+		// start at the beginning of the buffer
+		this.buf.rewind();
+
+		// allocate the output buffer
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		int dupAmount;
+		byte[] buffer = new byte[128];
+		while ((dupAmount = this.buf.get() & 0xFF) != RUN_LENGTH_EOD) {
+			if (dupAmount >= 0 && dupAmount <= 127) {
+				int amountToCopy = dupAmount + 1;
+				this.buf.get(buffer, 0, amountToCopy);
+				baos.write(buffer, 0, amountToCopy);
+			} else {
+				byte dupByte = this.buf.get();
+				for (int i = 0; i < 257 - dupAmount; i++) {
+					baos.write(dupByte);
+				}
+			}
+		}
+		return ByteBuffer.wrap(baos.toByteArray());
 	}
 }

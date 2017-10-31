@@ -977,19 +977,25 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
     class GraphicsState implements Cloneable {
 
         /** the clip region */
-        Shape cliprgn;
+        public Shape cliprgn;
+        
         /** the current stroke */
-        BasicStroke stroke;
+        public BasicStroke stroke;
+        
         /** the current paint for drawing strokes */
-        PDFPaint strokePaint;
+        public PDFPaint strokePaint;
+        
         /** the current paint for filling shapes */
-        PDFPaint fillPaint;
+        public PDFPaint fillPaint;
+        
         /** the current compositing alpha for stroking */
-        AlphaComposite strokeAlpha;
+        public AlphaComposite strokeAlpha;
+        
         /** the current compositing alpha for filling */
-        AlphaComposite fillAlpha;
+        public AlphaComposite fillAlpha;
+        
         /** the current transform */
-        AffineTransform xform;
+        public AffineTransform xform;
 
         /** Clone this Graphics state.
          *

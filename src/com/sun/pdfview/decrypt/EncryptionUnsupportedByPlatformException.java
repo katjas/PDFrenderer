@@ -21,19 +21,23 @@ package com.sun.pdfview.decrypt;
 /**
  * Identifies that the specified encryption mechanism, though supported by the
  * product, is not supported by the platform that it is running on; i.e., that
- * either the JCE does not support a required cipher or that its policy is
- * such that a key of a given length can not be used.
+ * either the JCE does not support a required cipher or that its policy is such
+ * that a key of a given length can not be used.
  *
  * @author Luke Kirby
  */
-public class EncryptionUnsupportedByPlatformException
-        extends UnsupportedEncryptionException {
+public class EncryptionUnsupportedByPlatformException extends UnsupportedEncryptionException {
 
-    public EncryptionUnsupportedByPlatformException(String message) {
-        super(message);
-    }
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-    public EncryptionUnsupportedByPlatformException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public EncryptionUnsupportedByPlatformException(String message) {
+		super(message);
+	}
+
+	public EncryptionUnsupportedByPlatformException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

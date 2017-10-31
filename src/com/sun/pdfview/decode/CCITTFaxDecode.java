@@ -8,17 +8,6 @@ import com.sun.pdfview.PDFObject;
 
 public class CCITTFaxDecode {
 
-
-
-	protected static ByteBuffer decode(PDFObject dict, ByteBuffer buf,
-            PDFObject params) throws IOException {
-
-		byte[] bytes = new byte[buf.remaining()];
-	    buf.get(bytes, 0, bytes.length);
-		return ByteBuffer.wrap(decode(dict, bytes));
-	}
-
-
 	protected static byte[] decode(PDFObject dict, byte[] source) throws IOException {
 		int width = 1728;
 		PDFObject widthDef = dict.getDictRef("Width");
@@ -41,12 +30,12 @@ public class CCITTFaxDecode {
 		int columns = getOptionFieldInt(dict, "Columns", width);
 		int rows = getOptionFieldInt(dict, "Rows", height);
 		int k = getOptionFieldInt(dict, "K", 0);
-		int size = rows * ((columns + 7) >> 3);
+		int size = rows * (columns + 7 >> 3);
 		byte[] destination = new byte[size];
 
 		boolean align = getOptionFieldBoolean(dict, "EncodedByteAlign", false);
 
-		CCITTFaxDecoder decoder = new CCITTFaxDecoder(1, columns, rows);
+		CCITTFaxDecoder decoder = new CCITTFaxDecoder(1, columns);
 		decoder.setAlign(align);
 		try {
 			if (k == 0) {
@@ -56,17 +45,18 @@ public class CCITTFaxDecode {
 			} else if (k < 0) {
 				decoder.decodeT6(destination, source, 0, rows);
 			}
-		}catch (Exception e) {
-		    PDFDebugger.debug("Error decoding CCITTFax image k: "+ k);
-			// some PDf producer don't correctly assign a k value for the deocde,
-			// as  result we can try one more time using the T6.
-			//first, reset buffer
+		} catch (Exception e) {
+			PDFDebugger.debug("Error decoding CCITTFax image k: " + k);
+			// some PDf producer don't correctly assign a k value for the
+			// deocde,
+			// as result we can try one more time using the T6.
+			// first, reset buffer
 			destination = new byte[size];
 			try {
 				decoder.decodeT6(destination, source, 0, rows);
-			}catch (Exception e1) {
+			} catch (Exception e1) {
 				// do nothing
-			    PDFDebugger.debug("Error decoding CCITTFax image");
+				PDFDebugger.debug("Error decoding CCITTFax image");
 			}
 		}
 		if (!getOptionFieldBoolean(dict, "BlackIs1", false)) {
@@ -79,23 +69,24 @@ public class CCITTFaxDecode {
 		return destination;
 	}
 
-	public static int getOptionFieldInt(PDFObject dict, String name, int defaultValue) throws IOException {
+	protected static ByteBuffer decode(PDFObject dict, ByteBuffer buf, PDFObject params) throws IOException {
 
-        PDFObject dictParams = getDecodeParams(dict);
+		byte[] bytes = new byte[buf.remaining()];
+		buf.get(bytes, 0, bytes.length);
+		return ByteBuffer.wrap(decode(dict, bytes));
+	}
 
-		if (dictParams == null) {
-			return defaultValue;
+	private static PDFObject getDecodeParams(PDFObject dict) throws IOException {
+		PDFObject decdParams = dict.getDictRef("DecodeParms");
+		if (decdParams != null && decdParams.getType() == PDFObject.ARRAY) {
+			return decdParams.getArray()[0];
 		}
-		PDFObject value = dictParams.getDictRef(name);
-		if (value == null) {
-			return defaultValue;
-		}
-		return value.getIntValue();
+		return decdParams;
 	}
 
 	public static boolean getOptionFieldBoolean(PDFObject dict, String name, boolean defaultValue) throws IOException {
 
-        PDFObject dictParams = getDecodeParams(dict);
+		PDFObject dictParams = getDecodeParams(dict);
 
 		if (dictParams == null) {
 			return defaultValue;
@@ -107,11 +98,17 @@ public class CCITTFaxDecode {
 		return value.getBooleanValue();
 	}
 
-    private static PDFObject getDecodeParams(PDFObject dict) throws IOException {
-        PDFObject decdParams = dict.getDictRef("DecodeParms");
-        if (decdParams != null && decdParams.getType() == PDFObject.ARRAY) {
-            return decdParams.getArray()[0];
-        }
-        return decdParams;
-    }
+	public static int getOptionFieldInt(PDFObject dict, String name, int defaultValue) throws IOException {
+
+		PDFObject dictParams = getDecodeParams(dict);
+
+		if (dictParams == null) {
+			return defaultValue;
+		}
+		PDFObject value = dictParams.getDictRef(name);
+		if (value == null) {
+			return defaultValue;
+		}
+		return value.getIntValue();
+	}
 }

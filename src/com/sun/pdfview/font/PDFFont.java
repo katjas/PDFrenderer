@@ -42,28 +42,32 @@ import com.sun.pdfview.font.ttf.TrueTypeFont;
  */
 public abstract class PDFFont {
 
+    /** the font SubType of this font */
+    private String subtype;
+    
+    /** the postscript name of this font */
+    private String baseFont;
+    
+    /** the font encoding (maps character ids to glyphs) */
+    private PDFFontEncoding encoding;
+    
+    /** the font descriptor */
+    private PDFFontDescriptor descriptor;
+    
+    /** the CMap that maps this font to unicode values */
+    private PDFCMap unicodeMap;
+    
+    /** a cache of glyphs indexed by character */
+    private Map<Character,PDFGlyph> charCache;
+    
+    private static Map<String,File> namedFontsToLocalTtfFiles = null;
+    
     private static final FilenameFilter TTF_FILTER = new FilenameFilter() {
         @Override
 		public boolean accept(File dir, String name) {
             return name.toLowerCase().endsWith(".ttf");
         }
     };
-
-    private static Map<String,File> namedFontsToLocalTtfFiles = null;
-
-    /** the font SubType of this font */
-    private String subtype;
-    /** the postscript name of this font */
-    private String baseFont;
-    /** the font encoding (maps character ids to glyphs) */
-    private PDFFontEncoding encoding;
-    /** the font descriptor */
-    private PDFFontDescriptor descriptor;
-    /** the CMap that maps this font to unicode values */
-    private PDFCMap unicodeMap;
-    /** a cache of glyphs indexed by character */
-    private Map<Character,PDFGlyph> charCache;
-
 
 
     /**
@@ -87,40 +91,7 @@ public abstract class PDFFont {
      * CharProcs = (dictionary)
      * Resources = (dictionary)
      */
-    public synchronized static PDFFont getFont(PDFObject obj,
-            HashMap<String,PDFObject> resources)
-            throws IOException {
-        // the obj is actually a dictionary containing:
-        //    Type (=Font)
-        //    Subtype (Type1, TrueType, Type3, Type0, MMType1, CIDFontType0,2)
-        //    FirstChar (int)
-        //    LastChar (int)
-        //    Widths (array)
-        //    Encoding (name or dict) : assumes StandardEncoding
-        // and........
-        // Type1 and TrueType fonts:
-        //    BaseFont (name)  // may be XXXXXX+Fontname as a subset.
-        //    FontDescriptor (dict)
-        // Type3 fonts:
-        //    FontBBox (rectangle)
-        //    FontMatrix (array) // e.g. [0.001 0 0 0.001 0 0]
-        //    CharProcs (dict)
-        //    Resources (dict)
-        //
-        // Font descriptor (Type1 and TrueType fonts):
-        //    FontName (name)
-        //    Flags (1=monospace, 2=serif, 4=script, 7=italic, 19=bold)
-        //    FontBBox (rectangle)
-        //    ItalicAngle (float)
-        //    Ascent (float)
-        //    Descent (float)
-        //    CapHeight (float)
-        //    StemV (float)
-        //    FontFile (stream for Type1 fonts)
-        //    FontFile2 (stream for TrueType fonts)
-        //    FontFile3 (stream for CFF/Type1C fonts)
-        //
-        // Font data can be Type1, TrueType(native), or Type1C
+    public synchronized static PDFFont getFont(PDFObject obj, HashMap<String,PDFObject> resources) throws IOException {
         PDFFont font = (PDFFont) obj.getCache();
         if (font != null) {
             return font;

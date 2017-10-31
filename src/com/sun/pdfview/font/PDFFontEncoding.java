@@ -28,184 +28,183 @@ import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.font.cid.PDFCMap;
 
 /**
- * The PDFFont encoding encapsulates the mapping from character codes
- * in the PDF document to glyphs of the font.
+ * The PDFFont encoding encapsulates the mapping from character codes in the PDF
+ * document to glyphs of the font.
  *
- * Encodings take two basic forms.  For Type1, TrueType, and Type3 fonts,
- * the encoding maps from character codes to Strings, which represent the
- * glyphs of the font.  For Type0 fonts, the mapping is a CMap which maps
- * character codes to characters in one of many descendant fonts.
+ * Encodings take two basic forms. For Type1, TrueType, and Type3 fonts, the
+ * encoding maps from character codes to Strings, which represent the glyphs of
+ * the font. For Type0 fonts, the mapping is a CMap which maps character codes
+ * to characters in one of many descendant fonts.
  *
  * Note that the data in the PDF might be ASCII characters (bytes) or it might
- * be a multi-byte format such as unicode.  For now we will assume all
- * glyph ids fit into at most the two bytes of a character.
+ * be a multi-byte format such as unicode. For now we will assume all glyph ids
+ * fit into at most the two bytes of a character.
  */
 public class PDFFontEncoding {
 
-    /** Encoding types */
-    private static final int TYPE_ENCODING = 0;
-    private static final int TYPE_CMAP = 1;
-    /** 
-     * the base encoding (an array of integers which can be mapped to names
-     * using the methods on FontSupport
-     */
-    private int[] baseEncoding;
-    /** any differences from the base encoding */
-    private Map<Character,String> differences;
-    /**
-     * a CMap for fonts encoded by CMap
-     */
-    private PDFCMap cmap;
-    /**
-     * the type of this encoding (encoding or CMap)
-     */
-    private int type;
-    
-    public PDFFontEncoding(PDFCMap cmap) {
-    	super();
-    	this.type = TYPE_CMAP;
-    	this.cmap = cmap;
-    }
+	/** Encoding types */
+	private static final int TYPE_ENCODING = 0;
+	private static final int TYPE_CMAP = 1;
+	/**
+	 * the base encoding (an array of integers which can be mapped to names
+	 * using the methods on FontSupport
+	 */
+	private int[] baseEncoding;
+	/** any differences from the base encoding */
+	private Map<Character, String> differences;
+	/**
+	 * a CMap for fonts encoded by CMap
+	 */
+	private PDFCMap cmap;
+	/**
+	 * the type of this encoding (encoding or CMap)
+	 */
+	private int type;
 
-    /** Creates a new instance of PDFFontEncoding */
-    public PDFFontEncoding(String fontType, PDFObject encoding)
-            throws IOException {
-        if (encoding.getType() == PDFObject.NAME) {
-            // if the encoding is a String, it is the name of an encoding
-            // or the name of a CMap, depending on the type of the font
-            if (fontType.equals("Type0")) {
-                this.type = TYPE_CMAP;
-                this.cmap = PDFCMap.getCMap(encoding.getStringValue());
-            } else {
-                this.type = TYPE_ENCODING;
+	public PDFFontEncoding(PDFCMap cmap) {
+		super();
+		this.type = TYPE_CMAP;
+		this.cmap = cmap;
+	}
 
-                this.differences = new HashMap<Character,String>();
-                this.baseEncoding = this.getBaseEncoding(encoding.getStringValue());
-            }
-        } else {
-            // loook at the "Type" entry of the encoding to determine the type
-            String typeStr = encoding.getDictRef("Type").getStringValue();
+	/** Creates a new instance of PDFFontEncoding */
+	public PDFFontEncoding(String fontType, PDFObject encoding) throws IOException {
+		if (encoding.getType() == PDFObject.NAME) {
+			// if the encoding is a String, it is the name of an encoding
+			// or the name of a CMap, depending on the type of the font
+			if ("Type0".equals(fontType)) {
+				this.type = TYPE_CMAP;
+				this.cmap = PDFCMap.getCMap(encoding.getStringValue());
+			} else {
+				this.type = TYPE_ENCODING;
 
-            if (typeStr.equals("Encoding")) {
-                // it is an encoding
-                this.type = TYPE_ENCODING;
-                parseEncoding(encoding);
-            } else if (typeStr.equals("CMap")) {
-                // it is a CMap
-                this.type = TYPE_CMAP;
-                this.cmap = PDFCMap.getCMap(encoding);
-            } else {
-                throw new IllegalArgumentException("Uknown encoding type: " + this.type);
-            }
-        }
-    }
+				this.differences = new HashMap<Character, String>();
+				this.baseEncoding = this.getBaseEncoding(encoding.getStringValue());
+			}
+		} else {
+			// loook at the "Type" entry of the encoding to determine the type
+			String typeStr = encoding.getDictRef("Type").getStringValue();
 
-    /** Get the glyphs associated with a given String */
-    public List<PDFGlyph> getGlyphs(PDFFont font, String text) {
-        List<PDFGlyph> outList = new ArrayList<PDFGlyph>(text.length());
+			if ("Encoding".equals(typeStr)) {
+				// it is an encoding
+				this.type = TYPE_ENCODING;
+				parseEncoding(encoding);
+			} else if ("CMap".equals(typeStr)) {
+				// it is a CMap
+				this.type = TYPE_CMAP;
+				this.cmap = PDFCMap.getCMap(encoding);
+			} else {
+				throw new IllegalArgumentException("Uknown encoding type: " + this.type);
+			}
+		}
+	}
 
-        // go character by character through the text
-        char[] arry = text.toCharArray();
-        for (int i = 0; i < arry.length; i++) {
-            switch (this.type) {
-                case TYPE_ENCODING:
-                    outList.add(getGlyphFromEncoding(font, arry[i]));
-                    break;
-                case TYPE_CMAP:
-                    // 2 bytes -> 1 character in a CMap
-                    char c = (char) ((arry[i] & 0xff) << 8);
-                    if (i < arry.length - 1) {
-                        c |= (char) (arry[++i] & 0xff);
-                    }
-                    outList.add(getGlyphFromCMap(font, c));
-                    break;
-            }
-        }
+	/** Get the base encoding for a given name */
+	private int[] getBaseEncoding(String encodingName) {
+		if ("MacRomanEncoding".equals(encodingName)) {
+			return FontSupport.macRomanEncoding;
+		} else if ("MacExpertEncoding".equals(encodingName)) {
+			return FontSupport.type1CExpertCharset;
+		} else if ("WinAnsiEncoding".equals(encodingName)) {
+			return FontSupport.winAnsiEncoding;
+		} else if ("StandardEncoding".equals(encodingName)) {
+			return FontSupport.standardEncoding;
+		} else if ("SymbolSetEncoding".equals(encodingName)) {
+			return FontSupport.symbolSetEncoding;
+		} else {
+			throw new IllegalArgumentException("Unknown encoding: " + encodingName);
+		}
+	}
 
-        return outList;
-    }
+	/**
+	 * Get a glyph from a CMap, given a Type0 font and a character
+	 */
+	private PDFGlyph getGlyphFromCMap(PDFFont font, char src) {
+		int fontID = this.cmap.getFontID(src);
+		char charID = this.cmap.map(src);
 
-    /**
-     * Get a glyph from an encoding, given a font and character
-     */
-    private PDFGlyph getGlyphFromEncoding(PDFFont font, char src) {
-        String charName = null;
+		if (font instanceof Type0Font) {
+			font = ((Type0Font) font).getDescendantFont(fontID);
+		}
 
-        // only deal with one byte of source
-        src &= 0xff;
+		return font.getCachedGlyph(charID, null);
+	}
 
-        // see if this character is in the differences list
-        if (this.differences.containsKey(Character.valueOf(src))) {
-            charName = this.differences.get(Character.valueOf(src));
-        } else if (this.baseEncoding != null) {
-            // get the character name from the base encoding
-            int charID = this.baseEncoding[src];
-            charName = FontSupport.getName(charID);
-        }
+	/**
+	 * Get a glyph from an encoding, given a font and character
+	 */
+	private PDFGlyph getGlyphFromEncoding(PDFFont font, char src) {
+		String charName = null;
 
-        return font.getCachedGlyph(src, charName);
-    }
+		// only deal with one byte of source
+		src &= 0xff;
 
-    /**
-     * Get a glyph from a CMap, given a Type0 font and a character
-     */
-    private PDFGlyph getGlyphFromCMap(PDFFont font, char src) {
-        int fontID = this.cmap.getFontID(src);
-        char charID = this.cmap.map(src);
+		// see if this character is in the differences list
+		if (this.differences.containsKey(Character.valueOf(src))) {
+			charName = this.differences.get(Character.valueOf(src));
+		} else if (this.baseEncoding != null) {
+			// get the character name from the base encoding
+			int charID = this.baseEncoding[src];
+			charName = FontSupport.getName(charID);
+		}
 
-        if (font instanceof Type0Font) {
-            font = ((Type0Font) font).getDescendantFont(fontID);
-        }
+		return font.getCachedGlyph(src, charName);
+	}
 
-        return font.getCachedGlyph(charID, null);
-    }
+	/** Get the glyphs associated with a given String */
+	public List<PDFGlyph> getGlyphs(PDFFont font, String text) {
+		List<PDFGlyph> outList = new ArrayList<PDFGlyph>(text.length());
 
-    /**
-     * Parse a PDF encoding object for the actual encoding
-     */
-    public void parseEncoding(PDFObject encoding) throws IOException {
-        this.differences = new HashMap<Character,String>();
+		// go character by character through the text
+		char[] arry = text.toCharArray();
+		for (int i = 0; i < arry.length; i++) {
+			switch (this.type) {
+			case TYPE_ENCODING:
+				outList.add(getGlyphFromEncoding(font, arry[i]));
+				break;
+			case TYPE_CMAP:
+				// 2 bytes -> 1 character in a CMap
+				char c = (char) ((arry[i] & 0xff) << 8);
+				if (i < arry.length - 1) {
+					c |= (char) (arry[++i] & 0xff);
+				}
+				outList.add(getGlyphFromCMap(font, c));
+				break;
+			}
+		}
 
-        // figure out the base encoding, if one exists
-        PDFObject baseEncObj = encoding.getDictRef("BaseEncoding");
-        if (baseEncObj != null) {
-            this.baseEncoding = getBaseEncoding(baseEncObj.getStringValue());
-        }
+		return outList;
+	}
 
-        // parse the differences array
-        PDFObject diffArrayObj = encoding.getDictRef("Differences");
-        if (diffArrayObj != null) {
-            PDFObject[] diffArray = diffArrayObj.getArray();
-            int curPosition = -1;
+	/**
+	 * Parse a PDF encoding object for the actual encoding
+	 */
+	public void parseEncoding(PDFObject encoding) throws IOException {
+		this.differences = new HashMap<Character, String>();
 
-            for (int i = 0; i < diffArray.length; i++) {
-                if (diffArray[i].getType() == PDFObject.NUMBER) {
-                    curPosition = diffArray[i].getIntValue();
-                } else if (diffArray[i].getType() == PDFObject.NAME) {
-                    Character key = Character.valueOf((char) curPosition);
-                    this.differences.put(key, diffArray[i].getStringValue());
-                    curPosition++;
-                } else {
-                    throw new IllegalArgumentException("Unexpected type in diff array: " + diffArray[i]);
-                }
-            }
-        }
-    }
+		// figure out the base encoding, if one exists
+		PDFObject baseEncObj = encoding.getDictRef("BaseEncoding");
+		if (baseEncObj != null) {
+			this.baseEncoding = getBaseEncoding(baseEncObj.getStringValue());
+		}
 
-    /** Get the base encoding for a given name */
-    private int[] getBaseEncoding(String encodingName) {
-        if (encodingName.equals("MacRomanEncoding")) {
-            return FontSupport.macRomanEncoding;
-        } else if (encodingName.equals("MacExpertEncoding")) {
-            return FontSupport.type1CExpertCharset;
-        } else if (encodingName.equals("WinAnsiEncoding")) {
-            return FontSupport.winAnsiEncoding;
-        } else if (encodingName.equals("StandardEncoding")) {
-        	return FontSupport.standardEncoding; 
-        } else if(encodingName.equals("SymbolSetEncoding")) {
-            return FontSupport.symbolSetEncoding;
-        } else {
-            throw new IllegalArgumentException("Unknown encoding: " + encodingName);
-        }
-    }
+		// parse the differences array
+		PDFObject diffArrayObj = encoding.getDictRef("Differences");
+		if (diffArrayObj != null) {
+			PDFObject[] diffArray = diffArrayObj.getArray();
+			int curPosition = -1;
+
+			for (PDFObject element : diffArray) {
+				if (element.getType() == PDFObject.NUMBER) {
+					curPosition = element.getIntValue();
+				} else if (element.getType() == PDFObject.NAME) {
+					Character key = Character.valueOf((char) curPosition);
+					this.differences.put(key, element.getStringValue());
+					curPosition++;
+				} else {
+					throw new IllegalArgumentException("Unexpected type in diff array: " + element);
+				}
+			}
+		}
+	}
 }

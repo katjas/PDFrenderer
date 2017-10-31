@@ -28,284 +28,303 @@ import java.util.Map;
  * A cache of PDF pages and images.
  */
 public class Cache {
+	
+	/** the pages in the cache, mapped by page number */
+	private final Map<Integer, SoftReference<PageRecord>> pages;
 
-    /** the pages in the cache, mapped by page number */
-    private final Map<Integer, SoftReference<PageRecord>> pages;
+	/** the record stored for each page in the cache */
+	class PageRecord extends Record {
 
-    /** Creates a new instance of a Cache */
-    public Cache() {
-        this.pages = Collections.synchronizedMap(new HashMap<Integer, SoftReference<PageRecord>>());
-    }
+		/** any images associated with the page */
+		public Map<ImageInfo, SoftReference<Record>> images;
 
-    /**
-     * Add a page to the cache.  This method should be used for
-     * pages which have already been completely rendered.  
-     * 
-     * @param pageNumber the page number of this page
-     * @param page the page to add
-     */
-    public void addPage(Integer pageNumber, PDFPage page) {
-        addPageRecord(pageNumber, page, null);
-    }
+		/** create a new page record */
+		public PageRecord() {
+			this.images = Collections.synchronizedMap(new HashMap<ImageInfo, SoftReference<Record>>());
+		}
+	}
 
-    /**
-     * Add a page to the cache.  This method should be used for
-     * pages which are still in the process of being rendered.
-     *
-     * @param pageNumber the page number of this page
-     * @param page the page to add
-     * @param parser the parser which is parsing this page
-     */
-    public void addPage(Integer pageNumber, PDFPage page, PDFParser parser) {
-        addPageRecord(pageNumber, page, parser);
-    }
+	/** the basic information about a page or image */
+	public class Record {
 
-    /**
-     * Add an image to the cache.  This method should be used for images
-     * which have already been completely rendered
-     *
-     * @param page page this image is associated with
-     * @param info the image info associated with this image
-     * @param image the image to add
-     */
-    public void addImage(PDFPage page, ImageInfo info, BufferedImage image) {
-        addImageRecord(page, info, image, null);
-    }
+		/** the page or image itself */
+		public Object value;
+		
+		/** the thing generating the page, or null if done/not provided */
+		public BaseWatchable generator;
+	}
 
-    /**
-     * Add an image to the cache.  This method should be used for images
-     * which are still in the process of being rendered.
-     *
-     * @param page the page this image is associated with
-     * @param info the image info associated with this image
-     * @param image the image to add
-     * @param renderer the renderer which is rendering this page
-     */
-    public void addImage(PDFPage page, ImageInfo info, BufferedImage image,
-            PDFRenderer renderer) {
-        addImageRecord(page, info, image, renderer);
-    }
+	/** Creates a new instance of a Cache */
+	public Cache() {
+		this.pages = Collections.synchronizedMap(new HashMap<Integer, SoftReference<PageRecord>>());
+	}
 
-    /**
-     * Get a page from the cache
-     * 
-     * @param pageNumber the number of the page to get
-     * @return the page, if it is in the cache, or null if not
-     */
-    public PDFPage getPage(Integer pageNumber) {
-        PageRecord rec = getPageRecord(pageNumber);
-        if (rec != null) {
-            return (PDFPage) rec.value;
-        }
+	/**
+	 * Add an image to the cache. This method should be used for images which
+	 * have already been completely rendered
+	 *
+	 * @param page
+	 *            page this image is associated with
+	 * @param info
+	 *            the image info associated with this image
+	 * @param image
+	 *            the image to add
+	 */
+	public void addImage(PDFPage page, ImageInfo info, BufferedImage image) {
+		addImageRecord(page, info, image, null);
+	}
 
-        // not found
-        return null;
-    }
+	/**
+	 * Add an image to the cache. This method should be used for images which
+	 * are still in the process of being rendered.
+	 *
+	 * @param page
+	 *            the page this image is associated with
+	 * @param info
+	 *            the image info associated with this image
+	 * @param image
+	 *            the image to add
+	 * @param renderer
+	 *            the renderer which is rendering this page
+	 */
+	public void addImage(PDFPage page, ImageInfo info, BufferedImage image, PDFRenderer renderer) {
+		addImageRecord(page, info, image, renderer);
+	}
 
-    /**
-     * Get a page's parser from the cache
-     *
-     * @param pageNumber the number of the page to get the parser for
-     * @return the parser, or null if it is not in the cache
-     */
-    public PDFParser getPageParser(Integer pageNumber) {
-        PageRecord rec = getPageRecord(pageNumber);
-        if (rec != null) {
-            return (PDFParser) rec.generator;
-        }
+	/**
+	 * The internal routine to add an image to the cache and return the record
+	 * that was generated.
+	 */
+	public Record addImageRecord(PDFPage page, ImageInfo info, BufferedImage image, PDFRenderer renderer) {
+		// first, find or create the relevant page record
+		Integer pageNumber = Integer.valueOf(page.getPageNumber());
+		PageRecord pageRec = getPageRecord(pageNumber);
+		if (pageRec == null) {
+			pageRec = addPageRecord(pageNumber, page, null);
+		}
 
-        // not found
-        return null;
-    }
+		// next, create the image record
+		Record rec = new Record();
+		rec.value = image;
+		rec.generator = renderer;
 
-    /**
-     * Get an image from the cache
-     *
-     * @param page the page the image is associated with
-     * @param info the image info that describes the image
-     *
-     * @return the image if it is in the cache, or null if not
-     */
-    public BufferedImage getImage(PDFPage page, ImageInfo info) {
-        Record rec = getImageRecord(page, info);
-        if (rec != null) {
-            return (BufferedImage) rec.value;
-        }
+		// add it to the cache
+		pageRec.images.put(info, new SoftReference<Record>(rec));
 
-        // not found 
-        return null;
-    }
+		return rec;
+	}
 
-    /**
-     * Get an image's renderer from the cache
-     *
-     * @param page the page this image was generated from
-     * @param info the image info describing the image
-     * @return the renderer, or null if it is not in the cache
-     */
-    public PDFRenderer getImageRenderer(PDFPage page, ImageInfo info) {
-        Record rec = getImageRecord(page, info);
-        if (rec != null) {
-            return (PDFRenderer) rec.generator;
-        }
+	/**
+	 * Add a page to the cache. This method should be used for pages which have
+	 * already been completely rendered.
+	 * 
+	 * @param pageNumber
+	 *            the page number of this page
+	 * @param page
+	 *            the page to add
+	 */
+	public void addPage(Integer pageNumber, PDFPage page) {
+		addPageRecord(pageNumber, page, null);
+	}
 
-        // not found
-        return null;
-    }
+	/**
+	 * Add a page to the cache. This method should be used for pages which are
+	 * still in the process of being rendered.
+	 *
+	 * @param pageNumber
+	 *            the page number of this page
+	 * @param page
+	 *            the page to add
+	 * @param parser
+	 *            the parser which is parsing this page
+	 */
+	public void addPage(Integer pageNumber, PDFPage page, PDFParser parser) {
+		addPageRecord(pageNumber, page, parser);
+	}
 
-    /**
-     * Remove a page and all its associated images, as well as its parser
-     * and renderers, from the cache
-     *
-     * @param pageNumber the number of the page to remove
-     */
-    public void removePage(Integer pageNumber) {
-        removePageRecord(pageNumber);
-    }
+	/**
+	 * The internal routine to add a page to the cache, and return the page
+	 * record which was generated
+	 */
+	public PageRecord addPageRecord(Integer pageNumber, PDFPage page, PDFParser parser) {
+		PageRecord rec = new PageRecord();
+		rec.value = page;
+		rec.generator = parser;
 
-    /**
-     * Remove an image and its associated renderer from the cache
-     *
-     * @param page the page the image is generated from
-     * @param info the image info of the image to remove
-     */
-    public void removeImage(PDFPage page, ImageInfo info) {
-        removeImageRecord(page, info);
-    }
+		this.pages.put(pageNumber, new SoftReference<PageRecord>(rec));
 
-    /**
-     * The internal routine to add a page to the cache, and return the
-     * page record which was generated
-     */
-    PageRecord addPageRecord(Integer pageNumber, PDFPage page,
-            PDFParser parser) {
-        PageRecord rec = new PageRecord();
-        rec.value = page;
-        rec.generator = parser;
+		return rec;
+	}
 
-        this.pages.put(pageNumber, new SoftReference<PageRecord>(rec));
+	/**
+	 * Get an image from the cache
+	 *
+	 * @param page
+	 *            the page the image is associated with
+	 * @param info
+	 *            the image info that describes the image
+	 *
+	 * @return the image if it is in the cache, or null if not
+	 */
+	public BufferedImage getImage(PDFPage page, ImageInfo info) {
+		Record rec = getImageRecord(page, info);
+		if (rec != null) {
+			return (BufferedImage) rec.value;
+		}
 
-        return rec;
-    }
+		// not found
+		return null;
+	}
 
-    /**
-     * Get a page's record from the cache
-     *
-     * @return the record, or null if it's not in the cache
-     */
-    PageRecord getPageRecord(Integer pageNumber) {
-        PDFDebugger.debug("Request for page " + pageNumber, 1000);
-        SoftReference<PageRecord> ref = this.pages.get(pageNumber);
-        if (ref != null) {
-            String val = (ref.get() == null) ? " not in " : " in ";
-            PDFDebugger.debug("Page " + pageNumber + val + "cache", 1000);
-            return ref.get();
-        }
+	/**
+	 * Get an image's record from the cache
+	 *
+	 * @return the record, or null if it's not in the cache
+	 */
+	public Record getImageRecord(PDFPage page, ImageInfo info) {
+		// first find the relevant page record
+		Integer pageNumber = Integer.valueOf(page.getPageNumber());
 
-        PDFDebugger.debug("Page " + pageNumber + " not in cache", 1000);
-        // not in cache
-        return null;
-    }
+		PDFDebugger.debug("Request for image on page " + pageNumber, 1000);
 
-    /**
-     * Remove a page's record from the cache
-     */
-    PageRecord removePageRecord(Integer pageNumber) {
-        SoftReference<PageRecord> ref = this.pages.remove(pageNumber);
-        if (ref != null) {
-            return ref.get();
-        }
+		PageRecord pageRec = getPageRecord(pageNumber);
+		if (pageRec != null) {
+			SoftReference<Record> ref = pageRec.images.get(info);
+			if (ref != null) {
+				String val = ref.get() == null ? " not in " : " in ";
+				PDFDebugger.debug("Image on page " + pageNumber + val + " cache", 1000);
+				return ref.get();
+			}
+		}
 
-        // not in cache
-        return null;
-    }
+		PDFDebugger.debug("Image on page " + pageNumber + " not in cache", 1000);
+		// not found
+		return null;
+	}
 
-    /**
-     * The internal routine to add an image to the cache and return the
-     * record that was generated.
-     */
-    Record addImageRecord(PDFPage page, ImageInfo info,
-            BufferedImage image, PDFRenderer renderer) {
-        // first, find or create the relevant page record
-        Integer pageNumber = Integer.valueOf(page.getPageNumber());
-        PageRecord pageRec = getPageRecord(pageNumber);
-        if (pageRec == null) {
-            pageRec = addPageRecord(pageNumber, page, null);
-        }
+	/**
+	 * Get an image's renderer from the cache
+	 *
+	 * @param page
+	 *            the page this image was generated from
+	 * @param info
+	 *            the image info describing the image
+	 * @return the renderer, or null if it is not in the cache
+	 */
+	public PDFRenderer getImageRenderer(PDFPage page, ImageInfo info) {
+		Record rec = getImageRecord(page, info);
+		if (rec != null) {
+			return (PDFRenderer) rec.generator;
+		}
 
-        // next, create the image record
-        Record rec = new Record();
-        rec.value = image;
-        rec.generator = renderer;
+		// not found
+		return null;
+	}
 
-        // add it to the cache
-        pageRec.images.put(info, new SoftReference<Record>(rec));
+	/**
+	 * Get a page from the cache
+	 * 
+	 * @param pageNumber
+	 *            the number of the page to get
+	 * @return the page, if it is in the cache, or null if not
+	 */
+	public PDFPage getPage(Integer pageNumber) {
+		PageRecord rec = getPageRecord(pageNumber);
+		if (rec != null) {
+			return (PDFPage) rec.value;
+		}
 
-        return rec;
-    }
+		// not found
+		return null;
+	}
 
-    /**
-     * Get an image's record from the cache
-     *
-     * @return the record, or null if it's not in the cache
-     */
-    Record getImageRecord(PDFPage page, ImageInfo info) {
-        // first find the relevant page record
-        Integer pageNumber = Integer.valueOf(page.getPageNumber());
+	/**
+	 * Get a page's parser from the cache
+	 *
+	 * @param pageNumber
+	 *            the number of the page to get the parser for
+	 * @return the parser, or null if it is not in the cache
+	 */
+	public PDFParser getPageParser(Integer pageNumber) {
+		PageRecord rec = getPageRecord(pageNumber);
+		if (rec != null) {
+			return (PDFParser) rec.generator;
+		}
 
-        PDFDebugger.debug("Request for image on page " + pageNumber, 1000);
+		// not found
+		return null;
+	}
 
-        PageRecord pageRec = getPageRecord(pageNumber);
-        if (pageRec != null) {
-            SoftReference<Record> ref = pageRec.images.get(info);
-            if (ref != null) {
-                String val = (ref.get() == null) ? " not in " : " in ";
-                PDFDebugger.debug("Image on page " + pageNumber + val + " cache", 1000);
-                return ref.get();
-            }
-        }
+	/**
+	 * Get a page's record from the cache
+	 *
+	 * @return the record, or null if it's not in the cache
+	 */
+	public PageRecord getPageRecord(Integer pageNumber) {
+		PDFDebugger.debug("Request for page " + pageNumber, 1000);
+		SoftReference<PageRecord> ref = this.pages.get(pageNumber);
+		if (ref != null) {
+			String val = ref.get() == null ? " not in " : " in ";
+			PDFDebugger.debug("Page " + pageNumber + val + "cache", 1000);
+			return ref.get();
+		}
 
-        PDFDebugger.debug("Image on page " + pageNumber + " not in cache", 1000);
-        // not found
-        return null;
-    }
+		PDFDebugger.debug("Page " + pageNumber + " not in cache", 1000);
+		// not in cache
+		return null;
+	}
 
-    /**
-     * Remove an image's record from the cache
-     */
-    Record removeImageRecord(PDFPage page, ImageInfo info) {
-        // first find the relevant page record
-        Integer pageNumber = Integer.valueOf(page.getPageNumber());
-        PageRecord pageRec = getPageRecord(pageNumber);
-        if (pageRec != null) {
-            SoftReference<Record> ref = pageRec.images.remove(info);
-            if (ref != null) {
-                return ref.get();
-            }
+	/**
+	 * Remove an image and its associated renderer from the cache
+	 *
+	 * @param page
+	 *            the page the image is generated from
+	 * @param info
+	 *            the image info of the image to remove
+	 */
+	public void removeImage(PDFPage page, ImageInfo info) {
+		removeImageRecord(page, info);
+	}
 
-        }
+	/**
+	 * Remove an image's record from the cache
+	 */
+	public Record removeImageRecord(PDFPage page, ImageInfo info) {
+		// first find the relevant page record
+		Integer pageNumber = Integer.valueOf(page.getPageNumber());
+		PageRecord pageRec = getPageRecord(pageNumber);
+		if (pageRec != null) {
+			SoftReference<Record> ref = pageRec.images.remove(info);
+			if (ref != null) {
+				return ref.get();
+			}
 
-        return null;
-    }
+		}
 
-    /** the basic information about a page or image */
-    class Record {
+		return null;
+	}
 
-        /** the page or image itself */
-        Object value;
-        /** the thing generating the page, or null if done/not provided */
-        BaseWatchable generator;
-    }
+	/**
+	 * Remove a page and all its associated images, as well as its parser and
+	 * renderers, from the cache
+	 *
+	 * @param pageNumber
+	 *            the number of the page to remove
+	 */
+	public void removePage(Integer pageNumber) {
+		removePageRecord(pageNumber);
+	}
 
-    /** the record stored for each page in the cache */
-    class PageRecord extends Record {
+	/**
+	 * Remove a page's record from the cache
+	 */
+	public PageRecord removePageRecord(Integer pageNumber) {
+		SoftReference<PageRecord> ref = this.pages.remove(pageNumber);
+		if (ref != null) {
+			return ref.get();
+		}
 
-        /** any images associated with the page */
-        Map<ImageInfo, SoftReference<Record>> images;
-
-        /** create a new page record */
-        public PageRecord() {
-            this.images = Collections.synchronizedMap(new HashMap<ImageInfo, SoftReference<Record>>());
-        }
-    }
+		// not in cache
+		return null;
+	}
 }

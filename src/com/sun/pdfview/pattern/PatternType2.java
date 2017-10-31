@@ -29,36 +29,35 @@ import com.sun.pdfview.PDFPaint;
  * A type 1 (tiling) pattern
  */
 public class PatternType2 extends PDFPattern {
-        
-    /** the shader */
-    private PDFShader shader;
-        
-    /** Creates a new instance of PatternType1 */
-    public PatternType2() {
-        super(2);
-    }
-    
-    /**
-     * Parse the pattern from the PDFObject
-     *
-     * Note the resources passed in are ignored...
-     */
-    @Override
-	protected void parse(PDFObject patternObj, Map rsrc) throws IOException
-    {
-        this.shader = PDFShader.getShader(patternObj.getDictRef("Shading"), rsrc);        
-    }
-    
-    /** 
-     * Create a PDFPaint from this pattern and set of components.  
-     * This creates a buffered image of this pattern using
-     * the given paint, then uses that image to create the correct 
-     * TexturePaint to use in the PDFPaint.
-     *
-     * @param basePaint the base paint to use, or null if not needed
-     */
-    @Override
+
+	/** the shader */
+	private PDFShader shader;
+
+	/** Creates a new instance of PatternType1 */
+	public PatternType2() {
+		super(2);
+	}
+
+	/**
+	 * Create a PDFPaint from this pattern and set of components. This creates a
+	 * buffered image of this pattern using the given paint, then uses that
+	 * image to create the correct TexturePaint to use in the PDFPaint.
+	 *
+	 * @param basePaint
+	 *            the base paint to use, or null if not needed
+	 */
+	@Override
 	public PDFPaint getPaint(PDFPaint basePaint) {
-    	return shader.getPaint();
-    }    
+		return shader.getPaint();
+	}
+
+	/**
+	 * Parse the pattern from the PDFObject
+	 *
+	 * Note the resources passed in are ignored...
+	 */
+	@Override
+	protected void parse(PDFObject patternObj, Map rsrc) throws IOException {
+		this.shader = PDFShader.getShader(patternObj.getDictRef("Shading"), rsrc);
+	}
 }

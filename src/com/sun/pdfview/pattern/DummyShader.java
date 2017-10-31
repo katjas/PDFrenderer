@@ -13,13 +13,13 @@ public class DummyShader extends PDFShader {
 	}
 
 	@Override
-	public void parse(PDFObject shareObj) throws IOException {
-		
-	}
-
-	@Override
 	public PDFPaint getPaint() {
 		return PDFPaint.getPaint(Color.PINK);
 	}
-		
+
+	@Override
+	public void parse(PDFObject shareObj) throws IOException {
+
+	}
+
 }

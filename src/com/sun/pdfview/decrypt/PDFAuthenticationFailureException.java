@@ -21,14 +21,20 @@ package com.sun.pdfview.decrypt;
 import com.sun.pdfview.PDFParseException;
 
 /**
- * Identifies that the supplied password was incorrect or non-existent
- * and required.
+ * Identifies that the supplied password was incorrect or non-existent and
+ * required.
+ * 
  * @author Luke Kirby
  */
 // TODO - consider having this not extend PDFParseException so that
 // it will be handled more explicitly?
 public class PDFAuthenticationFailureException extends PDFParseException {
-    public PDFAuthenticationFailureException(String message) {
-        super(message);
-    }
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public PDFAuthenticationFailureException(String message) {
+		super(message);
+	}
 }

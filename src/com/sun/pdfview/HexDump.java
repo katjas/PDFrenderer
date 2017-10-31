@@ -23,62 +23,62 @@ import java.io.RandomAccessFile;
 
 public class HexDump {
 
-    public static void printData(byte[] data) {
-        char[] parts = new char[17];
-        int partsloc = 0;
-        for (int i = 0; i < data.length; i++) {
-            int d = (data[i]) & 0xff;
-            if (d == 0) {
-                parts[partsloc++] = '.';
-            } else if (d < 32 || d >= 127) {
-                parts[partsloc++] = '?';
-            } else {
-                parts[partsloc++] = (char) d;
-            }
-            if (i % 16 == 0) {
-                int start = Integer.toHexString(data.length).length();
-                int end = Integer.toHexString(i).length();
+	public static void main(String args[]) {
+		if (args.length != 1) {
+			System.out.println("Usage: ");
+			System.out.println("    HexDump <filename>");
+			System.exit(-1);
+		}
 
-                for (int j = start; j > end; j--) {
-                    System.out.print("0");
-                }
-                System.out.print(Integer.toHexString(i) + ": ");
-            }
-            if (d < 16) {
-                System.out.print("0" + Integer.toHexString(d));
-            } else {
-                System.out.print(Integer.toHexString(d));
-            }
-            if ((i & 15) == 15 || i == data.length - 1) {
-                System.out.println("      " + new String(parts));
-                partsloc = 0;
-            } else if ((i & 7) == 7) {
-                System.out.print("  ");
-                parts[partsloc++] = ' ';
-            } else if ((i & 1) == 1) {
-                System.out.print(" ");
-            }
-        }
-        System.out.println();
-    }
+		try {
+			RandomAccessFile raf = new RandomAccessFile(args[0], "r");
 
-    public static void main(String args[]) {
-        if (args.length != 1) {
-            System.out.println("Usage: ");
-            System.out.println("    HexDump <filename>");
-            System.exit(-1);
-        }
+			int size = (int) raf.length();
+			byte[] data = new byte[size];
 
-        try {
-            RandomAccessFile raf = new RandomAccessFile(args[0], "r");
+			raf.readFully(data);
+			printData(data);
+		} catch (IOException ioe) {
+			BaseWatchable.getErrorHandler().publishException(ioe);
+		}
+	}
 
-            int size = (int) raf.length();
-            byte[] data = new byte[size];
+	public static void printData(byte[] data) {
+		char[] parts = new char[17];
+		int partsloc = 0;
+		for (int i = 0; i < data.length; i++) {
+			int d = data[i] & 0xff;
+			if (d == 0) {
+				parts[partsloc++] = '.';
+			} else if (d < 32 || d >= 127) {
+				parts[partsloc++] = '?';
+			} else {
+				parts[partsloc++] = (char) d;
+			}
+			if (i % 16 == 0) {
+				int start = Integer.toHexString(data.length).length();
+				int end = Integer.toHexString(i).length();
 
-            raf.readFully(data);
-            printData(data);
-        } catch (IOException ioe) {
-            BaseWatchable.getErrorHandler().publishException(ioe);
-        }
-    }
+				for (int j = start; j > end; j--) {
+					System.out.print("0");
+				}
+				System.out.print(Integer.toHexString(i) + ": ");
+			}
+			if (d < 16) {
+				System.out.print("0" + Integer.toHexString(d));
+			} else {
+				System.out.print(Integer.toHexString(d));
+			}
+			if ((i & 15) == 15 || i == data.length - 1) {
+				System.out.println("      " + new String(parts));
+				partsloc = 0;
+			} else if ((i & 7) == 7) {
+				System.out.print("  ");
+				parts[partsloc++] = ' ';
+			} else if ((i & 1) == 1) {
+				System.out.print(" ");
+			}
+		}
+		System.out.println();
+	}
 }
