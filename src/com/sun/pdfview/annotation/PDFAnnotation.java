@@ -8,6 +8,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.pdfview.Configuration;
 import com.sun.pdfview.PDFCmd;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
@@ -29,10 +30,15 @@ public class PDFAnnotation {
 
 	private final Float rect;
 
-	public enum ANNOTATION_TYPE {
-		UNKNOWN("-", 0, PDFAnnotation.class), LINK("Link", 1, LinkAnnotation.class), WIDGET("Widget", 2,
-				WidgetAnnotation.class), STAMP("Stamp", 3,
-						StampAnnotation.class), FREETEXT("FreeText", 5, FreetextAnnotation.class),
+
+	public enum ANNOTATION_TYPE{
+		UNKNOWN("-", 0, PDFAnnotation.class),
+		LINK("Link", 1, LinkAnnotation.class),
+		WIDGET("Widget", 2, WidgetAnnotation.class),
+		STAMP("Stamp", 3, StampAnnotation.class),
+		FREETEXT("FreeText", 5, FreetextAnnotation.class),
+		SIGNATURE("Sig", 6, WidgetAnnotation.class),
+
 		// TODO 28.03.2012: add more annotation types
 		;
 
@@ -107,27 +113,66 @@ public class PDFAnnotation {
 		String subtypeS = subtypeValue.getStringValue();
 
 		ANNOTATION_TYPE annotationType = ANNOTATION_TYPE.getByDefinition(subtypeS);
-		Class<?> className = annotationType.getClassName();
+		
+		//if Subtype is Widget than check if it is also a Signature
+		if(annotationType == ANNOTATION_TYPE.WIDGET) {
+			PDFObject sigType = parent.getDictRef("FT");
+			if(sigType != null) {
+				String sigTypeS = sigType.getStringValue();
+				if(ANNOTATION_TYPE.getByDefinition(sigTypeS) == ANNOTATION_TYPE.SIGNATURE) {
+					annotationType = ANNOTATION_TYPE.getByDefinition(sigTypeS);
+				}
+			}
+		}
+		
+		if(displayAnnotation(annotationType)) {
+			Class<?> className = annotationType.getClassName();
+			
+			Constructor<?> constructor;
+			try {
+				constructor = className.getConstructor(PDFObject.class);
+				return (PDFAnnotation)constructor.newInstance(parent);
+			} catch (Exception e) {
+				throw new PDFParseException("Could not parse annotation!", e);
+			} 
+		}
+		
+		return null;
+	}
 
-		Constructor<?> constructor;
-		try {
-			constructor = className.getConstructor(PDFObject.class);
-			return (PDFAnnotation) constructor.newInstance(parent);
-		} catch (Exception e) {
-			throw new PDFParseException("Could not parse annotation!", e);
+    private static boolean displayAnnotation(ANNOTATION_TYPE annotationType) {
+		switch(annotationType) {
+			case STAMP: return Configuration.getInstance().isPrintStampAnnotations();
+			case WIDGET: return Configuration.getInstance().isPrintWidgetAnnotations();
+			case FREETEXT: return Configuration.getInstance().isPrintFreetextAnnotations();
+			case LINK: return Configuration.getInstance().isPrintLinkAnnotations();
+			case SIGNATURE: return Configuration.getInstance().isPrintSignatureFields();
+			case UNKNOWN: default: return false;
 		}
 	}
 
-	/*************************************************************************
-	 * Constructor
-	 * 
-	 * @param annotObject
-	 *            - the PDFObject which contains the annotation description
-	 * @throws IOException
-	 ************************************************************************/
-	public PDFAnnotation(PDFObject annotObject) throws IOException {
-		this(annotObject, ANNOTATION_TYPE.UNKNOWN);
-	}
+	/**
+     * Get a Rectangle2D.Float representation for a PDFObject that is an
+     * array of four Numbers.
+     * @param obj a PDFObject that represents an Array of exactly four
+     * Numbers.
+     */
+    public Rectangle2D.Float parseRect(PDFObject obj) throws IOException {
+        if (obj.getType() == PDFObject.ARRAY) {
+            PDFObject bounds[] = obj.getArray();
+            if (bounds.length == 4) {
+                return new Rectangle2D.Float(bounds[0].getFloatValue(),
+                        bounds[1].getFloatValue(),
+                        bounds[2].getFloatValue() - bounds[0].getFloatValue(),
+                        bounds[3].getFloatValue() - bounds[1].getFloatValue());
+            } else {
+                throw new PDFParseException("Rectangle definition didn't have 4 elements");
+            }
+        } else {
+            throw new PDFParseException("Rectangle definition not an array");
+        }
+    }
+
 
 	/*************************************************************************
 	 * Constructor
@@ -187,27 +232,6 @@ public class PDFAnnotation {
 		return this.type;
 	}
 
-	/**
-	 * Get a Rectangle2D.Float representation for a PDFObject that is an array
-	 * of four Numbers.
-	 * 
-	 * @param obj
-	 *            a PDFObject that represents an Array of exactly four Numbers.
-	 */
-	public Rectangle2D.Float parseRect(PDFObject obj) throws IOException {
-		if (obj.getType() == PDFObject.ARRAY) {
-			PDFObject bounds[] = obj.getArray();
-			if (bounds.length == 4) {
-				return new Rectangle2D.Float(bounds[0].getFloatValue(), bounds[1].getFloatValue(),
-						bounds[2].getFloatValue() - bounds[0].getFloatValue(),
-						bounds[3].getFloatValue() - bounds[1].getFloatValue());
-			} else {
-				throw new PDFParseException("Rectangle definition didn't have 4 elements");
-			}
-		} else {
-			throw new PDFParseException("Rectangle definition not an array");
-		}
-	}
 
 	@Override
 	public String toString() {

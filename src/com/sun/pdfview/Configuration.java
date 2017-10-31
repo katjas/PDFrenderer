@@ -18,12 +18,37 @@ public class Configuration {
 	 * by default)
 	 */
 	private int thresholdForBandedImageRendering = 0;
+
 	/** whether color convert op should be used or not for parsing an image */
 	private boolean avoidColorConvertOp = false;
 
-	/** Use blur before image resize to enhance the result (Antialias) **/
-	private boolean useBlurResizingForImages = true;
+    /** whether grey scale images will be converted to ARGB */
+    private boolean convertGreyscaleImagesToArgb = true;
 
+    /** threshold in pixels after which images are rendered in chunks (disabled by default) */
+    private int thresholdForBandedImageRendering = 0;
+
+    /** whether color convert op should be used or not for parsing an image*/
+    private boolean avoidColorConvertOp = false;
+
+    /** Use blur before image resize to enhance the result (Antialias) **/
+    private boolean useBlurResizingForImages = true;
+    
+    /** Print signature fields on pdf **/
+    private boolean printSigantureFields = true;
+
+    /** Print stamp annotations on pdf **/
+    private boolean printStampAnnotations = true;
+
+    /** Print widget annotations on pdf **/
+    private boolean printWidgetAnnotations = true;
+
+    /** Print freetext annotations on pdf **/
+    private boolean printFreetextAnnotations = true;
+
+    /** Print link annotations on pdf **/
+    private boolean printLinkAnnotations = true;
+    
 	public static synchronized Configuration getInstance() {
 		if (INSTANCE == null) {
 			INSTANCE = new Configuration();
@@ -116,13 +141,92 @@ public class Configuration {
 		thresholdForBandedImageRendering = aSize;
 	}
 
-	/**
-	 * Use blur before image resize to enhance the result (Antialias)
-	 * 
-	 * @param useBlurResizingForImages
-	 */
-	public void setUseBlurResizingForImages(boolean useBlurResizingForImages) {
-		this.useBlurResizingForImages = useBlurResizingForImages;
-	}
+    /**
+     * Use blur before image resize to enhance the result (Antialias)
+     * 
+     * @param useBlurResizingForImages 
+     */
+    public void setUseBlurResizingForImages(boolean useBlurResizingForImages) {
+        this.useBlurResizingForImages = useBlurResizingForImages;
+    }
+    
+    /**
+     * Print signature fields on pdf
+     * 
+     * @param printSignatureField
+     */
+    public void setPrintSignatureFields(boolean printSignatureFields) {
+    	this.printSigantureFields = printSignatureFields;
+    }
+    
+    /**
+     * @return <code>true</code> if signature fields will be printed on pdf
+     */
+    public boolean isPrintSignatureFields() {
+    	return this.printSigantureFields;
+    }
 
+    /**
+     * Print stamp annotations on pdf
+     * 
+     * @param printStampAnnotation
+     */
+    public void setPrintStampAnnotations(boolean printStampAnnotations) {
+    	this.printStampAnnotations = printStampAnnotations;
+    }
+    
+    /**
+     * @return <code>true</code> if stamp annotations will be printed on pdf
+     */
+    public boolean isPrintStampAnnotations() {
+    	return this.printStampAnnotations;
+    }
+    
+    /**
+     * Print widget annotations on pdf
+     * 
+     * @param printWidgetAnnotations
+     */
+    public void setPrintWidgetAnnotations(boolean printWidgetAnnotations) {
+    	this.printWidgetAnnotations = printWidgetAnnotations;
+    }
+    
+    /**
+     * @return <code>true</code> if widget annotations will be printed on pdf
+     */
+    public boolean isPrintWidgetAnnotations() {
+		return this.printWidgetAnnotations;
+	}
+    
+    /**
+     * Print freetext annotations on pdf
+     * 
+     * @param printFreetextAnnotations
+     */
+    public void setPrintFreetextAnnotations(boolean printFreetextAnnotations) {
+    	this.printFreetextAnnotations = printFreetextAnnotations;
+    }
+    
+    /**
+     * @return <code>true</code> if freetext annotations will be printed on pdf
+     */
+    public boolean isPrintFreetextAnnotations() {
+    	return this.printFreetextAnnotations;
+    }
+    
+    /**
+     * Print link annotations on pdf
+     * 
+     * @param printLinkAnnotations
+     */
+    public void setPrintLinkAnnotations(boolean printLinkAnnotations) {
+    	this.printLinkAnnotations = printLinkAnnotations;
+    }
+    
+    /**
+     * @return <code>true</code> if link annotations will be printed on pdf
+     */
+    public boolean isPrintLinkAnnotations() {
+    	return this.printLinkAnnotations;
+    }
 }
