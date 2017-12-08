@@ -357,8 +357,21 @@ public class PatternType1 extends PDFPattern {
                     int xloc = (x + i) - (int) Math.ceil(this.bbox.getX());
                     int yloc = (y + j) - (int) Math.ceil(this.bbox.getY());
                     
-                    xloc %= useXStep;
-                    yloc %= useYStep;
+                     //if useXStep is 0, we would divide through 0 so instead xloc is set to 0
+                    if(useXStep == 0) {
+                    	xloc = 0;
+                    }
+                    else {
+                    	xloc %= useXStep;
+                    }
+                    
+                    //if useYStep is 0, we would divide through 0 so instead yloc is set to 0
+                    if(useYStep == 0) {
+                    	yloc = 0;
+                    }
+                    else {
+                    	yloc %= useYStep;
+                    }
                     
                     if (xloc < 0) {
                         xloc = useXStep + xloc;
