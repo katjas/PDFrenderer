@@ -19,7 +19,9 @@
 package com.sun.pdfview;
 
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
@@ -43,6 +45,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -93,7 +96,7 @@ public class PDFImage {
 	private final PDFObject imageObj;
 	/** true if the image is in encoded in JPEG*/
 	private final boolean jpegDecode;
-
+	
 	/**
 	 * Create an instance of a PDFImage
 	 * @throws IOException if {@link PDFDecoder} throws one while evaluating if the image is a Jpeg 
@@ -457,33 +460,64 @@ public class PDFImage {
 		if (sMaskImage != null) {
 			BufferedImage si = null;
 			try {
-	            if (sMaskImage.getHeight() != this.height && sMaskImage.getWidth() != this.width) {
-	                // in case the two images do not have the same size, scale the
-	                // sMask image
-	                // this fixed a problem in which only part of the image was
-	                // displayed
-	                si = scaleSMaskImage(sMaskImage);  
-	            } else {
+				int w = bi.getWidth();
+				int h = bi.getHeight();
+				// if the bitmap is only a few pixels it just defines the color
+				boolean maskOnly = (w <= 2);
+				if (maskOnly) {
+					// use size of mask
+					si = sMaskImage.getImage();
+	            	w = si.getWidth();
+	            	h = si.getHeight();
+				}
+				else if (sMaskImage.getHeight() != h && sMaskImage.getWidth() != w) {
+	                // in case the two images do not have the same size, scale 
+	            	if (sMaskImage.getHeight()*sMaskImage.getWidth() > w*h) {
+		            	// upscale image
+	            		si = sMaskImage.getImage();
+		            	w = si.getWidth();
+		            	h = si.getHeight();
+		            	int hints = Image.SCALE_FAST;
+						Image scaledInstance = bi.getScaledInstance(w, h, hints );
+						bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+						Graphics graphics = bi.createGraphics();
+						graphics.drawImage(scaledInstance, 0, 0, null);
+						graphics.dispose();
+	            	}
+	            	else {
+	            		// upscale mask
+	            		si = scaleSMaskImage(sMaskImage);
+	            	}
+	            } 
+	            else {
 	                si = sMaskImage.getImage();
 	            }
 	            PDFDebugger.debugImage(si, "smask" + this.imageObj.getObjNum());
 
-    			BufferedImage outImage = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB);
+    			BufferedImage outImage = new BufferedImage(w,h, BufferedImage.TYPE_INT_ARGB);
     			PDFDebugger.debugImage(si, "outImage" + this.imageObj.getObjNum());
-    			int[] srcArray = new int[this.width];
-    			int[] maskArray = new int[this.width];
+    			int[] srcArray = new int[w];
+    			int[] maskArray = new int[w];
     
-    			for (int i = 0; i < this.height; i++) {
-    				bi.getRGB(0, i, this.width, 1, srcArray, 0, this.width);
-    				si.getRGB(0, i, this.width, 1, maskArray, 0, this.width);
+    			for (int i = 0; i < h; i++) {
+    				if (maskOnly) {
+    					// use first pixel color from image
+    					Arrays.fill(srcArray, bi.getRGB(0,0));
+    				}
+    				else {
+    					// pixel row from image
+        				bi.getRGB(0, i, w, 1, srcArray, 0, w);
+    				}
+    				// pixel row from mask
+    				si.getRGB(0, i, w, 1, maskArray, 0, w);
     
-    				for (int j = 0; j < this.width; j++) {
+    				for (int j = 0; j < w; j++) {
     					int ac = 0xff000000;
-    
+    					// alpha from mask with color from image
     					maskArray[j] = ((maskArray[j] & 0xff) << 24) | (srcArray[j] & ~ac);
     				}
-    
-    				outImage.setRGB(0, i, this.width, 1, maskArray, 0, this.width);
+    				// write pixel row
+    				outImage.setRGB(0, i, w, 1, maskArray, 0, w);
     			}
     
     			bi = outImage;
