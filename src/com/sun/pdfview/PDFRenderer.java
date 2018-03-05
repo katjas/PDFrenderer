@@ -278,9 +278,6 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
      * @param image the image to draw
      */
     public Rectangle2D drawImage(PDFImage image) {
-        AffineTransform at = new AffineTransform(1f / image.getWidth(), 0,
-                0, -1f / image.getHeight(),
-                0, 1);
 
         BufferedImage bi;
         try {
@@ -290,6 +287,11 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
             // Nothing to draw, anyway!
             return new Rectangle2D.Double();
         }
+    	
+    	// transform must use bitmap size
+        AffineTransform at = new AffineTransform(1f / bi.getWidth(), 0,
+                0, -1f / bi.getHeight(),
+                0, 1);
 
         if (image.isImageMask()) {
         	bi = getMaskedImage(bi);
@@ -300,7 +302,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         
         if (Configuration.getInstance().isUseBlurResizingForImages() && 
         		bi.getType() != BufferedImage.TYPE_CUSTOM && 
-        		image.getWidth() >= 1.75*r.getWidth() && image.getHeight() >= 1.75*r.getHeight()){
+        		bi.getWidth() >= 1.75*r.getWidth() && bi.getHeight() >= 1.75*r.getHeight()){
         	try {
             	return smartDrawImage(image, bi, r, at);
         	}catch (Exception e) {
@@ -359,20 +361,20 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         
         if (Configuration.getInstance().isUseBlurResizingForImages() && 
         		bi.getType() != BufferedImage.TYPE_CUSTOM && 
-        		image.getWidth() >= 1.75*r.getWidth() && image.getHeight() >= 1.75*r.getHeight()){
+        		bi.getWidth() >= 1.75*r.getWidth() && bi.getHeight() >= 1.75*r.getHeight()){
 
         	BufferedImageOp op;
         	// indexed colored images need to be converted for the convolveOp
         	boolean colorConversion = (bi.getColorModel() instanceof IndexColorModel);
         	final float maxFactor = 3.5f;
         	final boolean RESIZE = true;
-        	if (image.getWidth() > maxFactor*r.getWidth() && image.getHeight() > maxFactor*r.getHeight()){
+        	if (bi.getWidth() > maxFactor*r.getWidth() && bi.getHeight() > maxFactor*r.getHeight()){
         		//First resize, otherwise we risk that we get out of heapspace
         		int newHeight = (int)Math.round(maxFactor*r.getHeight());
         		int newWidth = (int)Math.round(maxFactor*r.getWidth());
         		if (!RESIZE) {
-        			newHeight = image.getHeight();
-        			newWidth = image.getWidth();
+        			newHeight = bi.getHeight();
+        			newWidth = bi.getWidth();
         		}
         		BufferedImage resized = new BufferedImage(newWidth, 
         				newHeight, colorConversion?BufferedImage.TYPE_INT_ARGB:bi.getType());
@@ -402,12 +404,12 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         				1*weight, 2*weight, 1*weight
         		};
         		if (colorConversion) {
-            		BufferedImage colored = new BufferedImage(image.getWidth(), 
-            				image.getHeight(), colorConversion?BufferedImage.TYPE_INT_ARGB:bi.getType());
+            		BufferedImage colored = new BufferedImage(bi.getWidth(), 
+            				bi.getHeight(), colorConversion?BufferedImage.TYPE_INT_ARGB:bi.getType());
             		Graphics2D bg = (Graphics2D) colored.getGraphics();
             		bg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
             				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            		bg.drawImage(bi, 0, 0, image.getWidth(), image.getHeight(), null);
+            		bg.drawImage(bi, 0, 0, bi.getWidth(), bi.getHeight(), null);
             		bi = colored;
         		}
         		op = new ConvolveOp(new Kernel(3, 3, blurKernel), ConvolveOp.EDGE_NO_OP, null);
