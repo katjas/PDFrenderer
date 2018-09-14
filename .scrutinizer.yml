@@ -1,0 +1,11 @@
+build:
+  nodes:
+    analysis:
+      tests:
+        override:
+          - java-scrutinizer-run
+checks:
+    java: true
+filter:
+    excluded_paths:
+- parser/src/main/**
