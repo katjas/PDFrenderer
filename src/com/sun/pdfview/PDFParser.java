@@ -506,11 +506,6 @@ public class PDFParser extends BaseWatchable {
                 PDFDebugger.debug("Set GS state "+popString, 10);
                 setGSState(popString);
             } else if (cmd.equals("m")) {
-                if (path.getCurrentPoint() != null) {
-                    // begin a new sub path
-                    path.closePath();
-                    PDFDebugger.logPath(path, "closed");
-                }
                 // path move to
                 float y = popFloat();
                 float x = popFloat();
