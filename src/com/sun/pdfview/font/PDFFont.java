@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.sun.pdfview.BaseWatchable;
+import com.sun.pdfview.PDFDebugger;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 import com.sun.pdfview.PDFRenderer;
@@ -164,6 +165,10 @@ public abstract class PDFFont {
 			if (descriptor.getFontFile() != null) {
                 // it's a Type1 font, included.
                 font = new Type1Font(baseFont, obj, descriptor);
+                if(!((Type1Font)font).isName2OutlineFilled()){
+                	PDFDebugger.debug("Type1Font can't be parsed completelly, character mapping missing. Use a basefont instead.");
+                	font = new BuiltinFont(baseFont, obj, descriptor);
+                }
             } else if (descriptor.getFontFile3() != null) {
                 // it's a CFF (Type1C) font
                 font = new Type1CFont(baseFont, obj, descriptor);
