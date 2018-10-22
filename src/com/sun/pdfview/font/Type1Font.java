@@ -900,4 +900,8 @@ public class Type1Font extends OutlineFont {
 	protected GeneralPath getOutline(char src, float width) {
         return getOutline(this.chr2name[src & 0xff], width);
     }
+    
+    public boolean isName2OutlineFilled() {
+    	return (name2outline!=null) && !name2outline.isEmpty();
+    }
 }
