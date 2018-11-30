@@ -182,7 +182,8 @@ public abstract class PDFFont {
                 try {
                     font = new TTFFont(baseFont, obj, descriptor);
                 }catch (Exception e) {
-            		PDFRenderer.getErrorHandler().publishException(e);
+//            		PDFRenderer.getErrorHandler().publishException(e);
+                	PDFDebugger.debug("Error parsing font : " + baseFont);
                     // fake it with a built-in font
                     font = new BuiltinFont(baseFont, obj, descriptor);
                 }
@@ -192,7 +193,8 @@ public abstract class PDFFont {
                 	try {
                         font = new TTFFont(baseFont, obj, descriptor, extFontFile);
                 	}catch (Exception e) {
-                		PDFRenderer.getErrorHandler().publishException(e);
+//                		PDFRenderer.getErrorHandler().publishException(e);
+                		PDFDebugger.debug("Error parsing font : " + baseFont);
                 		// fake it with a built-in font
                 		font = new BuiltinFont(baseFont, obj, descriptor);
 					}
