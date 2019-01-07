@@ -35,6 +35,7 @@ import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
 import com.sun.pdfview.PDFRenderer;
 import com.sun.pdfview.font.cid.PDFCMap;
+import com.sun.pdfview.font.cid.ToUnicodeMap;
 import com.sun.pdfview.font.ttf.TrueTypeFont;
 
 /**
@@ -429,7 +430,8 @@ public abstract class PDFFont {
         List<PDFGlyph> outList = null;
 
         // if we have an encoding, use it to get the commands
-        if (this.encoding != null) {
+        // don't use the encoding if it is "OneByteIdentityH" (hack for case #205739)
+        if (this.encoding != null && !this.encoding.isOneByteIdentity()) {
             outList = this.encoding.getGlyphs(this, text);
         } else {
             // use the default mapping
