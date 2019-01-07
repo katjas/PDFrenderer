@@ -4,7 +4,7 @@ import javax.swing.JFrame;
 
 public class MyPdfRenderer {
 	
-	public static String fileName = "..."; // set file path of file to test hee
+	public static String fileName = "D:/25-002.pdf"; // set file path of file to test hee
 	public static int pageIndex = 1; // the page to be displayed
 	
 	public static void main(String[] args) {
