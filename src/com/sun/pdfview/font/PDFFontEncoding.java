@@ -60,6 +60,7 @@ public class PDFFontEncoding {
      * the type of this encoding (encoding or CMap)
      */
     private int type;
+	private PDFObject mapName;
     
     public PDFFontEncoding(PDFCMap cmap) {
     	super();
@@ -94,6 +95,7 @@ public class PDFFontEncoding {
                 // it is a CMap
                 this.type = TYPE_CMAP;
                 this.cmap = PDFCMap.getCMap(encoding);
+                this.mapName = encoding.getDictRef("CMapName");
             } else {
                 throw new IllegalArgumentException("Uknown encoding type: " + this.type);
             }
@@ -207,5 +209,17 @@ public class PDFFontEncoding {
         } else {
             throw new IllegalArgumentException("Unknown encoding: " + encodingName);
         }
+    }
+    
+    public boolean isOneByteIdentity() {
+    	if(this.mapName != null) {
+    		try {
+				return "OneByteIdentityH".equals(this.mapName.getStringValue());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	}
+    	
+    	return false;
     }
 }

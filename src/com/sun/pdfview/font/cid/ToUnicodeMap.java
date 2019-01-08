@@ -98,14 +98,14 @@ public class ToUnicodeMap extends PDFCMap {
 			BufferedReader bf = new BufferedReader(reader);
 			String line = bf.readLine();
 			while (line != null) {
-				if (line.contains("beginbfchar")) {
-					parseSingleCharMappingSection(bf);
+				if (line.contains("beginbfchar") || line.contains("begincidchar")) {
+					parseSingleCharMappingSection(bf, line.contains("begincidchar"));
 				}
-				if (line.contains("beginbfrange")) {
-					parseCharRangeMappingSection(bf);
+				if (line.contains("beginbfrange") || line.contains("begincidrange")) {
+					parseCharRangeMappingSection(bf, line.contains("begincidrange"));
 				}
 				if (line.contains("begincodespacerange")) {
-					parseCodeRangeMappingSection(bf);
+					parseCodeRangeMappingSection(bf, line);
 				}
 				line = bf.readLine();
 			}
@@ -119,25 +119,37 @@ public class ToUnicodeMap extends PDFCMap {
 	 * @throws IOException 
 	 ************************************************************************/
 	
-	private void parseCharRangeMappingSection(BufferedReader bf) throws IOException {
+	private void parseCharRangeMappingSection(BufferedReader bf, boolean isCid) throws IOException {
 		String line = bf.readLine();
 		while (line != null) {
-			if (line.contains("endbfrange")) {
+			if (line.contains("endbfrange") || line.contains("endcidrange")) {
 				break;
 			}
-			parseRangeLine(line);
+			parseRangeLine(line, isCid);
 			line = bf.readLine();
 		}
 	}
 
-	private void parseCodeRangeMappingSection(BufferedReader bf) throws IOException {
-		String line = bf.readLine();
-		while (line != null) {
-			if (line.contains("endcodespacerange")) {
-				break;
-			}
+	private void parseCodeRangeMappingSection(BufferedReader bf, String line) throws IOException {
+		//check if the prev line contains "endcodespacerange"
+		if(line.contains("endcodespacerange")) {
+			int indexOf = line.indexOf("endcodespacerange");
+			line = line.substring(0, indexOf);
+			indexOf = line.indexOf("begincodespacerange");
+			line = line.substring(indexOf+"begincodespacerange".length(), line.length());
+			line = line.trim();
+			
 			parseCodeRangeLine(line);
-			line = bf.readLine();
+		}
+		else {
+			String rline = bf.readLine();
+			while (rline != null) {
+				if (rline.contains("endcodespacerange")) {
+					break;
+				}
+				parseCodeRangeLine(rline);
+				rline = bf.readLine();
+			}
 		}
 	}
 
@@ -146,13 +158,37 @@ public class ToUnicodeMap extends PDFCMap {
 	 * @return
 	 ************************************************************************/
 	
-	private void parseRangeLine(String line) {
+	private void parseRangeLine(String line, boolean isCid) {
 		String[] mapping = line.split(" ");
 		if (mapping.length == 3) {
 			Character srcStart = parseChar(mapping[0]);
 			Character srcEnd = parseChar(mapping[1]);
-			Character destStart = parseChar(mapping[2]);
+			Character destStart;
+			if(isCid) {
+				destStart = (char)Integer.parseInt(mapping[2]);
+			}
+			else {
+				destStart = parseChar(mapping[2]);
+			}
 			this.charRangeMappings.add(new CharRangeMapping(srcStart, srcEnd, destStart));
+		}
+		else {
+			int indexOf1 = line.indexOf(">");
+			String substring1 = line.substring(0, indexOf1+1);
+			
+			int indexOf2 = line.indexOf("<", indexOf1);
+			int indexOf3 = line.indexOf(">", indexOf2);
+			String substring2 = line.substring(indexOf2, indexOf3+1);
+			
+			int indexOf4 = line.indexOf("<", indexOf3);
+			String substring3 = line.substring(indexOf4, line.length());
+			
+			if(!substring1.isEmpty() && !substring2.isEmpty() && !substring3.isEmpty()) {
+				Character srcStart = parseChar(substring1);
+				Character srcEnd = parseChar(substring2);
+				Character destStart = parseChar(substring3);
+				this.charRangeMappings.add(new CharRangeMapping(srcStart, srcEnd, destStart));
+			}
 		}
 	}
 
@@ -163,6 +199,19 @@ public class ToUnicodeMap extends PDFCMap {
 			Character srcEnd = parseChar(mapping[1]);
 			this.codeRangeMappings.add(new CodeRangeMapping(srcStart, srcEnd));
 		}
+		else {
+			int indexOf1 = line.indexOf(">");
+			String substring1 = line.substring(0, indexOf1+1);
+			
+			int indexOf2 = line.indexOf("<", indexOf1);
+			String substring2 = line.substring(indexOf2, line.length());
+			
+			if(!substring1.isEmpty() && !substring2.isEmpty()) {
+				Character srcStart = parseChar(substring1);
+				Character srcEnd = parseChar(substring2);
+				this.codeRangeMappings.add(new CodeRangeMapping(srcStart, srcEnd));
+			}
+		}
 	}
 
 	/*************************************************************************
@@ -170,13 +219,13 @@ public class ToUnicodeMap extends PDFCMap {
 	 * @throws IOException 
 	 ************************************************************************/
 	
-	private void parseSingleCharMappingSection(BufferedReader bf) throws IOException {
+	private void parseSingleCharMappingSection(BufferedReader bf, boolean isCID) throws IOException {
 		String line = bf.readLine();
 		while (line != null) {
-			if (line.contains("endbfchar")) {
+			if (line.contains("endbfchar") || line.contains("endcidchar")) {
 				break;
 			}
-			parseSingleCharMappingLine(line);
+			parseSingleCharMappingLine(line, isCID);
 			line = bf.readLine();
 		}
 	}
@@ -186,12 +235,15 @@ public class ToUnicodeMap extends PDFCMap {
 	 * @return
 	 ************************************************************************/
 	
-	private void parseSingleCharMappingLine(String line) {
+	private void parseSingleCharMappingLine(String line, boolean isCID) {
 		String[] mapping = line.split(" ");
-		if (mapping.length == 2 
-				&& mapping[0].startsWith("<")
-				&& mapping[1].startsWith("<")) {
-			this.singleCharMappings.put(parseChar(mapping[0]), parseChar(mapping[1]));
+		if (mapping.length == 2) {
+			if(isCID) {
+				this.singleCharMappings.put(parseChar(mapping[0]), (char)Integer.parseInt(mapping[1]));
+			}
+			else {
+				this.singleCharMappings.put(parseChar(mapping[0]), parseChar(mapping[1]));
+			}
 		}
 	}
 
