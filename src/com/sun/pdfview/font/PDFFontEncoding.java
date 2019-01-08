@@ -24,7 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.pdfview.PDFDebugger;
 import com.sun.pdfview.PDFObject;
+import com.sun.pdfview.PDFRenderer;
 import com.sun.pdfview.font.cid.PDFCMap;
 
 /**
@@ -216,7 +218,7 @@ public class PDFFontEncoding {
     		try {
 				return "OneByteIdentityH".equals(this.mapName.getStringValue());
 			} catch (IOException e) {
-				e.printStackTrace();
+				PDFRenderer.getErrorHandler().publishException(e);
 			}
     	}
     	
