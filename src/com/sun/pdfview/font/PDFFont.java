@@ -212,7 +212,8 @@ public abstract class PDFFont {
                 font = new CIDFontType2(baseFont, obj, descriptor);
         	}else {
                 // fake it with a built-in font
-                font = new BuiltinFont(baseFont, obj, descriptor);
+       		//but it prefer to use the CIDFontType0 that have the extra handling of ToUnicode, if found in the fontObj
+	                font = new CIDFontType0(baseFont, obj, descriptor);
         	}
         } else if (subType.equals("CIDFontType0")) {
         	if(descriptor.getFontFile2() !=null){
