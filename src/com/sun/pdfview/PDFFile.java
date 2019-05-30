@@ -870,7 +870,7 @@ public class PDFFile {
                 break;      // out-of-range, should have been hex
             }
             // H.3.2.4 indicates version 1.1 did not do hex escapes
-            if (c == '#' && (this.majorVersion != 1 && this.minorVersion != 1)) {
+            if (c == '#' && (this.majorVersion >= 1 && this.minorVersion > 1)) {
                 int hex = readHexPair();
                 if (hex >= 0) {
                     c = hex;
