@@ -1224,7 +1224,14 @@ public class PDFFile {
         
         while (true) {
 			PDFObject xrefObj = readObject(-1, -1, IdentityDecrypter.getInstance());
-			PDFObject pdfObject = xrefObj.getDictionary().get("W");
+			if (xrefObj == null) {
+				break;
+			}
+			HashMap<String, PDFObject> trailerdict = xrefObj.getDictionary();
+			if (trailerdict == null) {
+				break;
+			}
+			PDFObject pdfObject = trailerdict.get("W");
 			if (pdfObject == null) {
 				break;
 			}
@@ -1233,12 +1240,12 @@ public class PDFFile {
 			int l2 = wNums[1].getIntValue();
 			int l3 = wNums[2].getIntValue();
 	
-			int size = xrefObj.getDictionary().get("Size").getIntValue();
+			int size = trailerdict.get("Size").getIntValue();
 
 			byte[] strmbuf = xrefObj.getStream();
 			int strmPos = 0;
 			
-			PDFObject idxNums = xrefObj.getDictionary().get("Index");
+			PDFObject idxNums = trailerdict.get("Index");
 			int[] idxArray;
 			if (idxNums == null) {
 				idxArray = new int[]{0, size};
@@ -1292,9 +1299,7 @@ public class PDFFile {
 				}
 			}
 	
-		    HashMap<String, PDFObject> trailerdict = xrefObj.getDictionary();
-	
-            // read the root object location
+		    // read the root object location
             if (this.root == null) {
                 this.root = trailerdict.get("Root");
                 if (this.root != null) {
