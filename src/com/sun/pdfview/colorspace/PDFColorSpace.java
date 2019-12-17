@@ -96,6 +96,8 @@ public class PDFColorSpace {
     public static PDFColorSpace getColorSpace(int name) {
         switch (name) {
         case COLORSPACE_GRAY:
+        case ColorSpace.CS_GRAY:
+        case ColorSpace.TYPE_GRAY:
             return graySpace;
 
         case COLORSPACE_RGB:
@@ -172,6 +174,9 @@ public class PDFColorSpace {
             try {
                 ByteArrayInputStream bais = new ByteArrayInputStream(ary[1].getStream());
                 ICC_Profile profile = ICC_Profile.getInstance(bais);
+                if (profile.getColorSpaceType() == ColorSpace.CS_GRAY || profile.getColorSpaceType() == ColorSpace.TYPE_GRAY) {
+                    return graySpace;
+                }
                 value = new PDFColorSpace(new ICC_ColorSpace(profile));
             } catch (IllegalArgumentException e) {
                 return getColorSpace(COLORSPACE_RGB);
