@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.font.cid.PDFCMap;
+import com.sun.pdfview.font.ttf.AdobeGlyphList;
 
 /*****************************************************************************
  * At the moment this is not fully supported to parse CID based fonts
@@ -56,6 +57,11 @@ public class CIDFontType0 extends BuiltinFont {
     	// See "9.10 Extraction of Text Content" in the PDF spec.
         if (this.glyphLookupMap != null) {
         	src = this.glyphLookupMap.map(src);
+            //The preferred method of getting the glyph should be by name. 
+            if (name == null && src != 160){//unless it NBSP
+            	//so, try to find the name by the char
+            	name = AdobeGlyphList.getGlyphName(src);
+            }
         }
 		return super.getGlyph(src, name);
     }
