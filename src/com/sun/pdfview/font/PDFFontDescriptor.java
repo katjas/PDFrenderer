@@ -103,7 +103,12 @@ public class PDFFontDescriptor {
     public PDFFontDescriptor(PDFObject obj, String fontSubType) throws IOException {
         // required parameters
         setFlags(obj.getDictRef("Flags").getIntValue());
-        setFontName(obj.getDictRef("FontName").getStringValue());
+        PDFObject fontNameObj = obj.getDictRef("FontName");
+        if (fontNameObj == null){
+        	// fallback to avoid NPE try to use the BaseFont
+        	fontNameObj = obj.getDictRef("BaseFont");
+        }
+        setFontName(fontNameObj.getStringValue());
         setItalicAngle(obj.getDictRef("ItalicAngle").getIntValue());
         
         // conditionally required parameters
