@@ -211,6 +211,10 @@ public class PDFParser extends BaseWatchable {
                 if (c == '\r') {
                     c = this.stream[this.loc++]; // eat a following return
                 }
+                // skip whitespace
+                while (this.loc < this.stream.length && PDFFile.isWhiteSpace(c)) {
+                	c = this.stream[this.loc++];
+                }
             }
             PDFDebugger.debug("Read comment: " + comment.toString(), -1);
         }
