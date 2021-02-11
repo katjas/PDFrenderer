@@ -49,6 +49,7 @@ Usage / Example
 -------
 
 // example class for displaying a PDF file
+```java
 public class PDFDisplay extends JComponent{
 
 	// byte array containing the PDF file content
@@ -87,4 +88,4 @@ public class PDFDisplay extends JComponent{
 		renderer.run();
 	}
 }
-
+```
