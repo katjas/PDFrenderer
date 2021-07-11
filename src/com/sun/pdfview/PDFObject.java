@@ -200,6 +200,100 @@ public class PDFObject {
         this.value = xref;
         this.owner = owner;
     }
+    
+    /**
+     * Convenient method to get a dictionary value as String
+     * @param name of the dictionary value
+     * @return the value or null if no entry exists with that name
+     * @throws IOException
+     */
+    public String getDictRefAsString(String name) throws IOException {
+    	PDFObject ref = getDictRef(name);
+    	return ref == null ? null : ref.getStringValue();
+    }
+    
+    /**
+     * Convenient method to get a dictionary value as String
+     * @param name of the dictionary value
+     * @return the value or null if no entry exists with that name
+     * @throws IOException
+     */
+    public Boolean getDictRefAsBoolean(String name) throws IOException {
+    	PDFObject ref = getDictRef(name);
+    	return ref == null ? null : ref.getBooleanValue();
+    }
+    
+    /**
+     * Convenient method to get a dictionary value as Integer
+     * @param name of the dictionary value
+     * @return the value or null if no entry exists with that name
+     * @throws IOException
+     */
+    public Integer getDictRefAsInt(String name) throws IOException {
+    	PDFObject ref = getDictRef(name);
+    	return ref == null ? null : ref.getIntValue();
+    }
+        
+    /**
+     * Convenient method to get a dictionary value as int[]
+     * @param name of the dictionary value
+     * @return the value or null if no entry exists with that name
+     * @throws IOException
+     */
+    public int[] getDictRefAsIntArray(String name) throws IOException {
+    	PDFObject ref = getDictRef(name);
+    	if (ref == null) {
+    		return null;
+    	}
+    	PDFObject[] values = ref.getArray();
+        int[] result = new int[values.length];
+        for (int i = 0; i < values.length; i++) {
+        	result[i] = values[i].getIntValue();
+        }
+    	return result;
+    }
+    
+    /**
+     * Convenient method to get a dictionary value as float[]
+     * @param name of the dictionary value
+     * @return the value or null if no entry exists with that name
+     * @throws IOException
+     */
+    public float[] getDictRefAsFloatArray(String name) throws IOException {
+    	PDFObject ref = getDictRef(name);
+    	if (ref == null) {
+    		return null;
+    	}
+    	PDFObject[] values = ref.getArray();
+    	float[] result = new float[values.length];
+        for (int i = 0; i < values.length; i++) {
+        	result[i] = values[i].getFloatValue();
+        }
+    	return result;
+    }
+    
+    
+    /**
+     * Convenient method to get a dictionary value as Float
+     * @param name of the dictionary value
+     * @return the value or null if no entry exists with that name
+     * @throws IOException
+     */
+    public Float getDictRefAsFloat(String name) throws IOException {
+    	PDFObject ref = getDictRef(name);
+    	return ref == null ? null : ref.getFloatValue();
+    }
+    
+    /**
+     * Convenient method to get a dictionary value as Double
+     * @param name of the dictionary value
+     * @return the value or null if no entry exists with that name
+     * @throws IOException
+     */
+    public Double getDictRefAsDouble(String name) throws IOException {
+    	PDFObject ref = getDictRef(name);
+    	return ref == null ? null : ref.getDoubleValue();
+    }
 
     /**
      * get the type of this object.  The object will be

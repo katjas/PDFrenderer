@@ -5,6 +5,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.Rectangle2D.Float;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,58 +24,6 @@ import com.sun.pdfview.PDFParseException;
  * @since 03.07.2009
  ****************************************************************************/
 public class PDFAnnotation{
-	public enum ANNOTATION_TYPE{
-		UNKNOWN("-", 0, PDFAnnotation.class),
-		LINK("Link", 1, LinkAnnotation.class),
-		WIDGET("Widget", 2, WidgetAnnotation.class),
-		STAMP("Stamp", 3, StampAnnotation.class),
-		FREETEXT("FreeText", 5, FreetextAnnotation.class),
-		SIGNATURE("Sig", 6, WidgetAnnotation.class),
-		// TODO 28.03.2012: add more annotation types
-		;
-		
-		private String definition; 
-		private int internalId;
-		private Class<?> className;
-		private ANNOTATION_TYPE(String definition, int typeId, Class<?> className) {
-			this.definition = definition;
-			this.internalId = typeId;
-			this.className = className;
-		}
-		/**
-		 * @return the definition
-		 */
-		public String getDefinition() {
-			return definition;
-		}
-		/**
-		 * @return the internalId
-		 */
-		public int getInternalId() {
-			return internalId;
-		}
-		
-		/**
-		 * @return the className
-		 */
-		public Class<?> getClassName() {
-			return className;
-		}
-		
-		/**
-		 * Get annotation type by it's type 
-		 * @param definition
-		 * @return
-		 */
-		public static ANNOTATION_TYPE getByDefinition(String definition) {
-			for (ANNOTATION_TYPE type : values()) {
-				if(type.definition.equals(definition)) {
-					return type;
-				}
-			}
-			return UNKNOWN;
-		}		
-	}
 	
 	/** Definition of some annotation sub-types*/
 	public static final String GOTO = "GoTo";
@@ -82,9 +31,31 @@ public class PDFAnnotation{
 	public static final String GOTOR = "GoToR";
 	public static final String URI = "URI";
 	
+	public enum Flags {
+		UNKNOWN,  // 0 
+		INVISIBLE, // 1
+		HIDDEN, // 2
+		PRINT, // 3
+		NO_ZOOM, // 4
+		NO_ROTATE, // 5
+		NO_VIEW, // 6
+		READ_ONLY, // 7
+		LOCKED, // 8
+		TOGGLE_NO_VIEW, // 9
+		LOCKED_CONTENTS // 10
+	}
+	
+	
 	private final PDFObject pdfObj;
-	private final ANNOTATION_TYPE type;
+	private final AnnotationType type;
 	private final Float rect;
+	private final String subType;
+	private final String contents;
+	
+	private final String annotationName;
+	private String modified;
+	private Integer flags;
+	private String appearanceState;
 
 	/*************************************************************************
 	 * Constructor
@@ -92,7 +63,7 @@ public class PDFAnnotation{
 	 * @throws IOException 
 	 ************************************************************************/
 	public PDFAnnotation(PDFObject annotObject) throws IOException{
-		this(annotObject, ANNOTATION_TYPE.UNKNOWN);
+		this(annotObject, AnnotationType.UNKNOWN);
 	}
 
 	/*************************************************************************
@@ -100,10 +71,20 @@ public class PDFAnnotation{
 	 * @param annotObject - the PDFObject which contains the annotation description
 	 * @throws IOException 
 	 ************************************************************************/
-	protected PDFAnnotation(PDFObject annotObject, ANNOTATION_TYPE type) throws IOException{
+	public PDFAnnotation(PDFObject annotObject, AnnotationType type) throws IOException{
 		this.pdfObj = annotObject;
 		// in case a general "PdfAnnotation" is created the type is unknown
 		this.type = type;
+		
+		this.subType = annotObject.getDictRefAsString("Subtype");
+		this.contents = annotObject.getDictRefAsString("Contents");
+		this.annotationName = annotObject.getDictRefAsString("NM");
+		this.modified = annotObject.getDictRefAsString("M");
+		this.flags = annotObject.getDictRefAsInt("F");
+		this.appearanceState = annotObject.getDictRefAsString("AS");
+		
+		// TODO add Border, C, StructParent, OC
+		
 		this.rect = this.parseRect(annotObject.getDictRef("Rect"));
 	}
 
@@ -123,43 +104,36 @@ public class PDFAnnotation{
 			return null;
 		}
 		String subtypeS = subtypeValue.getStringValue();
-		ANNOTATION_TYPE annotationType = ANNOTATION_TYPE.getByDefinition(subtypeS);
+		AnnotationType annotationType = AnnotationType.getByDefinition(subtypeS);
 		
 		//if Subtype is Widget than check if it is also a Signature
-		if(annotationType == ANNOTATION_TYPE.WIDGET) {
+		if(annotationType == AnnotationType.WIDGET) {
 			PDFObject sigType = parent.getDictRef("FT");
 			if(sigType != null) {
 				String sigTypeS = sigType.getStringValue();
-				if(ANNOTATION_TYPE.getByDefinition(sigTypeS) == ANNOTATION_TYPE.SIGNATURE) {
-					annotationType = ANNOTATION_TYPE.getByDefinition(sigTypeS);
+				if(AnnotationType.getByDefinition(sigTypeS) == AnnotationType.SIGNATURE) {
+					annotationType = AnnotationType.getByDefinition(sigTypeS);
 				}
 			}
 		}
 		
-		if(displayAnnotation(annotationType)) {
+		if(annotationType.displayAnnotation()) {
 			Class<?> className = annotationType.getClassName();
 			
-			Constructor<?> constructor;
 			try {
-				constructor = className.getConstructor(PDFObject.class);
-				return (PDFAnnotation)constructor.newInstance(parent);
+				if (className.equals(MarkupAnnotation.class) || className.equals(TextMarkupAnnotation.class)) {
+					Constructor<?> constructor = className.getConstructor(PDFObject.class, AnnotationType.class);
+					return (PDFAnnotation)constructor.newInstance(parent, annotationType);
+				} else {
+					Constructor<?> constructor = className.getConstructor(PDFObject.class);
+					return (PDFAnnotation)constructor.newInstance(parent);
+				}
 			} catch (Exception e) {
 				throw new PDFParseException("Could not parse annotation!", e);
 			} 
 		}
 		
 		return null;
-	}
-
-    private static boolean displayAnnotation(ANNOTATION_TYPE annotationType) {
-		switch(annotationType) {
-			case STAMP: return Configuration.getInstance().isPrintStampAnnotations();
-			case WIDGET: return Configuration.getInstance().isPrintWidgetAnnotations();
-			case FREETEXT: return Configuration.getInstance().isPrintFreetextAnnotations();
-			case LINK: return Configuration.getInstance().isPrintLinkAnnotations();
-			case SIGNATURE: return Configuration.getInstance().isPrintSignatureFields();
-			case UNKNOWN: default: return false;
-		}
 	}
 
 	/**
@@ -196,7 +170,7 @@ public class PDFAnnotation{
 	 * Get the annotation type
 	 * @return int
 	 ************************************************************************/
-	public ANNOTATION_TYPE getType() {
+	public AnnotationType getType() {
 		return this.type;
 	}
 
@@ -206,6 +180,35 @@ public class PDFAnnotation{
 	 ************************************************************************/
 	public Float getRect() {
 		return this.rect;
+	}
+	
+	public String getSubType() {
+		return subType;
+	}
+	
+	public String getAnnotationName() {
+		return annotationName;
+	}
+	
+	public String getAppearanceState() {
+		return appearanceState;
+	}
+	
+	public String getContents() {
+		return contents;
+	}
+	
+	public Integer getFlags() {
+		return flags;
+	}
+	
+	public boolean isFlagSet(Flags flag) {
+		return flags != null 
+				&& BigInteger.valueOf(flags).testBit(flag.ordinal());
+	}
+	
+	public String getModified() {
+		return modified;
 	}
 
 	@Override

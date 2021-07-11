@@ -5,20 +5,21 @@ import java.io.IOException;
 import com.sun.pdfview.PDFObject;
 
 /*****************************************************************************
- * PDF annotation describing a free text
- * Currently only supports the XObjects which can be found in the path AP->N
- * of the annotation object (same implementation as the stamp annotation) 
- * @author Katja Sondermann
- * @since 28.03.2012
+ * PDF annotation for a square
+ *  
+ * @author Bernd Rosstauscher
  ****************************************************************************/
-public class FreetextAnnotation extends MarkupAnnotation {
+public class SquareAnnotation extends MarkupAnnotation {
+	
+	// TODO Not all of this is fully implemented yet.
+	// But it will work if the visual representation is done via an "Appearance Stream" 
 	
 	/*************************************************************************
 	 * Constructor
 	 * @param annotObject
 	 * @throws IOException 
 	 ************************************************************************/
-	public FreetextAnnotation(PDFObject annotObject) throws IOException {
-		super(annotObject, AnnotationType.FREETEXT);
+	public SquareAnnotation(PDFObject annotObject) throws IOException {
+		super(annotObject, AnnotationType.SQUARE);
 	}
 }
