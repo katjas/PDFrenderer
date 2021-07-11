@@ -119,6 +119,8 @@ public class MarkupAnnotation extends PDFAnnotation {
 
 
 	private List<PDFCmd> parseIntoPdfCommands(PDFObject obj) throws IOException {
+		// TODO see also WidgetAnnotation.parseCommand which seems to be copied code 
+		// We should merge these two
         String type = obj.getDictRef("Subtype").getStringValue();
         if (type == null) {
             type = obj.getDictRef ("S").getStringValue ();
