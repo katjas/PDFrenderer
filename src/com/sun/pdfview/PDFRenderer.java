@@ -164,7 +164,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         // set up the initial graphics state
         this.state = new GraphicsState();
         this.state.cliprgn = null;
-        this.state.stroke = new BasicStroke();
+        this.state.stroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
         this.state.strokePaint = PDFPaint.getColorPaint(Color.black);
         this.state.fillPaint = this.state.strokePaint;
         this.state.fillAlpha = AlphaComposite.getInstance(AlphaComposite.SRC);

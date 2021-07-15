@@ -36,8 +36,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.pdfview.annotation.AnnotationType;
 import com.sun.pdfview.annotation.PDFAnnotation;
-import com.sun.pdfview.annotation.PDFAnnotation.ANNOTATION_TYPE;
 
 /**
 * A PDFPage encapsulates the parsed commands required to render a
@@ -673,7 +673,7 @@ public class PDFPage {
     *
     * @return List<PDFAnnotation>
     ************************************************************************/
-    public List<PDFAnnotation> getAnnots(ANNOTATION_TYPE type) {
+    public List<PDFAnnotation> getAnnots(AnnotationType type) {
         List<PDFAnnotation> list = new ArrayList<PDFAnnotation>();
         if (this.annots != null) {
             for (PDFAnnotation annot : this.annots) {

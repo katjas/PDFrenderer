@@ -60,7 +60,7 @@ public class WidgetAnnotation extends PDFAnnotation {
 	}
 
 	public WidgetAnnotation(PDFObject annotObject) throws IOException {
-		super(annotObject, ANNOTATION_TYPE.WIDGET);
+		super(annotObject, AnnotationType.WIDGET);
 		
 		// The type of field that this dictionary describes. Field type is
 		// present for terminal fields but is inherited from parent if absent
@@ -105,8 +105,15 @@ public class WidgetAnnotation extends PDFAnnotation {
 		cmd = parseCommand(normalAP);
 	}
 	
+	/**
+	 * @param obj
+	 * @return
+	 * @throws IOException
+	 */
 	private List<PDFCmd> parseCommand(PDFObject obj) throws IOException {
-        PDFObject dictRefSubType = obj.getDictRef("Subtype");
+		// TODO see also MarkupAnnotation.parseIntoPdfCommands() which seems to be copied code 
+		// We should merge these two
+		PDFObject dictRefSubType = obj.getDictRef("Subtype");
 		String type = null;
 		if(dictRefSubType != null) {
 			type = dictRefSubType.getStringValue();
