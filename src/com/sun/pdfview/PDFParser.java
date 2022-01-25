@@ -1276,6 +1276,9 @@ public class PDFParser extends BaseWatchable {
         // TODO: lots of graphic states are not yet considered, see chapter 8.4.5 of the PDF specification.  
         // get LW, LC, LJ, Font, SM, CA, ML, D, RI, FL, BM, ca
         // out of the reference, which is a dictionary
+        if (gsobj == null) {
+            return;
+        }
         PDFObject d;
         boolean handled = false;
         if ((d = gsobj.getDictRef("LW")) != null) {
