@@ -19,12 +19,12 @@
 
 package com.sun.pdfview.decode;
 
-import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
-
+import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFParseException;
-import com.sun.pdfview.PDFFile;
+
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 
 /**
  * decode an array of hex nybbles into a byte array
@@ -82,25 +82,26 @@ public class ASCIIHexDecode {
      */
     private ByteBuffer decode() throws PDFParseException {
         // start at the beginning of the buffer
-        this.buf.rewind();
-        
+        buf.rewind();
+
         // allocate the output buffer
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        
+
         while (true) {
-	    int first = readHexDigit();
-	    int second = readHexDigit();
-	    
+            int first = readHexDigit();
             if (first == -1) {
                 break;
-	    } else if (second == -1) {
-		baos.write((byte) (first << 4));
-		break;
-	    } else {
+            }
+            int second = readHexDigit();
+
+            if (second == -1) {
+                baos.write((byte) (first << 4));
+                break;
+            } else {
                 baos.write((byte) ((first << 4) + second));
-	    }
-	}
-        
+            }
+        }
+
         return ByteBuffer.wrap(baos.toByteArray());
     }
 
